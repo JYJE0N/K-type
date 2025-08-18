@@ -116,6 +116,22 @@ Thumbs.db
 # Claude Code
 .claude/
 
-# Optional: If you don't want to commit lock files (some prefer not to)
-# yarn.lock
-# package-lock.json
+# Package manager lock files (using yarn)
+package-lock.json
+pnpm-lock.yaml
+
+# Temporary and backup files
+*.old
+*.bak
+node_modules.old/
+node_modules.old.bak/
+
+# Test files
+test-*.js
+*.test.js
+
+# WSL specific
+yarn-wrapper.sh
+
+# npm config
+.npmrc

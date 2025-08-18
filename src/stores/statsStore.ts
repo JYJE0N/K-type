@@ -42,24 +42,44 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
 
   // 실시간 통계 계산
   calculateStats: (keystrokes, mistakes, startTime, currentIndex = 0, currentTime = new Date()) => {
-    if (!startTime || keystrokes.length === 0) {
+    if (!startTime) {
       set({ liveStats: initialStats })
       return
     }
 
     const timeElapsed = (currentTime.getTime() - startTime.getTime()) / 1000 // 초 단위
+    
+    // 최소 1초는 지나야 통계 계산
+    if (timeElapsed < 1) {
+      set({ liveStats: { ...initialStats, charactersTyped: currentIndex } })
+      return
+    }
+    
     const store = get()
     
     // 실제 타이핑한 문자 수는 currentIndex 사용 (실제 진행된 문자 위치)
     const actualCharactersTyped = currentIndex
     
+    // CPM을 currentIndex 기반으로 직접 계산
+    const minutes = timeElapsed / 60
+    const cpmByProgress = minutes > 0 ? Math.round(actualCharactersTyped / minutes) : 0
+    
     const wpm = store.calculateWPM(keystrokes, timeElapsed)
     const rawWpm = store.calculateRawWPM(keystrokes, timeElapsed)
-    // CPM은 실제 키스트로크 기준으로 계산 (백스페이스 제외)
-    const cpm = store.calculateCPMByKeystrokes(keystrokes, timeElapsed)
+    const cpm = cpmByProgress // currentIndex 기반 CPM 사용
     const rawCpm = store.calculateRawCPM(keystrokes, timeElapsed)
     const accuracy = store.calculateAccuracy(keystrokes)
     const consistency = store.calculateConsistency(keystrokes)
+    
+    console.log('📊 실시간 통계:', {
+      currentIndex,
+      actualCharactersTyped,
+      timeElapsed: timeElapsed.toFixed(1),
+      cpm,
+      wpm,
+      accuracy,
+      keystrokeCount: keystrokes.length
+    })
     
     const liveStats: LiveStats = {
       wpm,
@@ -122,14 +142,29 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
   calculateCPMByKeystrokes: (keystrokes, timeElapsed) => {
     if (timeElapsed === 0) return 0
     
-    // 백스페이스 제외한 유효한 키스트로크만 카운트
-    const validKeystrokes = keystrokes.filter(k => k.key !== 'Backspace')
+    // 백스페이스와 한글 자모 제외한 실제 문자 입력만 카운트
+    const validKeystrokes = keystrokes.filter(k => {
+      if (k.key === 'Backspace') return false
+      
+      // 한글 자모 및 조합 중간 상태 필터링
+      const charCode = k.key.charCodeAt(0)
+      const isKoreanJamo = (
+        (charCode >= 0x3131 && charCode <= 0x314F) || // 한글 호환 자모
+        (charCode >= 0x1100 && charCode <= 0x11FF) || // 한글 자모
+        (charCode >= 0x3130 && charCode <= 0x318F) || // 한글 호환 자모 확장
+        (charCode >= 0xA960 && charCode <= 0xA97F)    // 한글 확장-A
+      )
+      
+      return !isKoreanJamo
+    })
+    
     const minutes = timeElapsed / 60
     
     console.log('📊 CPM (키스트로크 기준) 계산:', {
       totalKeystrokes: keystrokes.length,
       validKeystrokes: validKeystrokes.length,
-      backspaceCount: keystrokes.length - validKeystrokes.length,
+      backspaceCount: keystrokes.filter(k => k.key === 'Backspace').length,
+      koreanJamoCount: keystrokes.length - validKeystrokes.length - keystrokes.filter(k => k.key === 'Backspace').length,
       timeElapsed: timeElapsed.toFixed(2),
       minutes: minutes.toFixed(2),
       calculatedCPM: minutes > 0 ? Math.round(validKeystrokes.length / minutes) : 0

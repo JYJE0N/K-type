@@ -34,15 +34,6 @@ export default function Home() {
     }
 
     const newText = textGenerator.generateText(textType, { wordCount })
-    console.log('Generated new text (useEffect):', { 
-      newText: newText.substring(0, 50) + '...', 
-      length: newText.length, 
-      language, 
-      textType, 
-      wordCount,
-      firstChar: `"${newText[0]}"(${newText[0] ? newText[0].charCodeAt(0) : 'undefined'})`,
-      firstFewChars: newText.substring(0, 10).split('').map(c => `"${c}"(${c.charCodeAt(0)})`).join(', ')
-    })
     setTargetText(newText)
     resetTest()
   }, [language, textType, testTarget, testMode, setTargetText, resetTest])

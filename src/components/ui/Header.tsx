@@ -5,7 +5,8 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { ThemeSelector } from '../settings/ThemeSelector'
 import { LanguageSelector } from '../settings/LanguageSelector'
 import { TestModeSelector } from '../settings/TestModeSelector'
-import { Clock, Globe, Palette, FileText } from 'lucide-react'
+import { Clock, Globe, Palette, FileText, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
 interface HeaderProps {
   className?: string
@@ -176,6 +177,15 @@ export function Header({ className = '' }: HeaderProps) {
                 </div>
               </div>
             </div>
+
+            {/* 통계 보기 */}
+            <Link 
+              href="/stats"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-200"
+            >
+              <BarChart3 className="w-4 h-4 text-typing-accent" />
+              <span className="text-sm font-medium text-text-primary">통계</span>
+            </Link>
 
             {/* 테마 설정 */}
             <div className="relative">

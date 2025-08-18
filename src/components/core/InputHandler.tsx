@@ -80,9 +80,9 @@ export function InputHandler({
         if (char.length === 1 && char.charCodeAt(0) >= 32 && char !== ' ') {
           console.log(`🎯 Processing direct input: "${char}" (${char.charCodeAt(0)})`)
           
-          // 첫 번째 유효한 입력 시 테스트 시작
+          // 첫 번째 유효한 입력 시 테스트 자동 시작
           if (!hasStarted.current) {
-            console.log('🚀 Starting test with direct input...')
+            console.log('🚀 Auto-starting test with first input...')
             onTestStart()
             hasStarted.current = true
           }
@@ -148,10 +148,9 @@ export function InputHandler({
       )
     }
 
-    // 한글 자모는 키스트로크로 처리하지 않음 (테스트 시작은 Shift+Tab으로만)
+    // 한글 자모는 조합 완성 후 처리됨
     if (isKoreanJamo(key)) {
-      console.log('🔤 Ignoring Korean jamo (test starts with Shift+Tab only):', key, `(${key.charCodeAt(0)})`)
-      event.preventDefault()
+      console.log('🔤 Korean jamo will be processed after composition:', key, `(${key.charCodeAt(0)})`)
       return
     }
 
@@ -170,52 +169,57 @@ export function InputHandler({
       return
     }
 
-    // Shift+Tab으로 테스트 시작 (실제 문자로 처리하지 않음)
-    if (key === 'Tab' && event.shiftKey) {
+    // Tab 키 처리
+    if (key === 'Tab') {
       event.preventDefault()
       
+      if (event.shiftKey && !hasStarted.current) {
+        // Shift+Tab은 테스트 재시작 (새로고침) 용도로 사용
+        console.log('🔄 Starting test with Shift+Tab (fallback)')
+        onTestStart()
+        hasStarted.current = true
+        return
+      }
+      
+      // 일반 Tab은 테스트 중에만 처리
+      if (hasStarted.current) {
+        onKeyPress('\t')
+      }
+      return
+    }
+    
+    // Enter 키 처리
+    if (key === 'Enter') {
+      event.preventDefault()
+      
+      // 첫 번째 Enter 입력 시 테스트 자동 시작
       if (!hasStarted.current) {
-        console.log('🚀 Starting test with Shift+Tab (no character processing)')
+        console.log('🚀 Auto-starting test with Enter key...')
         onTestStart()
         hasStarted.current = true
       }
       
-      // Shift+Tab은 테스트 시작 신호일 뿐, 실제 문자로 처리하지 않음
+      onKeyPress('\n')
       return
     }
     
-    // 일반 Enter와 Tab은 테스트가 시작된 후에만 처리
-    if (key === 'Enter' || key === 'Tab') {
-      if (!hasStarted.current) {
-        console.log('❌ Test not started. Use Shift+Tab to start.')
-        event.preventDefault()
-        return
-      }
-      
-      event.preventDefault()
-      
-      // 특수 키를 문자로 변환하여 처리
-      const specialChar = key === 'Enter' ? '\n' : '\t'
-      onKeyPress(specialChar)
-      return
-    }
-    
-    // 기타 모든 인쇄 가능한 문자 처리 (테스트가 시작된 후에만)
+    // 기타 모든 인쇄 가능한 문자 처리
     if (key.length === 1) {
-      if (!hasStarted.current) {
-        console.log('❌ Test not started. Use Shift+Tab to start.')
-        event.preventDefault()
-        return
-      }
-      
       // IME 조합 중일 때는 keydown에서 처리하지 않음 (composition에서 처리됨)
       if (isComposing.current) {
         console.log('🎭 Skipping keydown during composition:', key)
-        event.preventDefault()
         return
       }
       
       event.preventDefault()
+      
+      // 첫 번째 유효한 키 입력 시 테스트 자동 시작
+      if (!hasStarted.current) {
+        console.log('🚀 Auto-starting test with first key press:', key)
+        onTestStart()
+        hasStarted.current = true
+      }
+      
       onKeyPress(key)
       return
     }
@@ -273,13 +277,16 @@ export function InputHandler({
       currentIndex
     })
     
-    // 완성된 문자가 있으면 직접 처리 (테스트가 시작된 경우에만)
+    // 완성된 문자가 있으면 직접 처리
     if (composedText && composedText.length > 0) {
+      // 첫 번째 한글 조합 완성 시 테스트 자동 시작
       if (!hasStarted.current) {
-        console.log('❌ Test not started. Use Shift+Tab to start. Ignoring composition:', composedText)
-      } else {
-        processComposedText(composedText)
+        console.log('🚀 Auto-starting test with first Korean character:', composedText)
+        onTestStart()
+        hasStarted.current = true
       }
+      
+      processComposedText(composedText)
       
       // input 필드 정리
       if (inputRef.current) {
@@ -287,7 +294,7 @@ export function InputHandler({
       }
       lastProcessedLength.current = 0
     }
-  }, [targetText, currentIndex, processComposedText, onCompositionChange])
+  }, [targetText, currentIndex, processComposedText, onCompositionChange, onTestStart])
 
   // disabled 상태 변경 시 시작 상태 리셋
   useEffect(() => {
@@ -336,14 +343,7 @@ export function InputHandler({
         tabIndex={1}
       />
       
-      {/* 상태 표시 */}
-      {!disabled && !isCompleted && !hasStarted.current && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 bg-background bg-opacity-80 backdrop-blur-sm">
-          <div className="text-text-secondary text-sm px-4 py-2 bg-surface rounded-lg border border-text-secondary border-opacity-20">
-            <kbd className="bg-typing-accent text-background px-2 py-1 rounded text-xs font-mono">Shift</kbd> + <kbd className="bg-typing-accent text-background px-2 py-1 rounded text-xs font-mono">Tab</kbd> 으로 시작하세요
-          </div>
-        </div>
-      )}
+      {/* 상태 표시 제거 - TypingEngine에서 처리 */}
     </div>
   )
 }

@@ -4,12 +4,18 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTypingStore } from '@/stores/typingStore'
 import { useStatsStore } from '@/stores/statsStore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useUserProgressStore } from '@/stores/userProgressStore'
+import { lazy, Suspense } from 'react'
 import { TextRenderer } from './TextRenderer'
 import { InputHandler } from './InputHandler'
 import { StatsCalculator } from './StatsCalculator'
 import { TestResult } from './TestResult'
+import { VirtualKeyboard } from './VirtualKeyboard'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
+
+// Lazy load the WPMGraph component to improve initial load time
+const WPMGraph = lazy(() => import('./WPMGraph').then(module => ({ default: module.WPMGraph })))
 
 interface TypingEngineProps {
   className?: string
@@ -38,8 +44,9 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
     getProgress
   } = useTypingStore()
   
-  const { calculateStats, resetStats } = useStatsStore()
+  const { calculateStats, resetStats, cpm, wpm, accuracy, consistency } = useStatsStore()
   const { language, textType, testMode, testTarget } = useSettingsStore()
+  const { initializeUser, recordTest, updateCharacterStats, updateMistakePattern } = useUserProgressStore()
 
   // 테스트 재시작 핸들러 (새로운 텍스트 생성)
   const handleRestart = useCallback(() => {
@@ -119,6 +126,72 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
     }
   }, [isActive, isPaused, isCompleted, keystrokes, mistakes, startTime, calculateStats, currentIndex])
 
+  // 컴포넌트 초기화 - 사용자 초기화만
+  useEffect(() => {
+    initializeUser()
+  }, [])
+
+  // 테스트 완료 시 MongoDB에 저장
+  useEffect(() => {
+    if (isCompleted && startTime && keystrokes.length > 0) {
+      // 약간의 지연을 주어 최종 통계가 계산되도록 함
+      setTimeout(() => {
+        const duration = (Date.now() - startTime.getTime()) / 1000
+        const wordsTyped = Math.floor(currentIndex / 5)
+        
+        // 현재 통계 store에서 최신 값 가져오기
+        const currentStats = useStatsStore.getState().liveStats
+        
+        console.log('📊 테스트 완료 통계:', {
+          duration,
+          wordsTyped,
+          currentIndex,
+          cpm: currentStats.cpm,
+          wpm: currentStats.wpm,
+          accuracy: currentStats.accuracy,
+          consistency: currentStats.consistency,
+          mistakes: mistakes.length
+        })
+        
+        // NaN 체크 및 기본값 설정
+        const validCPM = isNaN(currentStats.cpm) || !isFinite(currentStats.cpm) ? Math.round(currentIndex / (duration / 60)) : currentStats.cpm
+        const validWPM = isNaN(currentStats.wpm) || !isFinite(currentStats.wpm) ? Math.round(wordsTyped / (duration / 60)) : currentStats.wpm
+        const validAccuracy = isNaN(currentStats.accuracy) || !isFinite(currentStats.accuracy) ? 
+          (keystrokes.length > 0 ? Math.round((keystrokes.filter(k => k.correct).length / keystrokes.length) * 100) : 100) : 
+          currentStats.accuracy
+        const validConsistency = isNaN(currentStats.consistency) || !isFinite(currentStats.consistency) ? 0 : currentStats.consistency
+        
+        // 최소한의 데이터가 있을 때만 저장
+        if (duration > 0 && currentIndex > 0) {
+          // MongoDB에 테스트 결과 저장
+          recordTest({
+            mode: testMode,
+            textType,
+            language,
+            duration,
+            wordsTyped: wordsTyped || 0,
+            cpm: validCPM,
+            wpm: validWPM,
+            accuracy: validAccuracy,
+            consistency: validConsistency,
+            mistakes,
+            keystrokes,
+          })
+
+          // 약점 분석 데이터 업데이트
+          mistakes.forEach(mistake => {
+            const wrongChar = userInput[mistake.index] || ''
+            const correctChar = targetText[mistake.index] || ''
+            if (correctChar) {
+              updateMistakePattern(wrongChar, correctChar)
+              updateCharacterStats(correctChar, false, 0)
+            }
+          })
+        }
+      }, 500) // 500ms 지연
+    }
+  }, [isCompleted])
+
   // 테스트 모드에 따른 완료 조건 확인
   useEffect(() => {
     if (!isActive || isPaused || isCompleted) return
@@ -189,13 +262,19 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
   // 진행률 계산
   const progress = getProgress()
   const currentChar = getCurrentChar()
-  
 
   return (
     <div className={`typing-engine ${className}`}>
       {/* 통계 표시 */}
-      <div className="mb-6">
+      <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StatsCalculator />
+        <Suspense fallback={
+          <div className="h-64 bg-surface rounded-lg flex items-center justify-center">
+            <div className="text-text-secondary">그래프 로딩 중...</div>
+          </div>
+        }>
+          <WPMGraph />
+        </Suspense>
       </div>
 
       {/* 메인 타이핑 영역 */}
@@ -215,42 +294,46 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
             </div>
           </div>
         )}
-        {/* 텍스트 렌더러 */}
-        <TextRenderer
-          text={targetText}
-          currentIndex={currentIndex}
-          userInput={userInput}
-          mistakes={mistakes.map(m => m.position)}
-          className="mb-4"
-        />
+        
+        {/* 텍스트 렌더러와 입력 핸들러를 감싸는 컨테이너 */}
+        <div className="relative">
+          {/* 텍스트 렌더러 */}
+          <TextRenderer
+            text={targetText}
+            currentIndex={currentIndex}
+            userInput={userInput}
+            mistakes={mistakes.map(m => m.position)}
+            className="mb-4"
+          />
 
-        {/* 입력 핸들러 (숨겨진 인풋) */}
-        <InputHandler
-          onKeyPress={useTypingStore.getState().handleKeyPress}
-          onBackspace={useTypingStore.getState().handleBackspace}
-          onTestStart={useTypingStore.getState().startTest}
-          onCompositionChange={handleCompositionChange}
-          disabled={false}
-          className="absolute inset-0 cursor-text"
-        />
+          {/* 입력 핸들러 (숨겨진 인풋) - TextRenderer 위에 투명하게 */}
+          <InputHandler
+            onKeyPress={useTypingStore.getState().handleKeyPress}
+            onBackspace={useTypingStore.getState().handleBackspace}
+            onTestStart={useTypingStore.getState().startTest}
+            onCompositionChange={handleCompositionChange}
+            disabled={false}
+            className="absolute inset-0 cursor-text z-10"
+          />
 
-        {/* 상태 오버레이 */}
-        {!isActive && !isCompleted && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-            <div className="text-center">
-              <p className="text-lg mb-2">타이핑을 시작하려면 클릭하세요</p>
-              <p className="text-sm text-text-secondary">아무 키나 눌러 시작할 수 있습니다</p>
-              <p className="text-xs text-text-secondary mt-2">
-                <span className="bg-surface px-2 py-1 rounded">Shift + Enter</span> 새로운 텍스트로 시작
-              </p>
+          {/* 상태 오버레이 - 가장 위에 */}
+          {!isActive && !isCompleted && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20 pointer-events-none">
+              <div className="text-center bg-surface bg-opacity-98 p-6 rounded-lg shadow-2xl border border-typing-accent border-opacity-30 pointer-events-auto">
+                <p className="text-lg mb-2 font-semibold text-typing-accent">타이핑을 시작하려면 클릭하세요</p>
+                <p className="text-sm text-text-secondary">아무 키나 눌러 시작할 수 있습니다</p>
+                <p className="text-xs text-text-secondary mt-2">
+                  <span className="bg-surface px-2 py-1 rounded font-mono border border-text-secondary border-opacity-20">Shift + Enter</span> 새로운 텍스트로 시작
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {isPaused && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-            <div className="text-center">
-              <p className="text-lg mb-2">일시정지됨</p>
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20">
+            <div className="text-center bg-surface bg-opacity-98 p-6 rounded-lg shadow-2xl border border-typing-accent border-opacity-30">
+              <p className="text-lg mb-2 text-typing-accent">일시정지됨</p>
               <p className="text-sm text-text-secondary">계속하려면 아무 키나 누르세요</p>
             </div>
           </div>
@@ -267,13 +350,13 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
         </div>
       )}
 
-      {/* 현재 문자 힌트 */}
-      {isActive && !isPaused && !isCompleted && currentChar && (
-        <div className="mt-4 text-center">
-          <span className="text-sm text-text-secondary">다음 문자: </span>
-          <span className="text-lg font-bold text-typing-current">
-            {currentChar === ' ' ? '⎵' : currentChar}
-          </span>
+      {/* 가상 키보드 */}
+      {isActive && !isCompleted && (
+        <div className="mt-6">
+          <VirtualKeyboard 
+            nextChar={currentChar}
+            showFingerHints={true}
+          />
         </div>
       )}
 
