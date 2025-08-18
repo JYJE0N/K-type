@@ -194,14 +194,25 @@ body {
   51%, 100% { opacity: 0; }
 }
 
+/* 크로스 브라우저 호환 세로 커서 클래스 */
+.cursor-blink {
+  /* 브라우저별 일관된 렌더링을 위한 추가 스타일 */
+  display: inline-block;
+  vertical-align: baseline;
+  transform-origin: center bottom;
+  /* 안티 앨리어싱 최적화 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 @keyframes blink {
-  0%, 50% { 
+  0%, 45% { 
     opacity: 1; 
-    transform: scaleY(1);
+    transform: scaleY(1) translateZ(0); /* GPU 가속 */
   }
-  51%, 100% { 
-    opacity: 0.1; 
-    transform: scaleY(0.98);
+  46%, 100% { 
+    opacity: 0.2; 
+    transform: scaleY(0.95) translateZ(0); /* GPU 가속 */
   }
 }
 

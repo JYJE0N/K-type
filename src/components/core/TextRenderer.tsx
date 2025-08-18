@@ -259,12 +259,13 @@ export function TextRenderer({
         {/* 텍스트 끝 세로 커서 (타이핑 완료 시 깜빡임) */}
         {currentIndex >= text.length && (
           <span
-            className="inline-block w-0.5 bg-typing-accent ml-1 rounded-sm"
+            className="inline-block w-0.5 bg-typing-accent ml-1 rounded-sm cursor-blink"
             style={{
-              height: "0.9em", // 높이를 동일하게 (1em) 설정
+              height: "1.1em", // 폰트 크기에 맞는 높이
               animation: "blink 1s infinite",
-              verticalAlign: "bottom", // 완전히 바닥에 맞춤
-              transform: "translateY(0.1em)", // 0.1em만큼 위로 (글자 디센더 고려)
+              verticalAlign: "text-bottom", // 텍스트 하단 기준 정렬
+              position: "relative",
+              top: "0.15em", // 더 아래로 내리기
             }}
           />
         )}
