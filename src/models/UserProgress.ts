@@ -70,6 +70,10 @@ export interface IUserProgress extends Document {
   
   createdAt: Date
   updatedAt: Date
+  
+  // Methods
+  addTestRecord(record: ITestRecord): Promise<void>
+  updateStreak(): Promise<void>
 }
 
 const TestRecordSchema = new Schema<ITestRecord>({
@@ -154,7 +158,7 @@ const UserProgressSchema = new Schema<IUserProgress>(
   }
 )
 
-function arrayLimit(val: any[]) {
+function arrayLimit(val: unknown[]) {
   return val.length <= 50
 }
 

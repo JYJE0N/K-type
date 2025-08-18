@@ -181,7 +181,7 @@ export function WeaknessAnalysis() {
             <li>• 정확도가 낮습니다. 속도보다 정확성에 집중해보세요</li>
           )}
           {weakestChars.length > 0 && parseFloat(chartData[0]?.errorRate) > 20 && (
-            <li>• "{chartData[0].char}" 문자 연습이 필요합니다</li>
+            <li>• &quot;{chartData[0].char}&quot; 문자 연습이 필요합니다</li>
           )}
           {commonMistakes.length > 5 && (
             <li>• 반복되는 실수 패턴이 많습니다. 천천히 타이핑해보세요</li>

@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTypingStore } from '@/stores/typingStore'
+import { IMEHandler, isKoreanJamo, getBrowserType } from '@/utils/koreanIME'
 
 interface InputHandlerProps {
   onKeyPress: (key: string) => void
@@ -21,308 +22,253 @@ export function InputHandler({
   className = ''
 }: InputHandlerProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const hasStarted = useRef(false)
-  const lastProcessedLength = useRef(0)
-  const isComposing = useRef(false)
+  const imeHandler = useRef(new IMEHandler())
+  const processedInputRef = useRef<Set<string>>(new Set())
+  const browserType = useRef(getBrowserType())
   
-  // 완료 상태 및 타겟 텍스트 확인
-  const { isCompleted, targetText, currentIndex } = useTypingStore()
+  // State for test start
+  const [testStarted, setTestStarted] = useState(false)
+  const [showStartHint, setShowStartHint] = useState(true)
+  
+  const { isCompleted, isActive } = useTypingStore()
 
-  // 입력 포커스 유지
+  // Focus management
   const maintainFocus = useCallback(() => {
-    console.log('🎯 maintainFocus called:', { hasInput: !!inputRef.current, disabled, isCompleted })
     if (inputRef.current && !disabled && !isCompleted) {
       inputRef.current.focus()
-      console.log('✅ Input focused')
-    } else {
-      console.log('❌ Focus not applied:', { hasInput: !!inputRef.current, disabled, isCompleted })
     }
   }, [disabled, isCompleted])
 
-  // Input 이벤트 처리 (영어 입력 지원)
-  const handleInput = useCallback((event: React.FormEvent<HTMLInputElement>) => {
-    console.log('📝 InputHandler state check:', { disabled, isCompleted, targetTextLength: targetText.length })
-    if (disabled || isCompleted) {
-      console.log('❌ Input blocked:', { disabled, isCompleted })
+  // Auto-start test on first valid input
+  const handleTestStart = useCallback(() => {
+    if (!testStarted && !isActive) {
+      console.log('🚀 Auto-starting test')
+      onTestStart()
+      setTestStarted(true)
+      setShowStartHint(false)
+    }
+  }, [testStarted, isActive, onTestStart])
+
+  // Process character input (unified handler)
+  const processCharacter = useCallback((char: string) => {
+    // Skip Korean jamo
+    if (isKoreanJamo(char)) {
+      console.log(`🔤 Skipping Korean jamo: "${char}"`)
       return
     }
+
+    // Check for duplicate processing
+    const charId = `${char}-${Date.now()}`
+    if (processedInputRef.current.has(charId)) {
+      console.log(`⚠️ Duplicate character detected, skipping: "${char}"`)
+      return
+    }
+
+    // Auto-start test on first character
+    if (!testStarted) {
+      handleTestStart()
+    }
+
+    // Process the character
+    console.log(`✅ Processing character: "${char}" (${char.charCodeAt(0)})`)
+    onKeyPress(char)
+    
+    // Mark as processed (clear after 100ms to prevent memory leak)
+    processedInputRef.current.add(charId)
+    setTimeout(() => {
+      processedInputRef.current.delete(charId)
+    }, 100)
+  }, [testStarted, handleTestStart, onKeyPress])
+
+  // Handle direct input (for non-IME characters)
+  const handleInput = useCallback((event: React.FormEvent<HTMLInputElement>) => {
+    if (disabled || isCompleted) return
     
     const target = event.target as HTMLInputElement
     const value = target.value
-    const currentLength = value.length
     
-    console.log('📝 Input Event:', { 
-      value: value.substring(Math.max(0, value.length - 10)), // 마지막 10자만 표시
-      currentLength, 
-      lastProcessed: lastProcessedLength.current,
-      hasStarted: hasStarted.current,
-      isComposing: isComposing.current
-    })
-    
-    // IME 조합 중일 때는 처리하지 않음 (한글 조합 중)
-    if (isComposing.current) {
-      console.log('🎭 Skipping input during composition')
+    // Skip if IME is composing
+    if (imeHandler.current.isComposing()) {
+      console.log('🎭 Skipping input during IME composition')
       return
     }
     
-    // 영어나 기타 직접 입력 처리 (IME 사용하지 않는 문자들)
-    if (currentLength > lastProcessedLength.current) {
-      const newChars = value.slice(lastProcessedLength.current)
+    // Process only the last character for direct input
+    if (value.length > 0) {
+      const lastChar = value[value.length - 1]
       
-      console.log('✨ New non-composition characters:', {
-        newChars,
-        newCharsArray: newChars.split('').map(c => `${c}(${c.charCodeAt(0)})`),
-        length: newChars.length
-      })
-      
-      for (const char of newChars) {
-        // 유효한 타이핑 문자인지 확인 (제어 문자 제외, 스페이스는 handleKeyDown에서 처리)
-        if (char.length === 1 && char.charCodeAt(0) >= 32 && char !== ' ') {
-          console.log(`🎯 Processing direct input: "${char}" (${char.charCodeAt(0)})`)
-          
-          // 첫 번째 유효한 입력 시 테스트 자동 시작
-          if (!hasStarted.current) {
-            console.log('🚀 Auto-starting test with first input...')
-            onTestStart()
-            hasStarted.current = true
-          }
-          
-          onKeyPress(char)
-        }
+      // Only process if it's not a Korean jamo and is a valid character
+      if (lastChar && lastChar.charCodeAt(0) >= 32 && !isKoreanJamo(lastChar)) {
+        processCharacter(lastChar)
       }
       
-      lastProcessedLength.current = currentLength
-    }
-    
-    // input이 너무 길어지면 정리
-    if (currentLength > 20) {
+      // Clear input to prevent accumulation
       target.value = ''
-      lastProcessedLength.current = 0
     }
-  }, [disabled, isCompleted, onKeyPress, onTestStart, targetText.length])
+  }, [disabled, isCompleted, processCharacter])
 
-  // 키보드 이벤트 핸들러 (백스페이스만)
+  // Handle keyboard events
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log('⌨️ KeyDown event received:', { key: event.key, disabled, isCompleted })
-    if (disabled || isCompleted) {
-      console.log('❌ KeyDown blocked:', { disabled, isCompleted })
-      return
-    }
+    if (disabled || isCompleted) return
 
     const key = event.key
     
-    console.log('🔑 KeyDown Event:', {
-      key,
-      code: event.code,
-      keyCode: event.keyCode,
-      which: event.which,
-      isComposing: event.nativeEvent.isComposing,
-      location: event.location,
-      ctrlKey: event.ctrlKey,
-      altKey: event.altKey,
-      shiftKey: event.shiftKey,
-      metaKey: event.metaKey
-    })
-
-    // 백스페이스 처리
+    // Handle backspace
     if (key === 'Backspace') {
       event.preventDefault()
       console.log('🔙 Backspace pressed')
       onBackspace()
       
-      // input 값과 추적 길이 조정
-      const target = event.target as HTMLInputElement
-      target.value = '' // input 완전히 초기화
-      lastProcessedLength.current = 0
-      return
-    }
-    
-    // 한글 자모 및 조합 중간 상태 체크
-    const isKoreanJamo = (char: string) => {
-      const code = char.charCodeAt(0)
-      return (
-        (code >= 0x3131 && code <= 0x314F) || // 한글 호환 자모
-        (code >= 0x1100 && code <= 0x11FF) || // 한글 자모
-        (code >= 0x3130 && code <= 0x318F) || // 한글 호환 자모 확장
-        (code >= 0xA960 && code <= 0xA97F)    // 한글 확장-A
-      )
-    }
-
-    // 한글 자모는 조합 완성 후 처리됨
-    if (isKoreanJamo(key)) {
-      console.log('🔤 Korean jamo will be processed after composition:', key, `(${key.charCodeAt(0)})`)
-      return
-    }
-
-    // 기능 키들과 내비게이션 키들 무시 (하지만 Enter, Tab은 허용)
-    const ignoredKeys = [
-      'Escape', 'CapsLock', 'Control', 'Alt', 'Meta',
-      'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-      'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete',
-      'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-      'NumLock', 'ScrollLock', 'Pause', 'PrintScreen'
-    ]
-    
-    // Shift 키 단독으로는 무시하지만, Shift + 다른 키 조합은 허용
-    if (ignoredKeys.includes(key) || (key === 'Shift' && !event.ctrlKey && !event.altKey && !event.metaKey)) {
-      event.preventDefault()
-      return
-    }
-
-    // Tab 키 처리
-    if (key === 'Tab') {
-      event.preventDefault()
-      
-      if (event.shiftKey && !hasStarted.current) {
-        // Shift+Tab은 테스트 재시작 (새로고침) 용도로 사용
-        console.log('🔄 Starting test with Shift+Tab (fallback)')
-        onTestStart()
-        hasStarted.current = true
-        return
-      }
-      
-      // 일반 Tab은 테스트 중에만 처리
-      if (hasStarted.current) {
-        onKeyPress('\t')
+      // Clear input field
+      if (inputRef.current) {
+        inputRef.current.value = ''
       }
       return
     }
     
-    // Enter 키 처리
-    if (key === 'Enter') {
+    // Handle Enter and Tab as special characters
+    if (key === 'Enter' || key === 'Tab') {
       event.preventDefault()
       
-      // 첫 번째 Enter 입력 시 테스트 자동 시작
-      if (!hasStarted.current) {
-        console.log('🚀 Auto-starting test with Enter key...')
-        onTestStart()
-        hasStarted.current = true
+      // Auto-start if needed
+      if (!testStarted) {
+        handleTestStart()
       }
       
-      onKeyPress('\n')
+      // Convert to actual character
+      const specialChar = key === 'Enter' ? '\n' : '\t'
+      processCharacter(specialChar)
       return
     }
     
-    // 기타 모든 인쇄 가능한 문자 처리
-    if (key.length === 1) {
-      // IME 조합 중일 때는 keydown에서 처리하지 않음 (composition에서 처리됨)
-      if (isComposing.current) {
-        console.log('🎭 Skipping keydown during composition:', key)
-        return
-      }
-      
+    // Handle Space explicitly (more reliable than composition)
+    if (key === ' ') {
       event.preventDefault()
       
-      // 첫 번째 유효한 키 입력 시 테스트 자동 시작
-      if (!hasStarted.current) {
-        console.log('🚀 Auto-starting test with first key press:', key)
-        onTestStart()
-        hasStarted.current = true
+      // Auto-start if needed
+      if (!testStarted) {
+        handleTestStart()
       }
       
-      onKeyPress(key)
+      processCharacter(' ')
       return
     }
-  }, [disabled, isCompleted, onBackspace, onKeyPress, onTestStart])
+    
+    // For other single characters, let composition or input event handle it
+    // This prevents double processing
+    if (key.length === 1 && !imeHandler.current.isComposing()) {
+      // For non-IME languages, we can process immediately
+      const charCode = key.charCodeAt(0)
+      if (charCode < 128 && charCode >= 32) { // ASCII printable characters
+        event.preventDefault()
+        
+        // Auto-start if needed
+        if (!testStarted) {
+          handleTestStart()
+        }
+        
+        processCharacter(key)
+      }
+    }
+  }, [disabled, isCompleted, testStarted, handleTestStart, onBackspace, processCharacter])
 
-  // Composition 이벤트 핸들러들 (IME 분석용)
+  // Composition event handlers (for IME)
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
-    isComposing.current = true
+    console.log('🎭 Composition started:', event.data)
+    imeHandler.current.startComposition()
     onCompositionChange?.(true)
-    console.log('🎭 CompositionStart:', {
-      data: event.data,
-      isComposing: isComposing.current
-    })
-  }, [onCompositionChange])
+    
+    // Hide start hint when user starts typing
+    if (showStartHint) {
+      setShowStartHint(false)
+    }
+  }, [onCompositionChange, showStartHint])
 
   const handleCompositionUpdate = useCallback((event: React.CompositionEvent) => {
-    console.log('🎭 CompositionUpdate:', {
-      data: event.data,
-      isComposing: isComposing.current
-    })
+    console.log('🎭 Composition update:', event.data)
+    imeHandler.current.updateComposition(event.data || '')
   }, [])
 
-  const processComposedText = useCallback((composedText: string) => {
-    // 완성된 문자들을 하나씩 처리
-    for (const char of composedText) {
-      const charCode = char.charCodeAt(0)
-      
-      // 자모 및 조합 중간 상태가 아닌 완성된 문자만 처리 (공백 포함)
-      const isKoreanJamo = (
-        (charCode >= 0x3131 && charCode <= 0x314F) || // 한글 호환 자모
-        (charCode >= 0x1100 && charCode <= 0x11FF) || // 한글 자모
-        (charCode >= 0x3130 && charCode <= 0x318F) || // 한글 호환 자모 확장
-        (charCode >= 0xA960 && charCode <= 0xA97F)    // 한글 확장-A
-      )
-      
-      if (char.length === 1 && charCode >= 32 && !isKoreanJamo) {
-        console.log(`🎯 Processing composed character: "${char}" (${charCode})`)
-        onKeyPress(char)
-      } else if (isKoreanJamo) {
-        console.log(`🔤 Skipping Korean jamo in composition: "${char}" (${charCode})`)
-      }
-    }
-  }, [onKeyPress])
-
   const handleCompositionEnd = useCallback((event: React.CompositionEvent) => {
-    isComposing.current = false
+    console.log('🎭 Composition ended:', event.data)
+    
+    const composedText = event.data || ''
+    const newChars = imeHandler.current.endComposition(composedText)
     onCompositionChange?.(false)
-    const composedText = event.data
     
-    console.log('🎭 CompositionEnd:', {
-      data: composedText,
-      isComposing: isComposing.current,
-      composedChars: composedText?.split('').map(c => `${c}(${c.charCodeAt(0)})`).join(', '),
-      targetTextStart: targetText.substring(0, 10),
-      currentIndex
-    })
+    // Auto-start if this is the first input
+    if (!testStarted && newChars.length > 0) {
+      handleTestStart()
+    }
     
-    // 완성된 문자가 있으면 직접 처리
-    if (composedText && composedText.length > 0) {
-      // 첫 번째 한글 조합 완성 시 테스트 자동 시작
-      if (!hasStarted.current) {
-        console.log('🚀 Auto-starting test with first Korean character:', composedText)
-        onTestStart()
-        hasStarted.current = true
-      }
-      
-      processComposedText(composedText)
-      
-      // input 필드 정리
-      if (inputRef.current) {
-        inputRef.current.value = ''
-      }
-      lastProcessedLength.current = 0
+    // Process each new character
+    for (const char of newChars) {
+      processCharacter(char)
     }
-  }, [targetText, currentIndex, processComposedText, onCompositionChange, onTestStart])
-
-  // disabled 상태 변경 시 시작 상태 리셋
-  useEffect(() => {
-    console.log('🔄 State changed:', { disabled, isCompleted })
-    if (disabled || isCompleted) {
-      hasStarted.current = false
-      lastProcessedLength.current = 0
-      if (inputRef.current) {
-        inputRef.current.value = ''
-      }
-    } else {
-      // 활성화될 때 포커스 시도
-      setTimeout(() => maintainFocus(), 100)
+    
+    // Clear input field
+    if (inputRef.current) {
+      inputRef.current.value = ''
     }
-  }, [disabled, isCompleted, maintainFocus])
+  }, [testStarted, handleTestStart, processCharacter, onCompositionChange])
 
-  // 포커스 유지
-  useEffect(() => {
+  // Handle click to focus
+  const handleContainerClick = useCallback(() => {
     maintainFocus()
+    
+    // Hide hint when clicked
+    if (showStartHint) {
+      setShowStartHint(false)
+    }
+  }, [maintainFocus, showStartHint])
+
+  // Reset when test state changes
+  useEffect(() => {
+    if (disabled || isCompleted) {
+      setTestStarted(false)
+      setShowStartHint(true)
+      imeHandler.current.reset()
+      processedInputRef.current.clear()
+      
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
+    } else if (!isActive) {
+      setTestStarted(false)
+      setShowStartHint(true)
+    }
+  }, [disabled, isCompleted, isActive])
+
+  // Initial focus
+  useEffect(() => {
+    const timer = setTimeout(() => maintainFocus(), 100)
+    return () => clearTimeout(timer)
   }, [maintainFocus])
 
+  // Browser-specific adjustments
+  useEffect(() => {
+    console.log(`🌐 Browser detected: ${browserType.current}`)
+    
+    // Add browser-specific event listeners if needed
+    if (browserType.current === 'firefox') {
+      // Firefox-specific handling
+      console.log('🦊 Firefox-specific IME handling enabled')
+    } else if (browserType.current === 'safari') {
+      // Safari-specific handling
+      console.log('🧭 Safari-specific IME handling enabled')
+    }
+  }, [])
+
   return (
-    <div className={`input-handler ${className} relative cursor-text`} onClick={maintainFocus}>
-      {/* 한글 입력을 위한 투명 input */}
+    <div 
+      className={`input-handler ${className} relative cursor-text`} 
+      onClick={handleContainerClick}
+    >
+      {/* Hidden input for IME */}
       <input
         ref={inputRef}
         type="text"
-        className="absolute inset-0 w-full h-full bg-transparent border-none text-transparent"
+        className="absolute inset-0 w-full h-full opacity-0"
         style={{ 
           caretColor: 'transparent',
           outline: 'none',
@@ -340,10 +286,35 @@ export function InputHandler({
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
-        tabIndex={1}
+        tabIndex={0}
+        aria-label="Typing input field"
       />
       
-      {/* 상태 표시 제거 - TypingEngine에서 처리 */}
+      {/* Start hint overlay */}
+      {!disabled && !isCompleted && !testStarted && showStartHint && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 bg-background bg-opacity-60 backdrop-blur-sm transition-opacity duration-300">
+          <div className="text-center animate-pulse">
+            <p className="text-lg mb-2 text-text-primary">
+              클릭하거나 타이핑을 시작하세요
+            </p>
+            <p className="text-sm text-text-secondary">
+              첫 번째 문자를 입력하면 자동으로 시작됩니다
+            </p>
+            <div className="mt-3 flex justify-center gap-2">
+              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
+                Space
+              </kbd>
+              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
+                Enter
+              </kbd>
+              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
+                Tab
+              </kbd>
+              <span className="text-xs text-text-secondary">특수키 지원</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

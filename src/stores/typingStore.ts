@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { Keystroke, Mistake } from '@/types'
+import { isKoreanJamo } from '@/utils/koreanIME'
 
 interface TypingStore {
-  // 상태
+  // State
   isActive: boolean
   isPaused: boolean
   isCompleted: boolean
@@ -13,10 +14,13 @@ interface TypingStore {
   endTime: Date | null
   keystrokes: Keystroke[]
   mistakes: Mistake[]
+  
+  // Tracking for duplicate prevention
+  lastProcessedChar: string | null
+  lastProcessedTime: number
 
-  // 액션
+  // Actions
   setTargetText: (text: string) => void
-  setUserInput: (input: string) => void
   startTest: () => void
   pauseTest: () => void
   resumeTest: () => void
@@ -29,12 +33,32 @@ interface TypingStore {
   isCurrentCharCorrect: () => boolean
 }
 
-// 공통 키스트로크 처리 함수
-function processKeyStroke(state: TypingStore, key: string, currentChar: string, isCorrect: boolean, currentTime: number) {
+// Utility to check if this is a duplicate input
+function isDuplicateInput(state: TypingStore, key: string): boolean {
+  const now = Date.now()
+  const timeDiff = now - state.lastProcessedTime
+  
+  // If same character within 50ms, likely a duplicate
+  if (state.lastProcessedChar === key && timeDiff < 50) {
+    console.log(`⚠️ Duplicate input detected: "${key}" within ${timeDiff}ms`)
+    return true
+  }
+  
+  return false
+}
+
+// Process a valid keystroke
+function processKeystroke(
+  state: TypingStore, 
+  key: string, 
+  expectedChar: string, 
+  isCorrect: boolean
+): Partial<TypingStore> {
+  const currentTime = Date.now()
   const lastKeystroke = state.keystrokes[state.keystrokes.length - 1]
   const timeDelta = lastKeystroke ? currentTime - lastKeystroke.timestamp : 0
 
-  // 키스트로크 추가
+  // Create keystroke record
   const keystroke: Keystroke = {
     key,
     timestamp: currentTime,
@@ -42,48 +66,30 @@ function processKeyStroke(state: TypingStore, key: string, currentChar: string, 
     timeDelta
   }
 
-  // 실수 기록
-  if (!isCorrect) {
-    const mistake: Mistake = {
+  // Create mistake record if incorrect
+  const mistakes = isCorrect ? state.mistakes : [
+    ...state.mistakes,
+    {
       position: state.currentIndex,
-      expected: currentChar,
+      expected: expectedChar,
       actual: key,
       timestamp: currentTime
     }
-    useTypingStore.setState(state => ({ 
-      mistakes: [...state.mistakes, mistake]
-    }))
-  }
+  ]
 
-  // 한글 자모 및 조합 중간 상태는 userInput에 추가하지 않음
-  const charCode = key.charCodeAt(0)
-  const isKoreanJamo = (
-    (charCode >= 0x3131 && charCode <= 0x314F) || // 한글 호환 자모
-    (charCode >= 0x1100 && charCode <= 0x11FF) || // 한글 자모
-    (charCode >= 0x3130 && charCode <= 0x318F) || // 한글 호환 자모 확장
-    (charCode >= 0xA960 && charCode <= 0xA97F)    // 한글 확장-A
-  )
-  
-  // 상태 업데이트 (맞든 틀렸든 다음 문자로 진행)
-  useTypingStore.setState(state => ({
+  // Update state
+  return {
     keystrokes: [...state.keystrokes, keystroke],
-    // currentIndex는 항상 증가 (오타여도 다음 문자로 진행)
-    currentIndex: isKoreanJamo ? state.currentIndex : state.currentIndex + 1,
-    // userInput은 올바른 경우에만 추가, 틀린 경우 실제 입력된 문자 저장
-    userInput: isKoreanJamo ? state.userInput : state.userInput + key
-  }))
-
-  // 텍스트 완료 시 즉시 완료 처리
-  if (isCorrect && state.currentIndex + 1 >= state.targetText.length) {
-    console.log('🏁 마지막 문자 완성으로 테스트 완료')
-    setTimeout(() => {
-      useTypingStore.getState().completeTest()
-    }, 50) // 약간의 지연 후 완료 처리
+    mistakes,
+    currentIndex: state.currentIndex + 1,
+    userInput: state.userInput + key,
+    lastProcessedChar: key,
+    lastProcessedTime: currentTime
   }
 }
 
 export const useTypingStore = create<TypingStore>((set, get) => ({
-  // 초기 상태
+  // Initial state
   isActive: false,
   isPaused: false,
   isCompleted: false,
@@ -94,34 +100,45 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   endTime: null,
   keystrokes: [],
   mistakes: [],
+  lastProcessedChar: null,
+  lastProcessedTime: 0,
 
-  // 타겟 텍스트 설정
+  // Set target text
   setTargetText: (text: string) => set({ 
     targetText: text,
     currentIndex: 0,
     userInput: '',
     keystrokes: [],
-    mistakes: []
+    mistakes: [],
+    lastProcessedChar: null,
+    lastProcessedTime: 0
   }),
 
-  // 사용자 입력 설정
-  setUserInput: (input: string) => set({ userInput: input }),
+  // Start test
+  startTest: () => {
+    const state = get()
+    if (state.isActive) {
+      console.log('⚠️ Test already active, skipping start')
+      return
+    }
+    
+    set({ 
+      isActive: true,
+      isPaused: false,
+      startTime: new Date(),
+      endTime: null
+    })
+    
+    console.log('✅ Test started')
+  },
 
-  // 테스트 시작
-  startTest: () => set({ 
-    isActive: true,
-    isPaused: false,
-    startTime: new Date(),
-    endTime: null
-  }),
-
-  // 테스트 일시정지
+  // Pause test
   pauseTest: () => set({ isPaused: true }),
 
-  // 테스트 재개
+  // Resume test
   resumeTest: () => set({ isPaused: false }),
 
-  // 테스트 리셋
+  // Reset test
   resetTest: () => set({
     isActive: false,
     isPaused: false,
@@ -131,21 +148,23 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     startTime: null,
     endTime: null,
     keystrokes: [],
-    mistakes: []
+    mistakes: [],
+    lastProcessedChar: null,
+    lastProcessedTime: 0
   }),
 
-  // 테스트 완료
+  // Complete test
   completeTest: () => {
     const state = get()
     const endTime = new Date()
     
-    // 최종 통계 계산
+    // Calculate final stats
     if (state.startTime) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { useStatsStore } = require('@/stores/statsStore')
       const { calculateStats } = useStatsStore.getState()
       calculateStats(state.keystrokes, state.mistakes, state.startTime, state.currentIndex, endTime)
-      console.log('🏁 테스트 완료 - 최종 통계 계산됨')
+      console.log('✅ Test completed - Final stats calculated')
     }
     
     set({
@@ -156,149 +175,110 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     })
   },
 
-  // 키 입력 처리
+  // Handle key press
   handleKeyPress: (key: string) => {
     const state = get()
     
-    // 테스트가 완료되었거나 일시정지된 경우 무시
-    if (state.isCompleted || state.isPaused) return
-
-    // 한글 자모 및 조합 중간 상태는 키스트로크로 처리하지 않음
-    const charCode = key.charCodeAt(0)
-    const isKoreanJamo = (
-      (charCode >= 0x3131 && charCode <= 0x314F) || // 한글 호환 자모
-      (charCode >= 0x1100 && charCode <= 0x11FF) || // 한글 자모
-      (charCode >= 0x3130 && charCode <= 0x318F) || // 한글 호환 자모 확장
-      (charCode >= 0xA960 && charCode <= 0xA97F)    // 한글 확장-A
-    )
-    
-    if (isKoreanJamo) {
-      console.log('🔤 Ignoring Korean jamo keystroke (waiting for composition):', key, `(${charCode})`)
+    // Check test state
+    if (state.isCompleted || state.isPaused) {
+      console.log('❌ Input blocked: test completed or paused')
       return
     }
 
-    // 테스트가 시작되지 않았다면 자동으로 시작
+    // Skip Korean jamo
+    if (isKoreanJamo(key)) {
+      console.log(`🔤 Ignoring Korean jamo: "${key}"`)
+      return
+    }
+
+    // Check for duplicate input
+    if (isDuplicateInput(state, key)) {
+      return
+    }
+
+    // Auto-start test if not active
     if (!state.isActive && !state.startTime) {
-      console.log('🚀 Auto-starting test with first key press')
+      console.log('🚀 Auto-starting test')
       get().startTest()
-      // 상태 다시 가져오기
-      const updatedState = get()
-      const currentTime = Date.now()
-      
-      // 현재 위치의 예상 문자 계산
-      const expectedChar = updatedState.targetText[updatedState.currentIndex]
-      const isCorrect = key === expectedChar
-      
-      console.log('🔤 handleKeyPress called (after auto-start):', { 
-        key: `"${key}"`, 
-        keyCharCode: key.charCodeAt(0),
-        isActive: updatedState.isActive, 
-        currentIndex: updatedState.currentIndex, 
-        targetText: updatedState.targetText.substring(0, 20) + '...', 
-        currentChar: `"${expectedChar}"`,
-        currentCharCode: expectedChar ? expectedChar.charCodeAt(0) : 'undefined',
-        isCorrect,
-        userInputLength: updatedState.userInput.length,
-        keyLength: key.length,
-        currentCharLength: expectedChar ? expectedChar.length : 0
-      })
-      
-      // 나머지 로직은 업데이트된 상태로 진행
-      processKeyStroke(updatedState, key, expectedChar, isCorrect, currentTime)
+    }
+
+    // Get expected character
+    const expectedChar = state.targetText[state.currentIndex]
+    if (!expectedChar) {
+      console.log('⚠️ No more characters to type')
       return
     }
 
-    const currentTime = Date.now()
-    
-    // 현재 위치의 예상 문자 계산
-    const expectedChar = state.targetText[state.currentIndex]
+    // Check if correct
     const isCorrect = key === expectedChar
     
-    console.log('🔍 Current state analysis:', {
-      currentIndex: state.currentIndex,
-      expectedChar: `"${expectedChar}"`,
-      inputKey: `"${key}"`,
-      targetPreview: state.targetText.substring(state.currentIndex, state.currentIndex + 10),
-      isCorrect
-    })
-    
-    console.log('🔤 handleKeyPress called:', { 
-      key: `"${key}"`, 
-      keyCharCode: key.charCodeAt(0),
-      isActive: state.isActive, 
-      currentIndex: state.currentIndex, 
-      targetText: state.targetText.substring(0, 20) + '...', 
-      currentChar: `"${expectedChar}"`,
-      currentCharCode: expectedChar ? expectedChar.charCodeAt(0) : 'undefined',
+    console.log('🔤 Processing keystroke:', { 
+      key: `"${key}"`,
+      expected: `"${expectedChar}"`,
       isCorrect,
-      strictEqual: key === expectedChar,
-      keyType: typeof key,
-      currentCharType: typeof expectedChar,
-      keyLength: key.length,
-      currentCharLength: expectedChar ? expectedChar.length : 0
+      currentIndex: state.currentIndex
     })
     
-    processKeyStroke(state, key, expectedChar, isCorrect, currentTime)
+    // Process the keystroke
+    const updates = processKeystroke(state, key, expectedChar, isCorrect)
+    set(updates)
+    
+    // Check for completion
+    const newIndex = updates.currentIndex || state.currentIndex
+    if (newIndex >= state.targetText.length) {
+      console.log('🏁 Text completed')
+      setTimeout(() => get().completeTest(), 50)
+    }
   },
 
-  // 백스페이스 처리 (실수 수정)
+  // Handle backspace
   handleBackspace: () => {
     const state = get()
     
-    console.log('🔙 handleBackspace called:', {
-      currentIndex: state.currentIndex,
-      userInputLength: state.userInput.length,
-      userInputLast: state.userInput.slice(-5),
-      isCompleted: state.isCompleted,
-      canBackspace: state.currentIndex > 0 && !state.isCompleted
-    })
-    
-    // userInput에 문자가 있으면 삭제 허용 (currentIndex가 0이어도)
-    if ((state.currentIndex <= 0 && state.userInput.length === 0) || state.isCompleted) {
-      console.log('❌ Backspace blocked: no input to delete or completed')
+    if (state.currentIndex <= 0 || state.isCompleted) {
+      console.log('❌ Cannot backspace: at start or completed')
       return
     }
 
-    // 현재 시간
     const currentTime = Date.now()
     const lastKeystroke = state.keystrokes[state.keystrokes.length - 1]
     const timeDelta = lastKeystroke ? currentTime - lastKeystroke.timestamp : 0
 
-    // 백스페이스 키스트로크 추가
+    // Create backspace keystroke
     const keystroke: Keystroke = {
       key: 'Backspace',
       timestamp: currentTime,
-      correct: false, // 백스페이스는 정정이므로 오타로 간주
+      correct: false,
       timeDelta
     }
 
-    console.log('✅ Processing backspace:', {
+    console.log('🔙 Processing backspace:', {
       fromIndex: state.currentIndex,
-      toIndex: state.currentIndex - 1,
-      removingChar: state.userInput.slice(-1)
+      toIndex: state.currentIndex - 1
     })
 
     set(state => ({
       keystrokes: [...state.keystrokes, keystroke],
       currentIndex: Math.max(0, state.currentIndex - 1),
-      // userInput은 현재 인덱스까지의 올바른 문자들
-      userInput: state.targetText.substring(0, Math.max(0, state.currentIndex - 1))
+      userInput: state.userInput.slice(0, -1),
+      lastProcessedChar: 'Backspace',
+      lastProcessedTime: currentTime
     }))
   },
 
-  // 현재 문자 가져오기
+  // Get current character
   getCurrentChar: () => {
     const { targetText, currentIndex } = get()
     return targetText[currentIndex] || ''
   },
 
-  // 진행률 계산
+  // Get progress
   getProgress: () => {
     const { currentIndex, targetText } = get()
     return targetText.length > 0 ? (currentIndex / targetText.length) * 100 : 0
   },
 
-  // 현재 문자가 올바른지 확인
+  // Check if current character is correct
   isCurrentCharCorrect: () => {
     const { targetText, userInput, currentIndex } = get()
     if (currentIndex >= userInput.length) return true

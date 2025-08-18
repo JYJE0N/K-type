@@ -129,12 +129,12 @@ export const useUserProgressStore = create<UserProgressStore>()(
           try {
             const response = await axios.get(API_BASE)
             userId = response.data.userId
-            localStorage.setItem('ktypes-user-id', userId)
+            localStorage.setItem('ktypes-user-id', userId || '')
           } catch (error) {
             console.error('Failed to initialize user:', error)
             // 오프라인 모드일 때 임시 ID 생성
             userId = `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-            localStorage.setItem('ktypes-user-id', userId)
+            localStorage.setItem('ktypes-user-id', userId || '')
           }
         }
 
@@ -195,8 +195,8 @@ export const useUserProgressStore = create<UserProgressStore>()(
           mode: session.mode,
           textType: session.textType,
           language: session.language,
-          duration: session.duration,
-          wordsTyped: session.wordsTyped,
+          duration: session.duration || 0,
+          wordsTyped: Math.max(1, Math.floor((session.keystrokes.filter(k => k.correct).length + 1) / 5)),
           cpm: session.cpm,
           wpm: session.wpm,
           accuracy: session.accuracy,
@@ -217,8 +217,8 @@ export const useUserProgressStore = create<UserProgressStore>()(
 
           // 누적 통계 업데이트
           const totalTests = state.totalTests + 1
-          const totalTime = state.totalTime + session.duration
-          const totalWords = state.totalWords + session.wordsTyped
+          const totalTime = state.totalTime + (session.duration || 0)
+          const totalWords = state.totalWords + Math.max(1, Math.floor((session.keystrokes.filter(k => k.correct).length + 1) / 5))
           const totalKeystrokes = state.totalKeystrokes + session.keystrokes.length
           const totalMistakes = state.totalMistakes + session.mistakes.length
 

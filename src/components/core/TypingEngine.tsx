@@ -44,7 +44,7 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
     getProgress
   } = useTypingStore()
   
-  const { calculateStats, resetStats, cpm, wpm, accuracy, consistency } = useStatsStore()
+  const { calculateStats, resetStats } = useStatsStore()
   const { language, textType, testMode, testTarget } = useSettingsStore()
   const { initializeUser, recordTest, updateCharacterStats, updateMistakePattern } = useUserProgressStore()
 
@@ -165,13 +165,17 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
         if (duration > 0 && currentIndex > 0) {
           // MongoDB에 테스트 결과 저장
           recordTest({
+            id: `test-${Date.now()}`,
             mode: testMode,
+            target: testTarget,
             textType,
             language,
+            device: 'desktop',
             duration,
-            wordsTyped: wordsTyped || 0,
             cpm: validCPM,
             wpm: validWPM,
+            rawWpm: validWPM,
+            rawCpm: validCPM,
             accuracy: validAccuracy,
             consistency: validConsistency,
             mistakes,
@@ -180,8 +184,8 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
 
           // 약점 분석 데이터 업데이트
           mistakes.forEach(mistake => {
-            const wrongChar = userInput[mistake.index] || ''
-            const correctChar = targetText[mistake.index] || ''
+            const wrongChar = userInput[mistake.position] || ''
+            const correctChar = targetText[mistake.position] || ''
             if (correctChar) {
               updateMistakePattern(wrongChar, correctChar)
               updateCharacterStats(correctChar, false, 0)
@@ -260,7 +264,7 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
   }, [resetStats])
 
   // 진행률 계산
-  const progress = getProgress()
+  // const progress = getProgress() // 미사용으로 주석 처리
   const currentChar = getCurrentChar()
 
   return (

@@ -338,11 +338,11 @@ export function VirtualKeyboard({
             {row.map((keyData, keyIndex) => (
               <div
                 key={`${rowIndex}-${keyIndex}`}
-                className={getKeyClass(keyData)}
+                className={getKeyClass(keyData as KeyData)}
                 style={{ flex: keyData.width || 1 }}
               >
                 <span className="select-none">
-                  {getKeyLabel(keyData)}
+                  {getKeyLabel(keyData as KeyData)}
                 </span>
                 {keyData.shift && keyData.key.length === 1 && (
                   <span className="absolute top-1 right-1 text-xs opacity-50">
