@@ -241,7 +241,7 @@ export function TextRenderer({
     <div className={`text-renderer ${className}`}>
       {/* 표준 타이핑 영역 - 타이핑용 텍스트 */}
       <div
-        className="font-mono text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center"
+        className="font-mono text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center flex flex-wrap justify-center items-baseline"
         style={{
           fontSize: "var(--font-size, 24px)",
           lineHeight: "1.6",
@@ -261,10 +261,10 @@ export function TextRenderer({
           <span
             className="inline-block w-0.5 bg-typing-accent ml-1 rounded-sm"
             style={{
-              height: "0.9em", // 글자 높이의 90%로 더 낮게
+              height: "0.9em", // 높이를 동일하게 (1em) 설정
               animation: "blink 1s infinite",
               verticalAlign: "bottom", // 완전히 바닥에 맞춤
-              transform: "translateY(-0.1em)", // 0.1em만큼 위로 (글자 디센더 고려)
+              transform: "translateY(0.1em)", // 0.1em만큼 위로 (글자 디센더 고려)
             }}
           />
         )}
