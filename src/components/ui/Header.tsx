@@ -5,7 +5,9 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { ThemeSelector } from '../settings/ThemeSelector'
 import { LanguageSelector } from '../settings/LanguageSelector'
 import { TestModeSelector } from '../settings/TestModeSelector'
-import { Clock, Globe, Palette, FileText, BarChart3 } from 'lucide-react'
+import { TierBadge } from '../gamification/TierBadge'
+import { Clock, Globe, Palette, FileText, BarChart3, User, Medal } from 'lucide-react'
+import { calculateTier, calculateTierPoints, calculateLevel } from '@/utils/gamification'
 import Link from 'next/link'
 
 interface HeaderProps {
@@ -13,8 +15,15 @@ interface HeaderProps {
 }
 
 export function Header({ className = '' }: HeaderProps) {
-  const { language, theme, testMode, testTarget } = useSettingsStore()
+  const { language, theme, testMode, testTarget, textType } = useSettingsStore()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  
+  // 임시 사용자 데이터 (나중에 실제 데이터로 교체)
+  const bestCPM = 280
+  const currentTier = calculateTier(bestCPM)
+  const tierPoints = calculateTierPoints(bestCPM, currentTier)
+  const level = calculateLevel(1500)
+  const badgeCount = 3
 
   // 언어 이름 매핑
   const getLanguageName = (lang: string) => {
@@ -35,18 +44,29 @@ export function Header({ className = '' }: HeaderProps) {
     }
   }
 
+  // 텍스트 타입 이름 매핑
+  const getTextTypeName = (type: string) => {
+    switch (type) {
+      case 'words': return '단어'
+      case 'punctuation': return '구두점'
+      case 'numbers': return '숫자'
+      case 'sentences': return '문장'
+      default: return type
+    }
+  }
+
   return (
-    <header className={`header ${className} bg-surface border-b border-text-secondary border-opacity-20`}>
-      <div className="container mx-auto px-6 py-6">
+    <header className={`header ${className} bg-surface border-b border-text-secondary border-opacity-20 flex justify-center`}>
+      <div className="w-full max-w-5xl px-6 py-6">
         {/* 메인 타이틀 */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-typing-accent mb-2">K-Types</h1>
           <p className="text-sm text-text-secondary">한국어 타자연습</p>
         </div>
 
-        {/* 설정 패널 래퍼 */}
+        {/* 간단한 설정 패널 */}
         <div className="flex justify-center">
-          <div className="relative inline-flex items-center gap-6 px-6 py-3 bg-background bg-opacity-50 backdrop-blur-sm border border-white border-opacity-10 rounded-full overflow-visible">
+          <div className="relative inline-flex items-center gap-4 px-6 py-3 bg-background bg-opacity-50 backdrop-blur-sm border border-white border-opacity-10 rounded-full">
             {/* 모드 토글 */}
             <div className="relative bg-background bg-opacity-30 rounded-full p-1 border border-white border-opacity-10">
               <div className="flex">
@@ -178,14 +198,70 @@ export function Header({ className = '' }: HeaderProps) {
               </div>
             </div>
 
-            {/* 통계 보기 */}
-            <Link 
-              href="/stats"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-200"
-            >
-              <BarChart3 className="w-4 h-4 text-typing-accent" />
-              <span className="text-sm font-medium text-text-primary">통계</span>
-            </Link>
+            {/* 텍스트 타입 설정 */}
+            <div className="relative">
+              <div 
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-200 cursor-pointer"
+                onMouseEnter={() => setHoveredItem('texttype')}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <FileText className="w-4 h-4 text-typing-accent" />
+                <span className="text-sm font-medium text-text-primary">
+                  {getTextTypeName(textType)}
+                </span>
+                
+                {/* 호버 시 슬라이드 옵션들 */}
+                <div className={`absolute top-1/2 left-full ml-2 -translate-y-1/2 transition-all duration-300 z-50 whitespace-nowrap ${
+                  hoveredItem === 'texttype' 
+                    ? 'opacity-100 visible translate-x-0' 
+                    : 'opacity-0 invisible translate-x-2'
+                }`}>
+                  <div className="flex items-center gap-1 px-3 py-2 bg-surface bg-opacity-95 backdrop-blur-md border border-white border-opacity-20 rounded-lg shadow-xl">
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType('words')}
+                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                        textType === 'words'
+                          ? 'bg-typing-accent text-background'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                      }`}
+                    >
+                      단어
+                    </button>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType('punctuation')}
+                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                        textType === 'punctuation'
+                          ? 'bg-typing-accent text-background'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                      }`}
+                    >
+                      구두점
+                    </button>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType('numbers')}
+                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                        textType === 'numbers'
+                          ? 'bg-typing-accent text-background'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                      }`}
+                    >
+                      숫자
+                    </button>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType('sentences')}
+                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                        textType === 'sentences'
+                          ? 'bg-typing-accent text-background'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                      }`}
+                    >
+                      문장
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
 
             {/* 테마 설정 */}
             <div className="relative">
@@ -240,6 +316,15 @@ export function Header({ className = '' }: HeaderProps) {
                 </div>
               </div>
             </div>
+            
+            {/* 통계 링크 */}
+            <Link 
+              href="/stats"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-200"
+            >
+              <BarChart3 className="w-4 h-4 text-typing-accent" />
+              <span className="text-sm font-medium text-text-primary">통계</span>
+            </Link>
           </div>
         </div>
       </div>

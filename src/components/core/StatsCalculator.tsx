@@ -85,7 +85,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
   return (
     <div className={`stats-calculator ${className}`}>
       {/* 핵심 통계 - 원형 그래프들 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-surface rounded-lg">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {/* 타수 (CPM) - 원형 그래프 */}
         <div className="text-center py-4 flex flex-col items-center">
           <div className="relative w-20 h-20 mb-2">
@@ -119,7 +119,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               <span className="text-xs text-text-secondary">CPM</span>
             </div>
           </div>
-          <div className="text-sm font-medium text-text-secondary">타수</div>
+          <div className="text-base font-bold text-white">타수</div>
         </div>
 
         {/* 정확도 - 원형 그래프 */}
@@ -155,7 +155,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               <span className="text-xs text-text-secondary">%</span>
             </div>
           </div>
-          <div className="text-sm font-medium text-text-secondary">정확도</div>
+          <div className="text-base font-bold text-white">정확도</div>
         </div>
 
         {/* 진행도 - 원형 그래프 */}
@@ -191,7 +191,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               <span className="text-xs text-text-secondary">%</span>
             </div>
           </div>
-          <div className="text-sm font-medium text-text-secondary">진행도</div>
+          <div className="text-base font-bold text-white">진행도</div>
         </div>
 
         {/* 남은 단어/시간 - 원형 그래프 */}
@@ -216,12 +216,12 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 17}`}
                 strokeDashoffset={`${2 * Math.PI * 17 * (1 - (remaining / Math.max(testTarget, 1)))}`}
-                className="text-text-primary transition-all duration-300"
+                className="text-white transition-all duration-300"
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-text-primary">
+              <span className="text-lg font-bold text-white">
                 <AnimatedNumber value={remaining} />
               </span>
               <span className="text-xs text-text-secondary">
@@ -229,7 +229,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               </span>
             </div>
           </div>
-          <div className="text-sm font-medium text-text-secondary">
+          <div className="text-base font-bold text-white">
             {isTimeMode ? '남은 시간' : '남은 단어'}
           </div>
         </div>
@@ -237,8 +237,8 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
 
       {/* 추가 통계 (모바일용 확장 정보) */}
       <div className="lg:hidden mt-4">
-        <details className="bg-surface rounded-lg">
-          <summary className="p-4 cursor-pointer text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+        <details>
+          <summary className="p-4 cursor-pointer text-sm font-medium text-text-secondary hover:text-white transition-colors">
             자세한 통계 보기
           </summary>
           <div className="px-4 pb-4 grid grid-cols-2 gap-6 text-center">
@@ -250,21 +250,21 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               <div className="text-xs text-text-secondary opacity-70">오타 포함</div>
             </div>
             <div className="py-3">
-              <div className="text-xl font-bold text-text-primary mb-1">
+              <div className="text-xl font-bold text-white mb-1">
                 <AnimatedNumber value={liveStats.rawWpm} />
               </div>
               <div className="text-sm font-medium text-text-secondary">Raw WPM</div>
               <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
             </div>
             <div className="py-3">
-              <div className="text-xl font-bold text-text-primary mb-1">
+              <div className="text-xl font-bold text-white mb-1">
                 <AnimatedNumber value={liveStats.consistency} suffix="%" />
               </div>
               <div className="text-sm font-medium text-text-secondary">일관성</div>
               <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
             </div>
             <div className="py-3">
-              <div className="text-xl font-bold text-text-primary mb-1">
+              <div className="text-xl font-bold text-white mb-1">
                 {liveStats.charactersTyped}
               </div>
               <div className="text-sm font-medium text-text-secondary">입력한 문자</div>

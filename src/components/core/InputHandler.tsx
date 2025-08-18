@@ -58,7 +58,8 @@ export function InputHandler({
     }
 
     // Check for duplicate processing
-    const charId = `${char}-${Date.now()}`
+    const now = Date.now()
+    const charId = `${char}-${Math.floor(now / 100)}` // 100ms window
     if (processedInputRef.current.has(charId)) {
       console.log(`⚠️ Duplicate character detected, skipping: "${char}"`)
       return
@@ -73,11 +74,11 @@ export function InputHandler({
     console.log(`✅ Processing character: "${char}" (${char.charCodeAt(0)})`)
     onKeyPress(char)
     
-    // Mark as processed (clear after 100ms to prevent memory leak)
+    // Mark as processed (clear after 200ms to prevent memory leak)
     processedInputRef.current.add(charId)
     setTimeout(() => {
       processedInputRef.current.delete(charId)
-    }, 100)
+    }, 200)
   }, [testStarted, handleTestStart, onKeyPress])
 
   // Handle direct input (for non-IME characters)
@@ -150,6 +151,12 @@ export function InputHandler({
         handleTestStart()
       }
       
+      // Skip if IME is composing (let composition handle it)
+      if (imeHandler.current.isComposing()) {
+        console.log('🎭 Skipping space during IME composition')
+        return
+      }
+      
       processCharacter(' ')
       return
     }
@@ -212,15 +219,22 @@ export function InputHandler({
     }
   }, [testStarted, handleTestStart, processCharacter, onCompositionChange])
 
-  // Handle click to focus
+  // Handle click to focus and start test
   const handleContainerClick = useCallback(() => {
+    console.log('🖱️ Container clicked!')
     maintainFocus()
+    
+    // Start test if not started
+    if (!testStarted && !isActive) {
+      console.log('🚀 Starting test from click')
+      handleTestStart()
+    }
     
     // Hide hint when clicked
     if (showStartHint) {
       setShowStartHint(false)
     }
-  }, [maintainFocus, showStartHint])
+  }, [maintainFocus, showStartHint, testStarted, isActive, handleTestStart])
 
   // Reset when test state changes
   useEffect(() => {
@@ -290,31 +304,6 @@ export function InputHandler({
         aria-label="Typing input field"
       />
       
-      {/* Start hint overlay */}
-      {!disabled && !isCompleted && !testStarted && showStartHint && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 bg-background bg-opacity-60 backdrop-blur-sm transition-opacity duration-300">
-          <div className="text-center animate-pulse">
-            <p className="text-lg mb-2 text-text-primary">
-              클릭하거나 타이핑을 시작하세요
-            </p>
-            <p className="text-sm text-text-secondary">
-              첫 번째 문자를 입력하면 자동으로 시작됩니다
-            </p>
-            <div className="mt-3 flex justify-center gap-2">
-              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
-                Space
-              </kbd>
-              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
-                Enter
-              </kbd>
-              <kbd className="bg-surface px-2 py-1 rounded text-xs font-mono border border-text-secondary border-opacity-20">
-                Tab
-              </kbd>
-              <span className="text-xs text-text-secondary">특수키 지원</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

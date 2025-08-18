@@ -14,8 +14,8 @@ import { VirtualKeyboard } from './VirtualKeyboard'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
 
-// Lazy load the WPMGraph component to improve initial load time
-const WPMGraph = lazy(() => import('./WPMGraph').then(module => ({ default: module.WPMGraph })))
+// Lazy load the CPMGraph component to improve initial load time
+const CPMGraph = lazy(() => import('./CPMGraph').then(module => ({ default: module.CPMGraph })))
 
 interface TypingEngineProps {
   className?: string
@@ -103,14 +103,12 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
     }
   }, [isActive, isPaused, isCompleted, startTime])
 
-  // 실시간 통계 업데이트 (IME 조합 중에는 업데이트 안함)
+  // 실시간 통계 업데이트 (IME 상태와 무관하게 항상 업데이트)
   useEffect(() => {
-    if (isActive && !isPaused && !isCompleted && !isComposing.current) {
+    if (isActive && !isPaused && !isCompleted) {
       intervalRef.current = setInterval(() => {
-        if (!isComposing.current) {
-          calculateStats(keystrokes, mistakes, startTime, currentIndex)
-        }
-      }, 500) // 500ms마다 업데이트
+        calculateStats(keystrokes, mistakes, startTime, currentIndex)
+      }, 250) // 250ms마다 더 자주 업데이트
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -269,17 +267,17 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
 
   return (
     <div className={`typing-engine ${className}`}>
-      {/* 통계 표시 */}
-      <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 통계 표시 - 헤더 밑에서 제거됨 */}
+      {/* <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StatsCalculator />
         <Suspense fallback={
           <div className="h-64 bg-surface rounded-lg flex items-center justify-center">
             <div className="text-text-secondary">그래프 로딩 중...</div>
           </div>
         }>
-          <WPMGraph />
+          <CPMGraph />
         </Suspense>
-      </div>
+      </div> */}
 
       {/* 메인 타이핑 영역 */}
       <div className="relative">
@@ -319,19 +317,25 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
             disabled={false}
             className="absolute inset-0 cursor-text z-10"
           />
+        </div>
 
-          {/* 상태 오버레이 - 가장 위에 */}
-          {!isActive && !isCompleted && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20 pointer-events-none">
-              <div className="text-center bg-surface bg-opacity-98 p-6 rounded-lg shadow-2xl border border-typing-accent border-opacity-30 pointer-events-auto">
-                <p className="text-lg mb-2 font-semibold text-typing-accent">타이핑을 시작하려면 클릭하세요</p>
-                <p className="text-sm text-text-secondary">아무 키나 눌러 시작할 수 있습니다</p>
-                <p className="text-xs text-text-secondary mt-2">
-                  <span className="bg-surface px-2 py-1 rounded font-mono border border-text-secondary border-opacity-20">Shift + Enter</span> 새로운 텍스트로 시작
-                </p>
+        {/* 안내문구 - 텍스트박스 아래 */}
+        <div className="mt-6 text-center">
+          {!isActive && !isCompleted ? (
+            <div className="space-y-3">
+              <p className="text-lg font-semibold text-typing-accent">타이핑을 시작하려면 클릭하세요</p>
+              <p className="text-sm text-text-secondary">아무 키나 눌러 시작할 수 있습니다</p>
+              <div className="flex items-center justify-center gap-2 text-xs text-text-secondary">
+                <kbd className="bg-typing-accent text-background px-3 py-1 rounded font-mono font-bold">Shift + Enter</kbd>
+                <span>새로운 텍스트로 시작</span>
               </div>
             </div>
-          )}
+          ) : isActive && !isCompleted ? (
+            <div className="flex items-center justify-center gap-2 text-xs text-text-secondary">
+              <kbd className="bg-typing-accent text-background px-3 py-1 rounded font-mono font-bold">Shift + Enter</kbd>
+              <span>새로운 텍스트</span>
+            </div>
+          ) : null}
         </div>
 
         {isPaused && (
@@ -364,17 +368,6 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
         </div>
       )}
 
-      {/* 개발용 디버그 정보 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-2 bg-surface rounded text-xs text-text-secondary">
-          <div>Index: {currentIndex}/{targetText.length}</div>
-          <div>Active: {isActive ? 'Yes' : 'No'}</div>
-          <div>Paused: {isPaused ? 'Yes' : 'No'}</div>
-          <div>Completed: {isCompleted ? 'Yes' : 'No'}</div>
-          <div>Keystrokes: {keystrokes.length}</div>
-          <div>Mistakes: {mistakes.length}</div>
-        </div>
-      )}
     </div>
   )
 }

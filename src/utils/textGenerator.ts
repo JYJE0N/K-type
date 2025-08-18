@@ -79,8 +79,34 @@ export class TextGenerator {
     return selectedWords.join(' ')
   }
 
-  // 문장 생성
+  // 문장 생성 (새로운 문장 데이터 활용)
   private generateSentences(wordCount: number): string {
+    // 먼저 새로운 문장 데이터 시스템 사용 시도
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { getRandomSentences } = require('@/data/sentences')
+      const language = this.languagePack.id === 'korean' ? 'ko' : 'en'
+      
+      // 랜덤 문장들 가져오기
+      const sentences = getRandomSentences(5, { language })
+      
+      if (sentences && sentences.length > 0) {
+        const selectedTexts = sentences.map((s: { text: string }) => s.text)
+        let result = selectedTexts.join(' ')
+        
+        // 목표 단어 수에 맞게 조정
+        const words = result.split(/\s+/)
+        if (words.length > wordCount) {
+          result = words.slice(0, wordCount).join(' ')
+        }
+        
+        return result
+      }
+    } catch (error) {
+      console.log('새 문장 시스템을 사용할 수 없습니다. 레거시 방식을 사용합니다.')
+    }
+
+    // 레거시 문장 시스템 폴백
     const sentences = this.languagePack.sentences || []
     if (sentences.length === 0) {
       // 문장이 없으면 기본 단어로 대체

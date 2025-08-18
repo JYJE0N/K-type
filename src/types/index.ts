@@ -130,13 +130,71 @@ export interface KeyDefinition {
   type?: 'normal' | 'space' | 'modifier';
 }
 
+// 문장 카테고리
+export type SentenceCategory = 
+  | 'classic-literature'     // 고전 문학
+  | 'philosophy'            // 철학
+  | 'science'              // 과학
+  | 'history'              // 역사
+  | 'news'                 // 뉴스/시사
+  | 'poetry'               // 시
+  | 'technical'            // 기술/IT
+  | 'business'             // 비즈니스
+  | 'everyday'             // 일상 회화
+  | 'academic';            // 학술
+
+// 문장 난이도
+export type SentenceDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+// 문장 데이터
+export interface Sentence {
+  id: string;
+  text: string;
+  category: SentenceCategory;
+  difficulty: SentenceDifficulty;
+  language: string;
+  sourceId: string;         // ContentSource 참조
+  tags?: string[];          // 추가 태그 (예: '구두점많음', '긴문장', '숫자포함')
+  metadata?: {
+    wordCount: number;
+    characterCount: number;
+    avgWordLength: number;
+    punctuationCount: number;
+    numberCount: number;
+    estimatedWPM: number;   // 예상 평균 WPM
+  };
+}
+
+// 문장 컬렉션 (여러 문장을 그룹화)
+export interface SentenceCollection {
+  id: string;
+  name: string;
+  description: string;
+  category: SentenceCategory;
+  difficulty: SentenceDifficulty;
+  language: string;
+  sentences: string[];      // Sentence ID 리스트
+  sourceId: string;
+  isDefault: boolean;       // 기본 컬렉션 여부
+  tags?: string[];
+  metadata: {
+    totalSentences: number;
+    avgWordLength: number;
+    avgSentenceLength: number;
+    estimatedTime: number;  // 예상 완료 시간 (분)
+  };
+}
+
 // 콘텐츠 소스 (저작권 추적용)
 export interface ContentSource {
   id: string;
   name: string;
-  license: 'public-domain' | 'cc0' | 'original';
+  license: 'public-domain' | 'cc0' | 'mit' | 'original';
   source?: string;          // 원본 소스 URL
   attribution?: string;     // 저작자 표시
+  year?: number;           // 출간/작성 연도
+  author?: string;         // 저자
+  description?: string;    // 설명
 }
 
 // 성능 메트릭

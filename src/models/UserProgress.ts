@@ -28,6 +28,33 @@ export interface IMistakePattern {
   count: number
 }
 
+export interface IBadge {
+  id: string
+  name: string
+  description: string
+  icon: string
+  unlockedAt: Date
+  value?: number // 달성 시 기록 (예: 첫 300타 달성 시 300)
+}
+
+export interface ITierInfo {
+  tier: 'bronze' | 'silver' | 'gold' | 'diamond' | 'platinum'
+  tierPoints: number // 해당 등급 내 포인트 (0-100)
+  totalXP: number // 총 경험치
+  level: number // 전체 레벨 (1-100)
+}
+
+export interface IPromotion {
+  isActive: boolean
+  fromTier: string
+  toTier: string
+  attempts: number
+  progress: number // 0-100
+  requiredWins: number
+  currentWins: number
+  lastAttempt: Date | null
+}
+
 export interface IUserProgress extends Document {
   userId: string
   username?: string
@@ -38,6 +65,11 @@ export interface IUserProgress extends Document {
   bestWPM: number
   bestAccuracy: number
   bestConsistency: number
+  
+  // 게임화 요소
+  tierInfo: ITierInfo
+  badges: IBadge[]
+  promotion: IPromotion
   
   // 누적 통계
   totalTests: number
@@ -104,6 +136,37 @@ const MistakePatternSchema = new Schema<IMistakePattern>({
   count: { type: Number, default: 1 },
 })
 
+const BadgeSchema = new Schema<IBadge>({
+  id: { type: String, required: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  icon: { type: String, required: true },
+  unlockedAt: { type: Date, required: true },
+  value: { type: Number }
+})
+
+const TierInfoSchema = new Schema<ITierInfo>({
+  tier: { 
+    type: String, 
+    enum: ['bronze', 'silver', 'gold', 'diamond', 'platinum'],
+    default: 'bronze' 
+  },
+  tierPoints: { type: Number, default: 0 },
+  totalXP: { type: Number, default: 0 },
+  level: { type: Number, default: 1 }
+})
+
+const PromotionSchema = new Schema<IPromotion>({
+  isActive: { type: Boolean, default: false },
+  fromTier: { type: String, default: '' },
+  toTier: { type: String, default: '' },
+  attempts: { type: Number, default: 0 },
+  progress: { type: Number, default: 0 },
+  requiredWins: { type: Number, default: 3 },
+  currentWins: { type: Number, default: 0 },
+  lastAttempt: { type: Date, default: null }
+})
+
 const UserProgressSchema = new Schema<IUserProgress>(
   {
     userId: { 
@@ -120,6 +183,11 @@ const UserProgressSchema = new Schema<IUserProgress>(
     bestWPM: { type: Number, default: 0 },
     bestAccuracy: { type: Number, default: 0 },
     bestConsistency: { type: Number, default: 0 },
+    
+    // 게임화 요소
+    tierInfo: { type: TierInfoSchema, default: () => ({}) },
+    badges: { type: [BadgeSchema], default: [] },
+    promotion: { type: PromotionSchema, default: () => ({}) },
     
     // 누적 통계
     totalTests: { type: Number, default: 0 },

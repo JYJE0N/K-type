@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Keystroke, Mistake } from '@/types'
 import { isKoreanJamo } from '@/utils/koreanIME'
+import { useStatsStore } from '@/stores/statsStore'
 
 interface TypingStore {
   // State
@@ -19,6 +20,11 @@ interface TypingStore {
   lastProcessedChar: string | null
   lastProcessedTime: number
 
+  // MonkeyType 스타일 단어 추적
+  textWords: string[]
+  completedWords: number
+  currentWordIndex: number
+
   // Actions
   setTargetText: (text: string) => void
   startTest: () => void
@@ -33,18 +39,44 @@ interface TypingStore {
   isCurrentCharCorrect: () => boolean
 }
 
-// Utility to check if this is a duplicate input
+// Utility to check if this is a duplicate input (더 관대하게 수정)
 function isDuplicateInput(state: TypingStore, key: string): boolean {
   const now = Date.now()
   const timeDiff = now - state.lastProcessedTime
   
-  // If same character within 50ms, likely a duplicate
-  if (state.lastProcessedChar === key && timeDiff < 50) {
+  // 중복 방지를 매우 관대하게: 5ms 이하 + 동일 문자일 때만  
+  if (state.lastProcessedChar === key && timeDiff < 5) {
     console.log(`⚠️ Duplicate input detected: "${key}" within ${timeDiff}ms`)
     return true
   }
   
   return false
+}
+
+// Check completed words (MonkeyType style)
+function checkCompletedWords(state: TypingStore): number {
+  if (state.textWords.length === 0) return 0
+  
+  let completedWords = 0
+  let currentPos = 0
+  
+  for (const word of state.textWords) {
+    const wordEnd = currentPos + word.length
+    
+    // 현재 단어가 완전히 타이핑되었는지 확인
+    if (state.currentIndex >= wordEnd) {
+      const typedWord = state.userInput.substring(currentPos, wordEnd)
+      if (typedWord === word) {
+        completedWords++
+      }
+    } else {
+      break // 아직 완성되지 않은 단어가 나오면 중단
+    }
+    
+    currentPos = wordEnd + 1 // 공백 포함
+  }
+  
+  return completedWords
 }
 
 // Process a valid keystroke
@@ -102,17 +134,34 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   mistakes: [],
   lastProcessedChar: null,
   lastProcessedTime: 0,
+  textWords: [],
+  completedWords: 0,
+  currentWordIndex: 0,
 
   // Set target text
-  setTargetText: (text: string) => set({ 
-    targetText: text,
-    currentIndex: 0,
-    userInput: '',
-    keystrokes: [],
-    mistakes: [],
-    lastProcessedChar: null,
-    lastProcessedTime: 0
-  }),
+  setTargetText: (text: string) => {
+    // 텍스트를 단어로 분할 (MonkeyType 방식)
+    const words = text.split(' ').filter(word => word.trim().length > 0)
+    
+    set({ 
+      targetText: text,
+      currentIndex: 0,
+      userInput: '',
+      keystrokes: [],
+      mistakes: [],
+      lastProcessedChar: null,
+      lastProcessedTime: 0,
+      textWords: words,
+      completedWords: 0,
+      currentWordIndex: 0
+    })
+    
+    console.log('📝 텍스트 설정:', {
+      text: text.substring(0, 50) + '...',
+      totalWords: words.length,
+      words: words.slice(0, 5)
+    })
+  },
 
   // Start test
   startTest: () => {
@@ -150,7 +199,9 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     keystrokes: [],
     mistakes: [],
     lastProcessedChar: null,
-    lastProcessedTime: 0
+    lastProcessedTime: 0,
+    completedWords: 0,
+    currentWordIndex: 0
   }),
 
   // Complete test
@@ -185,9 +236,34 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       return
     }
 
-    // Skip Korean jamo
+    // 한글 자모는 기록하되, 진행은 하지 않음 (CPM 계산용)
     if (isKoreanJamo(key)) {
-      console.log(`🔤 Ignoring Korean jamo: "${key}"`)
+      console.log(`🔤 Recording Korean jamo for CPM: "${key}"`)
+      const currentTime = Date.now()
+      const lastKeystroke = state.keystrokes[state.keystrokes.length - 1]
+      const timeDelta = lastKeystroke ? currentTime - lastKeystroke.timestamp : 0
+      
+      // 한글 자모도 키스트로크로 기록 (타이핑 노력으로 인정)
+      const jamoKeystroke: Keystroke = {
+        key,
+        timestamp: currentTime,
+        correct: true, // 한글 조합 과정의 모든 키스트로크를 유효한 타이핑으로 인정
+        timeDelta
+      }
+      
+      set({ 
+        keystrokes: [...state.keystrokes, jamoKeystroke],
+        lastProcessedChar: key,
+        lastProcessedTime: currentTime
+      })
+      
+      // 통계 업데이트
+      useStatsStore.getState().calculateStats(
+        [...state.keystrokes, jamoKeystroke],
+        state.mistakes,
+        state.startTime,
+        state.currentIndex
+      )
       return
     }
 
@@ -222,6 +298,42 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     // Process the keystroke
     const updates = processKeystroke(state, key, expectedChar, isCorrect)
     set(updates)
+    
+    // 단어 완성 체크
+    const newState = { ...state, ...updates }
+    const newCompletedWords = checkCompletedWords(newState)
+    
+    if (newCompletedWords > state.completedWords) {
+      console.log(`🎯 단어 완성! ${state.completedWords} → ${newCompletedWords}`)
+      set({ completedWords: newCompletedWords })
+      newState.completedWords = newCompletedWords
+    }
+    
+    // MonkeyType 스타일 통계 계산
+    const avgCharsPerWord = state.textWords.length > 0 
+      ? state.targetText.replace(/\s/g, '').length / state.textWords.length 
+      : 4
+      
+    const monkeyTypeCPM = useStatsStore.getState().calculateMonkeyTypeCPM(
+      newState.completedWords,
+      avgCharsPerWord,
+      (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
+    )
+    
+    const monkeyTypeWPM = useStatsStore.getState().calculateMonkeyTypeWPM(
+      newState.completedWords,
+      (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
+    )
+    
+    // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산
+    useStatsStore.getState().calculateStats(
+      newState.keystrokes, 
+      newState.mistakes, 
+      newState.startTime, 
+      newState.currentIndex
+    )
+    
+    console.log(`📊 MonkeyType vs 기존: CPM ${monkeyTypeCPM} vs ${useStatsStore.getState().liveStats.cpm}, WPM ${monkeyTypeWPM} vs ${useStatsStore.getState().liveStats.wpm}`)
     
     // Check for completion
     const newIndex = updates.currentIndex || state.currentIndex

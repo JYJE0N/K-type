@@ -60,7 +60,7 @@ export function TextRenderer({
 
   // 문자별 스타일 클래스
   const getCharacterClass = (status: string, specialKey?: string | null) => {
-    const baseClass = 'inline-block transition-colors duration-150'
+    const baseClass = 'inline-block transition-colors duration-150 relative'
     
     // 스페이스에 대한 특별한 스타일
     const isSpace = specialKey === 'space'
@@ -75,7 +75,8 @@ export function TextRenderer({
       case 'incorrect':
         return `${baseClass} ${specialKeyClass} text-red-500 font-bold bg-red-100 bg-opacity-20 rounded px-1`
       case 'current':
-        return `${baseClass} ${specialKeyClass} ${spaceClass} text-text-primary ${specialKey ? 'font-bold' : ''}`
+        // MonkeyType 스타일: 현재 문자에 언더바 + 애니메이션
+        return `${baseClass} ${specialKeyClass} ${spaceClass} text-text-primary ${specialKey ? 'font-bold' : ''} current-char`
       case 'pending':
       default:
         return `${baseClass} ${specialKeyClass} ${spaceClass} text-text-secondary ${specialKey ? 'opacity-50' : ''}`
@@ -149,20 +150,20 @@ export function TextRenderer({
         
         return (
           <span key={globalIndex} className="relative">
-            {/* 현재 문자 앞에 깜박이는 커서 표시 */}
-            {state?.status === 'current' && (
-              <span 
-                className="absolute -left-1.5 top-0 w-0.5 h-full bg-typing-current"
-                style={{
-                  animation: 'blink 1s infinite'
-                }}
-              />
-            )}
             <span
               className={getCharacterClass(state?.status || 'pending', state?.specialKey)}
               data-index={globalIndex}
             >
               {state?.specialKey ? renderSpecialKey(char, state.specialKey, state.status) : char}
+              {/* MonkeyType 스타일: 현재 문자 아래 Pulse 언더바 */}
+              {state?.status === 'current' && (
+                <span 
+                  className="absolute bottom-0 left-0 w-full h-0.5 bg-typing-accent opacity-70"
+                  style={{
+                    animation: 'pulse-underline 1.5s ease-in-out infinite'
+                  }}
+                />
+              )}
             </span>
           </span>
         )
@@ -175,20 +176,20 @@ export function TextRenderer({
       const spaceState = characterStates[spaceIndex]
       const spaceElement = spaceIndex < text.length && (
         <span key={spaceIndex} className="relative">
-          {/* 현재 스페이스 앞에 깜박이는 커서 표시 */}
-          {spaceState?.status === 'current' && (
-            <span 
-              className="absolute -left-1.5 top-0 w-0.5 h-full bg-typing-current"
-              style={{
-                animation: 'blink 1s infinite'
-              }}
-            />
-          )}
           <span
             className={getCharacterClass(spaceState?.status || 'pending', spaceState?.specialKey)}
             data-index={spaceIndex}
           >
             {spaceState?.specialKey ? renderSpecialKey(' ', spaceState.specialKey, spaceState.status) : ' '}
+            {/* MonkeyType 스타일: 현재 스페이스 아래 Pulse 언더바 */}
+            {spaceState?.status === 'current' && (
+              <span 
+                className="absolute bottom-0 left-0 w-full h-0.5 bg-typing-accent opacity-70"
+                style={{
+                  animation: 'pulse-underline 1.5s ease-in-out infinite'
+                }}
+              />
+            )}
           </span>
         </span>
       )
@@ -204,45 +205,47 @@ export function TextRenderer({
 
   return (
     <div className={`text-renderer ${className}`}>
+      {/* 표준 타이핑 영역 - 타이핑용 텍스트 */}
       <div 
-        className="font-mono text-xl leading-relaxed p-6 bg-surface rounded-lg border-2 border-transparent focus-within:border-typing-accent transition-colors"
+        className="font-mono text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center"
         style={{ 
           fontSize: 'var(--font-size, 24px)',
-          lineHeight: '1.8'
+          lineHeight: '1.6',
+          letterSpacing: '0.5px' // 문자 간격 추가
         }}
       >
         {text ? renderText() : (
-          <div className="text-text-secondary italic">
+          <div className="text-text-secondary italic text-lg">
             텍스트를 로드하는 중...
           </div>
         )}
         
         {/* 커서 (현재 위치 다음에 깜빡이는 커서) */}
         {currentIndex >= text.length && (
-          <span className="inline-block w-0.5 h-6 bg-typing-current animate-cursor ml-1" />
+          <span className="inline-block w-0.5 h-7 bg-typing-current animate-cursor ml-1" />
         )}
       </div>
       
-      {/* 진행 정보 */}
-      <div className="mt-4 p-4 bg-surface rounded-lg">
+      {/* 표준 진행 정보 */}
+      <div className="mt-4 p-4 bg-surface rounded-md border border-text-secondary border-opacity-20">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
           <div>
-            <div className="text-lg font-bold text-text-primary">{currentIndex}</div>
-            <div className="text-sm text-text-secondary">현재 위치</div>
+            <div className="text-base font-bold text-white">{currentIndex}</div>
+            <div className="text-base text-white">현재 위치</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-text-primary">{text.length}</div>
-            <div className="text-sm text-text-secondary">총 문자</div>
+            <div className="text-base font-bold text-white">{text.length}</div>
+            <div className="text-base text-white">총 문자</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-typing-incorrect">{mistakes.length}</div>
-            <div className="text-sm text-text-secondary">실수</div>
+            <div className="text-base font-bold text-white">{mistakes.length}</div>
+            <div className="text-base text-white">실수</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-typing-correct">
+            <div className="text-base font-bold text-white">
               {Math.round(currentIndex > 0 ? ((currentIndex - mistakes.length) / currentIndex) * 100 : 100)}%
             </div>
-            <div className="text-sm text-text-secondary">정확도</div>
+            <div className="text-base text-white">정확도</div>
           </div>
         </div>
       </div>
