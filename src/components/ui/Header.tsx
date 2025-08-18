@@ -60,8 +60,8 @@ export function Header({ className = '' }: HeaderProps) {
       <div className="w-full max-w-5xl px-6 py-6">
         {/* 메인 타이틀 */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-typing-accent mb-2">K-Types</h1>
-          <p className="text-sm text-text-secondary">한국어 타자연습</p>
+          <h1 className="text-3xl font-roboto-bold text-typing-accent mb-2">한글타입</h1>
+          <p className="text-sm text-text-secondary">한글 타자연습</p>
         </div>
 
         {/* 간단한 설정 패널 */}

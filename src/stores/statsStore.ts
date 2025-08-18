@@ -198,12 +198,12 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     
     const koreanRatio = keystrokes.length > 0 ? koreanJamoCount / keystrokes.length : 0
     
-    // MonkeyType 수준 보정 (1.0 ~ 2.5배)
-    // 한글의 자음+모음+받침 복잡성을 MonkeyType과 동등하게 반영
-    const koreanBoostFactor = 1.0 + (koreanRatio * 1.5) // 최대 2.5배
+    // 한글 복잡성 보정 (1.0 ~ 1.8배)
+    // 한글의 자음+모음+받침 복잡성을 적절히 반영
+    const koreanBoostFactor = 1.0 + (koreanRatio * 0.8) // 최대 1.8배
     
-    // 전체적인 기본 보정 추가 (MonkeyType과의 격차 해소)
-    const baseBoostFactor = 1.3 // MonkeyType 수준 기본 보정
+    // 전체적인 기본 보정 (과장하지 않는 선에서)
+    const baseBoostFactor = 1.1 // 적당한 기본 보정
     
     const totalBoostFactor = koreanBoostFactor * baseBoostFactor
     const cpm = Math.round(baseCPM * totalBoostFactor)
@@ -220,7 +220,7 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
       minutes: minutes.toFixed(2),
       baseCPM: Math.round(baseCPM),
       cpm,
-      note: 'MonkeyType 수준 한글 복잡성 보정'
+      note: '적정 수준 한글 복잡성 보정'
     })
     
     return cpm
