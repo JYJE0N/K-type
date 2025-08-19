@@ -272,43 +272,6 @@ export function TextRenderer({
         )}
       </div>
 
-      {/* 표준 진행 정보 */}
-      <div
-        className="card"
-        style={{ marginTop: "var(--spacing-md)" }}
-      >
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-lg font-semibold text-primary">
-              {currentIndex}
-            </div>
-            <div className="text-sm text-secondary">현재 위치</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-primary">
-              {text.length}
-            </div>
-            <div className="text-sm text-secondary">총 문자</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-accent">
-              {mistakes.length}
-            </div>
-            <div className="text-sm text-secondary">실수</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-accent">
-              {Math.round(
-                currentIndex > 0
-                  ? ((currentIndex - mistakes.length) / currentIndex) * 100
-                  : 100
-              )}
-              %
-            </div>
-            <div className="text-sm text-secondary">정확도</div>
-          </div>
-        </div>
-      </div>
 
       {/* 디버그 정보 (삭제됨) */}
       {/* 
