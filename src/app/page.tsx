@@ -10,7 +10,6 @@ import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
 import { StatsCalculator } from '@/components/core/StatsCalculator'
-import { CPMGraph } from '@/components/core/CPMGraph'
 
 export default function Home() {
   const { language, textType, testTarget, testMode } = useSettingsStore()
@@ -61,29 +60,13 @@ export default function Home() {
           </ClientOnly>
         </section>
           
-        {/* 섹션 2: 그래프 카드들 - 가운데 정렬 */}
+        {/* 섹션 2: 간단한 실시간 통계만 */}
         <section className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="card">
-              <div className="card-header">
-                <h3 className="card-title">실시간 통계</h3>
-              </div>
-              <div className="card-content">
-                <ClientOnly fallback={<div className="h-64 bg-background rounded animate-pulse"></div>}>
-                  <StatsCalculator />
-                </ClientOnly>
-              </div>
-            </div>
-            
-            <div className="card">
-              <div className="card-header">
-                <h3 className="card-title">CPM 그래프</h3>
-              </div>
-              <div className="card-content" style={{ minHeight: '280px' }}>
-                <ClientOnly fallback={<div className="h-64 bg-background rounded animate-pulse"></div>}>
-                  <CPMGraph />
-                </ClientOnly>
-              </div>
+          <div className="card">
+            <div className="card-content">
+              <ClientOnly fallback={<div className="h-32 bg-background rounded animate-pulse"></div>}>
+                <StatsCalculator />
+              </ClientOnly>
             </div>
           </div>
         </section>

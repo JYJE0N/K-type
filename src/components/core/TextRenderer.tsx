@@ -139,7 +139,7 @@ export function TextRenderer({
           {keyDisplay}
           {status === "current" && keyLabel && (
             <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-              <kbd className="kbd">{keyLabel}</kbd>
+              <kbd>{keyLabel}</kbd>
             </span>
           )}
         </span>
@@ -174,7 +174,7 @@ export function TextRenderer({
               {state?.specialKey
                 ? renderSpecialKey(char, state.specialKey, state.status)
                 : char}
-              {/* MonkeyType 스타일: 현재 문자 아래 Pulse 언더바 */}
+              {/* 현재 문자 아래 Pulse 언더바 */}
               {state?.status === "current" && (
                 <span
                   className="absolute left-0 w-full h-1 bg-typing-accent opacity-80 rounded-full shadow-sm"
@@ -210,7 +210,7 @@ export function TextRenderer({
             {spaceState?.specialKey
               ? renderSpecialKey(" ", spaceState.specialKey, spaceState.status)
               : " "}
-            {/* MonkeyType 스타일: 현재 스페이스 아래 Pulse 언더바 */}
+            {/* 현재 스페이스 아래 Pulse 언더바 */}
             {spaceState?.status === "current" && (
               <span
                 className="absolute left-0 w-full h-1 bg-typing-accent opacity-80 rounded-full shadow-sm"
@@ -273,14 +273,21 @@ export function TextRenderer({
       </div>
 
       {/* 표준 진행 정보 */}
-      <div className="card" style={{ marginTop: 'var(--spacing-md)' }}>
+      <div
+        className="card"
+        style={{ marginTop: "var(--spacing-md)" }}
+      >
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
           <div>
-            <div className="text-lg font-semibold text-primary">{currentIndex}</div>
+            <div className="text-lg font-semibold text-primary">
+              {currentIndex}
+            </div>
             <div className="text-sm text-secondary">현재 위치</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-primary">{text.length}</div>
+            <div className="text-lg font-semibold text-primary">
+              {text.length}
+            </div>
             <div className="text-sm text-secondary">총 문자</div>
           </div>
           <div>

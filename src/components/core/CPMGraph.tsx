@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart } from 'recharts'
 import { useStatsStore } from '@/stores/statsStore'
 import { useTypingStore } from '@/stores/typingStore'
 
@@ -97,6 +97,10 @@ export function CPMGraph() {
             <div className="w-3 h-3 bg-accent rounded"></div>
             <span className="text-sm text-primary font-medium">CPM</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-incorrect rounded"></div>
+            <span className="text-sm text-primary font-medium">오타</span>
+          </div>
           <div className="text-sm text-secondary">
             평균: <span className="font-semibold text-accent">{avgCpm}</span>
           </div>
@@ -105,7 +109,7 @@ export function CPMGraph() {
       
       <div className="relative bg-background rounded-lg p-3 border border-text-secondary border-opacity-10" style={{ height: '200px' }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart 
+          <ComposedChart 
             data={isEmpty ? [
               {time: 0, cpm: 0, raw: 0, errors: 0},
               {time: 30, cpm: 0, raw: 0, errors: 0},
@@ -153,6 +157,7 @@ export function CPMGraph() {
               formatter={(value: number, name: string) => {
                 if (name === 'cpm') return [`${value} CPM`, '실제']
                 if (name === 'raw') return [`${value} CPM`, 'Raw']
+                if (name === 'errors') return [`${value}개`, '오타']
                 return [value, name]
               }}
               labelFormatter={(label) => `${label}초`}
@@ -167,7 +172,17 @@ export function CPMGraph() {
               strokeWidth={3}
               name="cpm"
             />
-          </AreaChart>
+            
+            <Line 
+              type="monotoneX" 
+              dataKey="errors" 
+              stroke="var(--color-incorrect)" 
+              strokeWidth={2}
+              name="errors"
+              dot={{ fill: "var(--color-incorrect)", strokeWidth: 0, r: 3 }}
+              connectNulls={false}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
         
         {/* 빈 상태 오버레이 */}
