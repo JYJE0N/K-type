@@ -85,7 +85,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
   return (
     <div className={`stats-calculator ${className}`}>
       {/* 핵심 통계 - 원형 그래프들 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 타수 (CPM) - 원형 그래프 */}
         <div className="text-center py-4 flex flex-col items-center">
           <div className="relative w-20 h-20 mb-2">
@@ -113,13 +113,13 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-typing-accent">
+              <span className="text-md font-semibold text-primary">
                 <AnimatedNumber value={liveStats.cpm} />
               </span>
-              <span className="text-xs text-text-secondary">CPM</span>
+              <span className="caption text-text-secondary">CPM</span>
             </div>
           </div>
-          <div className="text-base font-bold text-white">타수</div>
+          <div className="text-sm text-secondary">타수</div>
         </div>
 
         {/* 정확도 - 원형 그래프 */}
@@ -144,18 +144,18 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 17}`}
                 strokeDashoffset={`${2 * Math.PI * 17 * (1 - liveStats.accuracy / 100)}`}
-                className="text-typing-correct transition-all duration-300 ease-out"
+                className="text-typing-accent transition-all duration-300 ease-out"
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-typing-correct">
+              <span className="text-md font-semibold text-primary">
                 <AnimatedNumber value={liveStats.accuracy} />
               </span>
-              <span className="text-xs text-text-secondary">%</span>
+              <span className="caption text-text-secondary">%</span>
             </div>
           </div>
-          <div className="text-base font-bold text-white">정확도</div>
+          <div className="text-sm text-secondary">정확도</div>
         </div>
 
         {/* 진행도 - 원형 그래프 */}
@@ -185,13 +185,13 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-typing-accent">
+              <span className="text-md font-semibold text-primary">
                 {Math.round((liveStats.charactersTyped / Math.max(liveStats.charactersTyped + remaining, 1)) * 100)}
               </span>
-              <span className="text-xs text-text-secondary">%</span>
+              <span className="caption text-text-secondary">%</span>
             </div>
           </div>
-          <div className="text-base font-bold text-white">진행도</div>
+          <div className="text-sm text-secondary">진행도</div>
         </div>
 
         {/* 남은 단어/시간 - 원형 그래프 */}
@@ -216,20 +216,20 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 17}`}
                 strokeDashoffset={`${2 * Math.PI * 17 * (1 - (remaining / Math.max(testTarget, 1)))}`}
-                className="text-white transition-all duration-300"
+                className="text-typing-accent transition-all duration-300"
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-white">
+              <span className="text-md font-semibold text-primary">
                 <AnimatedNumber value={remaining} />
               </span>
-              <span className="text-xs text-text-secondary">
+              <span className="caption text-text-secondary">
                 {isTimeMode ? 's' : 'w'}
               </span>
             </div>
           </div>
-          <div className="text-base font-bold text-white">
+          <div className="text-sm text-secondary">
             {isTimeMode ? '남은 시간' : '남은 단어'}
           </div>
         </div>

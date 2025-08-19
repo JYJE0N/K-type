@@ -32,6 +32,9 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
 
   const performance = getPerformanceGrade(liveStats.cpm)
 
+  // 등급 색상 통일
+  const gradeColor = 'text-accent'
+
   // 정확도에 따른 피드백
   const getAccuracyFeedback = (accuracy: number) => {
     if (accuracy >= 98) return { text: '완벽합니다!', icon: Target }
@@ -48,16 +51,16 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
 
   return (
     <div className={`test-result ${className}`}>
-      <div className="bg-surface rounded-lg p-6">
+      <div className="card">
         {/* 메인 결과 헤더 */}
-        <div className="text-center mb-6 p-6 bg-background rounded-lg">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className={`text-6xl font-bold ${performance.color}`}>
+        <div className="card-header text-center">
+          <div className="flex items-center justify-center gap-4">
+            <div className={`text-6xl font-bold ${gradeColor}`}>
               {performance.grade}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-typing-accent">테스트 완료!</h2>
-              <div className="flex items-center justify-center gap-2 text-text-secondary">
+              <h2 className="title-md text-accent">테스트 완료!</h2>
+              <div className="flex items-center justify-center gap-2 text-sm text-secondary">
                 <FeedbackIcon size={16} />
                 <span>{feedback.text}</span>
               </div>
@@ -66,33 +69,33 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
         </div>
 
         {/* 주요 통계 */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="text-center py-4">
-            <div className="text-3xl lg:text-4xl font-bold text-typing-accent mb-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
+            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
               {liveStats.cpm}
             </div>
-            <div className="text-sm font-medium text-text-secondary">분당 타수 (CPM)</div>
+            <div className="text-sm text-secondary">분당 타수 (CPM)</div>
           </div>
           
-          <div className="text-center py-4">
-            <div className="text-3xl lg:text-4xl font-bold text-typing-correct mb-2">
+          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
+            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
               {liveStats.accuracy}%
             </div>
-            <div className="text-sm font-medium text-text-secondary">정확도</div>
+            <div className="text-sm text-secondary">정확도</div>
           </div>
           
-          <div className="text-center py-4">
-            <div className="text-3xl lg:text-4xl font-bold text-text-primary mb-2">
+          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
+            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
               {liveStats.wpm}
             </div>
-            <div className="text-sm font-medium text-text-secondary">WPM</div>
+            <div className="text-sm text-secondary">WPM</div>
           </div>
           
-          <div className="text-center py-4">
-            <div className="text-3xl lg:text-4xl font-bold text-text-primary mb-2">
+          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
+            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
               {Math.round(testDuration)}초
             </div>
-            <div className="text-sm font-medium text-text-secondary">소요 시간</div>
+            <div className="text-sm text-secondary">소요 시간</div>
           </div>
         </div>
 
@@ -101,9 +104,9 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
         <div className="flex gap-4 justify-center">
           <button
             onClick={onRestart}
-            className="flex items-center gap-2 px-8 py-3 bg-typing-accent text-background font-semibold rounded-lg hover:opacity-80 transition-opacity text-base"
+            className="btn btn-lg btn-primary"
           >
-            <RotateCcw size={18} />
+            <RotateCcw className="w-4 h-4" />
             다시 시작
           </button>
           
@@ -115,15 +118,15 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
                 `정확도: ${liveStats.accuracy}%\n` +
                 `WPM: ${liveStats.wpm}\n` +
                 `소요 시간: ${Math.round(testDuration)}초\n\n` +
-                `Key-Types에서 측정`
+                `K-Types에서 측정`
               
               navigator.clipboard.writeText(resultText).then(() => {
                 alert('결과가 클립보드에 복사되었습니다!')
               })
             }}
-            className="flex items-center gap-2 px-8 py-3 bg-surface border border-text-secondary border-opacity-20 text-text-primary rounded-lg hover:bg-typing-accent hover:text-background hover:border-transparent transition-colors text-base"
+            className="btn btn-lg btn-secondary"
           >
-            <Copy size={18} />
+            <Copy className="w-4 h-4" />
             결과 복사
           </button>
         </div>

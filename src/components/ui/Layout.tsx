@@ -16,8 +16,8 @@ export function Layout({ children, className = '' }: LayoutProps) {
       <Header />
       
       {/* 메인 컨텐츠 - 중앙 정렬 적용 */}
-      <main className="main-content py-8 flex-1 flex justify-center">
-        <div className="w-full max-w-5xl px-4">
+      <main className="main-content flex-1 flex justify-center" style={{ padding: 'var(--spacing-2xl) var(--spacing-xl)' }}>
+        <div className="w-full max-w-5xl">
           {children}
         </div>
       </main>

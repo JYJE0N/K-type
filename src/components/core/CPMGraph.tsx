@@ -90,21 +90,21 @@ export function CPMGraph() {
     : 0
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-4 text-sm">
+    <div className="flex flex-col" style={{ height: '100%' }}>
+      <div className="flex justify-between items-center" style={{ marginBottom: 'var(--spacing-sm)' }}>
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-typing-accent rounded"></div>
-            <span className="text-white">CPM</span>
+            <div className="w-3 h-3 bg-accent rounded"></div>
+            <span className="text-sm text-primary font-medium">CPM</span>
           </div>
-          <div className="text-white">
-            평균: <span className="font-bold">{avgCpm}</span>
+          <div className="text-sm text-secondary">
+            평균: <span className="font-semibold text-accent">{avgCpm}</span>
           </div>
         </div>
       </div>
       
-      <div className="relative flex-1 bg-background rounded-lg p-3 border border-text-secondary border-opacity-10">
-        <ResponsiveContainer width="100%" height={200}>
+      <div className="relative bg-background rounded-lg p-3 border border-text-secondary border-opacity-10" style={{ height: '200px' }}>
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart 
             data={isEmpty ? [
               {time: 0, cpm: 0, raw: 0, errors: 0},
@@ -173,24 +173,24 @@ export function CPMGraph() {
         {/* 빈 상태 오버레이 */}
         {isEmpty && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-text-secondary bg-surface bg-opacity-90 px-4 py-2 rounded-lg backdrop-blur-sm border border-text-secondary border-opacity-10">
-              <div className="text-sm font-medium">타이핑 시작 대기 중</div>
-              <div className="text-xs mt-1 opacity-70">실시간 CPM이 여기에 표시됩니다</div>
+            <div className="text-center text-secondary bg-surface bg-opacity-90 px-4 py-2 rounded-lg backdrop-blur-sm border border-text-secondary border-opacity-10">
+              <div className="text-sm">타이핑 시작 대기 중</div>
+              <div className="caption text-muted" style={{ marginTop: 'var(--spacing-xs)' }}>실시간 CPM이 여기에 표시됩니다</div>
             </div>
           </div>
         )}
       </div>
       
       {data.length > 0 && (
-        <div className="mt-3 flex justify-between text-xs text-text-secondary">
-          <div>
-            현재: <span className="text-typing-accent font-bold">{data[data.length - 1].cpm}</span> CPM
+        <div className="flex justify-between" style={{ marginTop: 'var(--spacing-sm)' }}>
+          <div className="text-sm text-secondary">
+            현재: <span className="text-accent font-semibold">{data[data.length - 1].cpm}</span> <span className="text-muted">CPM</span>
           </div>
-          <div>
-            최고: <span className="text-typing-accent font-bold">{Math.max(...data.map(d => d.cpm))}</span> CPM
+          <div className="text-sm text-secondary">
+            최고: <span className="text-accent font-semibold">{Math.max(...data.map(d => d.cpm))}</span> <span className="text-muted">CPM</span>
           </div>
-          <div>
-            정확도: <span className="text-typing-accent font-bold">{(useStatsStore.getState().liveStats.accuracy || 0).toFixed(1)}%</span>
+          <div className="text-sm text-secondary">
+            정확도: <span className="text-accent font-semibold">{(useStatsStore.getState().liveStats.accuracy || 0).toFixed(1)}%</span>
           </div>
         </div>
       )}

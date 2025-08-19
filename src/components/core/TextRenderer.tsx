@@ -138,8 +138,8 @@ export function TextRenderer({
         <span className="special-key-wrapper relative">
           {keyDisplay}
           {status === "current" && keyLabel && (
-            <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs bg-typing-accent text-background px-2 py-1 rounded whitespace-nowrap">
-              {keyLabel}
+            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+              <kbd className="kbd">{keyLabel}</kbd>
             </span>
           )}
         </span>
@@ -241,11 +241,12 @@ export function TextRenderer({
     <div className={`text-renderer ${className}`}>
       {/* 표준 타이핑 영역 - 타이핑용 텍스트 */}
       <div
-        className="font-mono text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center flex flex-wrap justify-center items-baseline"
+        className="font-korean text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center flex flex-wrap justify-center items-baseline"
         style={{
-          fontSize: "var(--font-size, 24px)",
-          lineHeight: "1.6",
-          letterSpacing: "0.5px", // 문자 간격 추가
+          fontSize: "var(--font-size, 26px)",
+          lineHeight: "1.8",
+          letterSpacing: "0.05em", // 한글에 적합한 자간
+          fontWeight: "500", // 한글 가독성을 위한 적절한 굵기
         }}
       >
         {text ? (
@@ -272,24 +273,24 @@ export function TextRenderer({
       </div>
 
       {/* 표준 진행 정보 */}
-      <div className="mt-4 p-4 bg-surface rounded-md border border-text-secondary border-opacity-20">
+      <div className="card" style={{ marginTop: 'var(--spacing-md)' }}>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
           <div>
-            <div className="text-base font-bold text-white">{currentIndex}</div>
-            <div className="text-base text-white">현재 위치</div>
+            <div className="text-lg font-semibold text-primary">{currentIndex}</div>
+            <div className="text-sm text-secondary">현재 위치</div>
           </div>
           <div>
-            <div className="text-base font-bold text-white">{text.length}</div>
-            <div className="text-base text-white">총 문자</div>
+            <div className="text-lg font-semibold text-primary">{text.length}</div>
+            <div className="text-sm text-secondary">총 문자</div>
           </div>
           <div>
-            <div className="text-base font-bold text-white">
+            <div className="text-lg font-semibold text-accent">
               {mistakes.length}
             </div>
-            <div className="text-base text-white">실수</div>
+            <div className="text-sm text-secondary">실수</div>
           </div>
           <div>
-            <div className="text-base font-bold text-white">
+            <div className="text-lg font-semibold text-accent">
               {Math.round(
                 currentIndex > 0
                   ? ((currentIndex - mistakes.length) / currentIndex) * 100
@@ -297,7 +298,7 @@ export function TextRenderer({
               )}
               %
             </div>
-            <div className="text-base text-white">정확도</div>
+            <div className="text-sm text-secondary">정확도</div>
           </div>
         </div>
       </div>

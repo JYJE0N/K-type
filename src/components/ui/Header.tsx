@@ -57,11 +57,10 @@ export function Header({ className = '' }: HeaderProps) {
 
   return (
     <header className={`header ${className} bg-surface border-b border-text-secondary border-opacity-20 flex justify-center`}>
-      <div className="w-full max-w-5xl px-6 py-6">
+      <div className="w-full max-w-5xl" style={{ padding: 'var(--spacing-lg) var(--spacing-xl)' }}>
         {/* 메인 타이틀 */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-roboto-bold text-typing-accent mb-2">한글타입</h1>
-          <p className="text-sm text-text-secondary">한글 타자연습</p>
+        <div className="text-center" style={{ marginBottom: 'var(--spacing-md)' }}>
+          <h1 className="title-lg text-typing-accent font-korean">한글타입</h1>
         </div>
 
         {/* 간단한 설정 패널 */}
@@ -72,21 +71,23 @@ export function Header({ className = '' }: HeaderProps) {
               <div className="flex">
                 <button
                   onClick={() => useSettingsStore.getState().setTestMode('time')}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+                  className={`btn btn-sm ${
                     testMode === 'time'
-                      ? 'bg-typing-accent text-background shadow-sm'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'btn-primary'
+                      : 'btn-ghost'
                   }`}
+                  style={{ borderRadius: 'var(--radius-full)' }}
                 >
                   시간
                 </button>
                 <button
                   onClick={() => useSettingsStore.getState().setTestMode('words')}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+                  className={`btn btn-sm ${
                     testMode === 'words'
-                      ? 'bg-typing-accent text-background shadow-sm'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'btn-primary'
+                      : 'btn-ghost'
                   }`}
+                  style={{ borderRadius: 'var(--radius-full)' }}
                 >
                   단어
                 </button>
@@ -122,10 +123,10 @@ export function Header({ className = '' }: HeaderProps) {
                           <button
                             key={time}
                             onClick={() => useSettingsStore.getState().setTestTarget(time)}
-                            className={`px-3 py-1 text-xs rounded transition-colors ${
+                            className={`btn btn-sm ${
                               testTarget === time
-                                ? 'bg-typing-accent text-background'
-                                : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                                ? 'btn-primary'
+                                : 'btn-ghost'
                             }`}
                           >
                             {time}초
@@ -138,10 +139,10 @@ export function Header({ className = '' }: HeaderProps) {
                           <button
                             key={words}
                             onClick={() => useSettingsStore.getState().setTestTarget(words)}
-                            className={`px-3 py-1 text-xs rounded transition-colors ${
+                            className={`btn btn-sm ${
                               testTarget === words
-                                ? 'bg-typing-accent text-background'
-                                : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                                ? 'btn-primary'
+                                : 'btn-ghost'
                             }`}
                           >
                             {words}단어
@@ -175,21 +176,23 @@ export function Header({ className = '' }: HeaderProps) {
                   <div className="flex items-center gap-1 px-3 py-2 bg-surface bg-opacity-95 backdrop-blur-md border border-white border-opacity-20 rounded-lg shadow-xl">
                     <button
                       onClick={() => useSettingsStore.getState().setLanguage('korean')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         language === 'korean'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: language === 'korean' ? '600' : '400' }}
                     >
                       한국어
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setLanguage('english')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         language === 'english'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: language === 'english' ? '600' : '400' }}
                     >
                       English
                     </button>
@@ -219,41 +222,45 @@ export function Header({ className = '' }: HeaderProps) {
                   <div className="flex items-center gap-1 px-3 py-2 bg-surface bg-opacity-95 backdrop-blur-md border border-white border-opacity-20 rounded-lg shadow-xl">
                     <button
                       onClick={() => useSettingsStore.getState().setTextType('words')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         textType === 'words'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: textType === 'words' ? '600' : '400' }}
                     >
                       단어
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setTextType('punctuation')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         textType === 'punctuation'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: textType === 'punctuation' ? '600' : '400' }}
                     >
                       구두점
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setTextType('numbers')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         textType === 'numbers'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: textType === 'numbers' ? '600' : '400' }}
                     >
                       숫자
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setTextType('sentences')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         textType === 'sentences'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: textType === 'sentences' ? '600' : '400' }}
                     >
                       문장
                     </button>
@@ -284,31 +291,34 @@ export function Header({ className = '' }: HeaderProps) {
                   <div className="flex items-center gap-1 px-3 py-2 bg-surface bg-opacity-95 backdrop-blur-md border border-white border-opacity-20 rounded-lg shadow-xl">
                     <button
                       onClick={() => useSettingsStore.getState().setTheme('dark')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         theme === 'dark'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: theme === 'dark' ? '600' : '400' }}
                     >
                       다크
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setTheme('light')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         theme === 'light'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: theme === 'light' ? '600' : '400' }}
                     >
                       라이트
                     </button>
                     <button
                       onClick={() => useSettingsStore.getState().setTheme('high-contrast')}
-                      className={`px-3 py-1 text-xs rounded transition-colors ${
+                      className={`btn btn-sm ${
                         theme === 'high-contrast'
-                          ? 'bg-typing-accent text-background'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white hover:bg-opacity-5'
+                          ? 'btn-primary'
+                          : 'btn-ghost text-secondary'
                       }`}
+                      style={{ fontWeight: theme === 'high-contrast' ? '600' : '400' }}
                     >
                       고대비
                     </button>
@@ -317,14 +327,6 @@ export function Header({ className = '' }: HeaderProps) {
               </div>
             </div>
             
-            {/* 통계 링크 */}
-            <Link 
-              href="/stats"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-200"
-            >
-              <BarChart3 className="w-4 h-4 text-typing-accent" />
-              <span className="text-sm font-medium text-text-primary">통계</span>
-            </Link>
           </div>
         </div>
       </div>

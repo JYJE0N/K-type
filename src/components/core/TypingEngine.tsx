@@ -10,7 +10,6 @@ import { TextRenderer } from './TextRenderer'
 import { InputHandler } from './InputHandler'
 import { StatsCalculator } from './StatsCalculator'
 import { TestResult } from './TestResult'
-import { VirtualKeyboard } from './VirtualKeyboard'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
 
@@ -266,7 +265,7 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
   const currentChar = getCurrentChar()
 
   return (
-    <div className={`typing-engine ${className}`}>
+    <div className={`typing-engine ${className}`} style={{ paddingTop: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-lg)' }}>
       {/* 통계 표시 - 헤더 밑에서 제거됨 */}
       {/* <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StatsCalculator />
@@ -283,10 +282,9 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
       <div className="relative">
         {/* 시간 표시 (인풋 필드 위) */}
         {isActive && !isPaused && !isCompleted && (
-          <div className="mb-4 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface rounded-lg border border-text-secondary border-opacity-20">
-              <div className="w-3 h-3 bg-typing-accent rounded-full animate-pulse"></div>
-              <div className="text-lg font-mono font-bold text-typing-accent">
+          <div className="text-center" style={{ marginBottom: 'var(--spacing-md)' }}>
+            <div className="inline-flex items-center btn btn-sm btn-secondary" style={{ cursor: 'default' }}>
+              <div className="text-md font-mono text-typing-accent">
                 {(() => {
                   const mins = Math.floor(currentTime / 60)
                   const secs = Math.floor(currentTime % 60)
@@ -320,23 +318,14 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
         </div>
 
         {/* 안내문구 - 텍스트박스 아래 */}
-        <div className="mt-6 text-center">
-          {!isActive && !isCompleted ? (
-            <div className="space-y-3">
-              <p className="text-lg font-semibold text-typing-accent">타이핑을 시작하려면 클릭하세요</p>
-              <p className="text-sm text-text-secondary">아무 키나 눌러 시작할 수 있습니다</p>
-              <div className="flex items-center justify-center gap-2 text-xs text-text-secondary">
-                <kbd className="bg-typing-accent text-background px-3 py-1 rounded font-mono font-bold">Shift + Enter</kbd>
-                <span>새로운 텍스트로 시작</span>
-              </div>
-            </div>
-          ) : isActive && !isCompleted ? (
-            <div className="flex items-center justify-center gap-2 text-xs text-text-secondary">
-              <kbd className="bg-typing-accent text-background px-3 py-1 rounded font-mono font-bold">Shift + Enter</kbd>
-              <span>새로운 텍스트</span>
-            </div>
-          ) : null}
-        </div>
+        {!isActive && !isCompleted && (
+          <div className="text-center" style={{ marginTop: 'var(--spacing-lg)' }}>
+            <p className="text-md text-text-secondary">클릭 또는 키 입력으로 시작</p>
+            <p className="text-sm text-text-secondary opacity-60" style={{ marginTop: 'var(--spacing-xs)' }}>
+              재시작: <kbd>Shift</kbd> + <kbd>Enter</kbd>
+            </p>
+          </div>
+        )}
 
         {isPaused && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20">
@@ -358,15 +347,6 @@ export function TypingEngine({ className = '' }: TypingEngineProps) {
         </div>
       )}
 
-      {/* 가상 키보드 */}
-      {isActive && !isCompleted && (
-        <div className="mt-6">
-          <VirtualKeyboard 
-            nextChar={currentChar}
-            showFingerHints={true}
-          />
-        </div>
-      )}
 
     </div>
   )

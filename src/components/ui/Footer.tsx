@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, Info, Github } from "lucide-react";
+import { Github } from 'lucide-react';
 
 interface FooterProps {
   className?: string;
@@ -9,27 +9,24 @@ interface FooterProps {
 export function Footer({ className = "" }: FooterProps) {
   return (
     <footer
-      className={`footer mt-auto border-t border-text-secondary border-opacity-20 flex justify-center ${className}`}
+      className={`footer mt-auto border-t border-text-secondary border-opacity-10 flex justify-center ${className}`}
     >
-      <div className="w-full max-w-5xl px-4 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-          <div className="text-sm text-text-secondary">
-            Ⓒ2025 한글타입. 한글을 위한 타자연습 사이트 by Doomock.
+      <div className="w-full max-w-5xl" style={{ padding: 'var(--spacing-lg) var(--spacing-xl)' }}>
+        <div className="flex items-center justify-between">
+          <div className="caption text-muted">
+            © 2025 K-Types
           </div>
-
-          <div className="flex items-center space-x-4 text-sm text-text-secondary">
-            <button className="flex items-center space-x-2 hover:text-text-primary transition-colors">
-              <HelpCircle size={16} />
-              <span>Help</span>
-            </button>
-            <button className="flex items-center space-x-2 hover:text-text-primary transition-colors">
-              <Info size={16} />
-              <span>Info</span>
-            </button>
-            <button className="flex items-center space-x-2 hover:text-text-primary transition-colors">
-              <Github size={16} />
-              <span>GitHub</span>
-            </button>
+          <div className="flex items-center gap-3">
+            <span className="caption text-muted">Made by Doomock</span>
+            <a 
+              href="https://github.com/Doomock"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-muted hover:text-primary transition-colors"
+              aria-label="GitHub"
+            >
+              <Github className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>
