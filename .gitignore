@@ -134,4 +134,5 @@ test-*.js
 yarn-wrapper.sh
 
 # npm config
-.npmrc
+.npmrc._*
+.DS_Store
