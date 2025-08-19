@@ -6,6 +6,7 @@ import { TypingEngine } from '@/components/core/TypingEngine'
 import { ClientOnly } from '@/components/ClientOnly'
 import { ThemeInitializer } from '@/components/ThemeInitializer'
 import { ThemeSelector } from '@/components/ui/ThemeSelector'
+import { StatsButton } from '@/components/ui/StatsButton'
 import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
@@ -43,6 +44,7 @@ export default function Home() {
     <>
       <ThemeInitializer />
       <ThemeSelector />
+      <StatsButton />
       <Layout>
       {/* 메인 컨테이너 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
