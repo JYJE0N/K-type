@@ -339,17 +339,6 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         paddingBottom: "var(--spacing-lg)",
       }}
     >
-      {/* 통계 표시 - 헤더 밑에서 제거됨 */}
-      {/* <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StatsCalculator />
-        <Suspense fallback={
-          <div className="h-64 bg-surface rounded-lg flex items-center justify-center">
-            <div className="text-text-secondary">그래프 로딩 중...</div>
-          </div>
-        }>
-          <CPMGraph />
-        </Suspense>
-      </div> */}
 
       {/* 메인 타이핑 영역 */}
       <div className="relative">
