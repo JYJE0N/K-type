@@ -10,7 +10,7 @@ import { InputHandler } from "./InputHandler";
 import { getLanguagePack } from "@/modules/languages";
 import { TextGenerator } from "@/utils/textGenerator";
 import { useRouter } from "next/navigation";
-import { PlayCircle, PauseCircle, StopCircle } from "lucide-react";
+import { PlayCircle, PauseCircle, StopCircle, Globe } from "lucide-react";
 
 interface TypingEngineProps {
   className?: string;
@@ -339,6 +339,32 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         paddingBottom: "var(--spacing-lg)",
       }}
     >
+
+      {/* 언어 선택 (인풋 필드 위) */}
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center gap-3 bg-surface/60 backdrop-blur-sm rounded-lg p-2">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-text-secondary" />
+            <span className="text-sm text-text-secondary font-medium">언어</span>
+          </div>
+          <button
+            onClick={() => useSettingsStore.getState().setLanguage("korean")}
+            className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+              language === "korean" ? "header-menu-active" : "header-menu-inactive"
+            }`}
+          >
+            한국어
+          </button>
+          <button
+            onClick={() => useSettingsStore.getState().setLanguage("english")}
+            className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+              language === "english" ? "header-menu-active" : "header-menu-inactive"
+            }`}
+          >
+            English
+          </button>
+        </div>
+      </div>
 
       {/* 메인 타이핑 영역 */}
       <div className="relative">

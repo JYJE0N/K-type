@@ -144,7 +144,20 @@ export type SentenceCategory =
   | 'technical'            // 기술/IT
   | 'business'             // 비즈니스
   | 'everyday'             // 일상 회화
-  | 'academic';            // 학술
+  | 'academic'             // 학술
+  | 'quotes'               // 명언/격언
+  | 'proverbs'             // 속담
+  | 'learning'             // 학습
+  | 'relationships'        // 인간관계
+  | 'nature'               // 자연
+  | 'literature'           // 문학
+  | 'growth'               // 성장
+  | 'practice'             // 연습
+  | 'travel'               // 여행
+  | 'health'               // 건강
+  | 'innovation'           // 혁신
+  | 'environment'          // 환경
+  | 'technology';          // 기술
 
 // 문장 난이도
 export type SentenceDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';

@@ -4,23 +4,25 @@ import { useState } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { TypingTitle } from "./TypingTitle";
 import {
-  Clock,
-  Type,
-  Hash,
-  AtSign,
-  Palette,
-  Globe,
-  FileText,
   Settings,
+  ChevronDown,
+  ChevronUp,
+  Type,
 } from "lucide-react";
+import {
+  IoTime,
+  IoText,
+} from "react-icons/io5";
 
 interface HeaderProps {
   className?: string;
 }
 
 export function Header({ className = "" }: HeaderProps) {
-  const { language, theme, testMode, testTarget, textType, showSentences } =
+  const { testMode, testTarget, textType, showSentences } =
     useSettingsStore();
+  
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <header className={`header ${className} bg-surface flex justify-center`}>
@@ -30,115 +32,40 @@ export function Header({ className = "" }: HeaderProps) {
           <TypingTitle text="한글 타자기" />
         </div>
 
-        {/* MonkeyType 스타일 설정 바 */}
+        {/* 기본 설정 - 테스트 모드와 목표값만 */}
         <div className="flex justify-center">
-          <div className="flex items-center bg-surface/60 backdrop-blur-sm rounded-lg p-2 gap-4">
-            {/* 텍스트 타입 (왼쪽) */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setTextType("punctuation")
-                }
-                className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                  textType === "punctuation"
-                    ? "header-menu-active"
-                    : "header-menu-inactive"
-                }`}
-              >
-                <AtSign className="w-4.5 h-4.5" />
-                구두점
-              </button>
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setTextType("numbers")
-                }
-                className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                  textType === "numbers"
-                    ? "header-menu-active"
-                    : "header-menu-inactive"
-                }`}
-              >
-                <Hash className="w-4.5 h-4.5" />
-                숫자
-              </button>
-            </div>
-
-            {/* 구분선 */}
-            <div className="w-px h-6 bg-surface/50"></div>
-
-            {/* 테스트 모드 (가운데) */}
+          <div className="header-main-settings flex items-center bg-surface/60 backdrop-blur-sm rounded-lg p-2 gap-4">
+            
+            {/* 테스트 모드 */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => useSettingsStore.getState().setTestMode("time")}
-                className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
+                className={`flex items-center gap-2 px-4 py-2 text-lg rounded-md transition-all duration-200 font-medium ${
                   testMode === "time"
                     ? "header-menu-active"
                     : "header-menu-inactive"
                 }`}
               >
-                <Clock className="w-4.5 h-4.5" />
+                <IoTime className="w-5 h-5" />
                 시간
               </button>
               <button
-                onClick={() => useSettingsStore.getState().setTextType("words")}
-                className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                  textType === "words"
+                onClick={() => useSettingsStore.getState().setTestMode("words")}
+                className={`flex items-center gap-2 px-4 py-2 text-lg rounded-md transition-all duration-200 font-medium ${
+                  testMode === "words"
                     ? "header-menu-active"
                     : "header-menu-inactive"
                 }`}
               >
-                <Type className="w-4.5 h-4.5" />
+                <IoText className="w-5 h-5" />
                 단어
               </button>
-              {showSentences && (
-                <>
-                  <button
-                    onClick={() =>
-                      useSettingsStore.getState().setTextType("short-sentences")
-                    }
-                    className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                      textType === "short-sentences"
-                        ? "header-menu-active"
-                        : "header-menu-inactive"
-                    }`}
-                  >
-                    <FileText className="w-4.5 h-4.5" />
-                    단문
-                  </button>
-                  <button
-                    onClick={() =>
-                      useSettingsStore.getState().setTextType("medium-sentences")
-                    }
-                    className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                      textType === "medium-sentences"
-                        ? "header-menu-active"
-                        : "header-menu-inactive"
-                    }`}
-                  >
-                    <FileText className="w-4.5 h-4.5" />
-                    중문
-                  </button>
-                  <button
-                    onClick={() =>
-                      useSettingsStore.getState().setTextType("long-sentences")
-                    }
-                    className={`flex items-center gap-2 px-3 py-2 text-m rounded-md transition-all duration-200 font-medium ${
-                      textType === "long-sentences"
-                        ? "header-menu-active"
-                        : "header-menu-inactive"
-                    }`}
-                  >
-                    <FileText className="w-4.5 h-4.5" />
-                    장문
-                  </button>
-                </>
-              )}
             </div>
 
             {/* 구분선 */}
-            <div className="w-px h-6 bg-surface/50"></div>
+            <div className="w-px h-8 bg-surface/30"></div>
 
-            {/* 목표값 (오른쪽) */}
+            {/* 목표값 */}
             <div className="flex items-center gap-1">
               {testMode === "time"
                 ? [15, 30, 60, 120].map((time) => (
@@ -147,13 +74,13 @@ export function Header({ className = "" }: HeaderProps) {
                       onClick={() =>
                         useSettingsStore.getState().setTestTarget(time)
                       }
-                      className={`px-3 py-2 text-sm rounded-md transition-all duration-200 font-medium ${
+                      className={`px-4 py-2 text-md rounded-md transition-all duration-200 font-medium ${
                         testTarget === time
                           ? "header-menu-active"
                           : "header-menu-inactive"
                       }`}
                     >
-                      {time}
+                      {time}초
                     </button>
                   ))
                 : [10, 25, 50, 100].map((words) => (
@@ -162,106 +89,118 @@ export function Header({ className = "" }: HeaderProps) {
                       onClick={() =>
                         useSettingsStore.getState().setTestTarget(words)
                       }
-                      className={`px-3 py-2 text-sm rounded-md transition-all duration-200 font-medium ${
+                      className={`px-4 py-2 text-md rounded-md transition-all duration-200 font-medium ${
                         testTarget === words
                           ? "header-menu-active"
                           : "header-menu-inactive"
                       }`}
                     >
-                      {words}
+                      {words}단어
                     </button>
                   ))}
             </div>
+
+            {/* 구분선 */}
+            <div className="w-px h-8 bg-surface/30"></div>
+
+            {/* 고급 설정 토글 */}
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className={`flex items-center gap-2 px-4 py-2 text-md rounded-md font-medium settings-toggle-button ${
+                showAdvanced ? "header-secondary-active active" : "header-menu-inactive"
+              }`}
+              title="고급 설정 토글"
+            >
+              <Settings className="w-4 h-4" />
+              {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
-        {/* 보조 설정 (언어, 테마) */}
-        <div className="flex justify-center mt-4">
-          <div className="flex items-center gap-4">
-            {/* 언어 선택 */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setLanguage("korean")
-                }
-                className={`flex items-center gap-2 px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  language === "korean"
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-              >
-                <Globe className="w-4 h-4" />
-                한국어
-              </button>
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setLanguage("english")
-                }
-                className={`px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  language === "english"
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-              >
-                English
-              </button>
-            </div>
+        {/* 고급 설정 (조건부 표시) */}
+        <div className={`advanced-settings-panel overflow-hidden transition-all duration-400 ${
+          showAdvanced ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          {showAdvanced && (
+            <div className="flex flex-col items-center mt-6 gap-4 bg-surface/80 backdrop-blur-md rounded-xl p-6 shadow-lg">
+              
+              {/* 텍스트 타입 */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Type className="w-4 h-4 text-text-secondary" />
+                  <span className="text-sm text-text-secondary font-medium">텍스트</span>
+                </div>
+                <button
+                  onClick={() => useSettingsStore.getState().setTextType("words")}
+                  className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                    textType === "words" ? "header-secondary-active" : "header-secondary-inactive"
+                  }`}
+                >
+                  일반
+                </button>
+                <button
+                  onClick={() => useSettingsStore.getState().setTextType("punctuation")}
+                  className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                    textType === "punctuation" ? "header-secondary-active" : "header-secondary-inactive"
+                  }`}
+                >
+                  구두점
+                </button>
+                <button
+                  onClick={() => useSettingsStore.getState().setTextType("numbers")}
+                  className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                    textType === "numbers" ? "header-secondary-active" : "header-secondary-inactive"
+                  }`}
+                >
+                  숫자
+                </button>
+                
+                {/* 문장 옵션 */}
+                {showSentences && (
+                  <>
+                    <span className="w-px h-4 bg-text-secondary opacity-20 mx-1"></span>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType("short-sentences")}
+                      className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                        textType === "short-sentences" ? "header-secondary-active" : "header-secondary-inactive"
+                      }`}
+                    >
+                      단문
+                    </button>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType("medium-sentences")}
+                      className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                        textType === "medium-sentences" ? "header-secondary-active" : "header-secondary-inactive"
+                      }`}
+                    >
+                      중문
+                    </button>
+                    <button
+                      onClick={() => useSettingsStore.getState().setTextType("long-sentences")}
+                      className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+                        textType === "long-sentences" ? "header-secondary-active" : "header-secondary-inactive"
+                      }`}
+                    >
+                      장문
+                    </button>
+                  </>
+                )}
+              </div>
 
-            {/* 테마 선택 */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => useSettingsStore.getState().setTheme("dark")}
-                className={`flex items-center gap-2 px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  theme === "dark"
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-              >
-                <Palette className="w-4 h-4" />
-                다크
-              </button>
-              <button
-                onClick={() => useSettingsStore.getState().setTheme("light")}
-                className={`px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  theme === "light"
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-              >
-                라이트
-              </button>
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setTheme("high-contrast")
-                }
-                className={`px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  theme === "high-contrast"
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-              >
-                고대비
-              </button>
+              {/* 추가 옵션 */}
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={() => useSettingsStore.getState().setShowSentences(!showSentences)}
+                  className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+                    showSentences ? "header-secondary-active" : "header-secondary-inactive"
+                  }`}
+                  title="문장 옵션 표시/숨기기"
+                >
+                  {showSentences ? '문장 숨김' : '문장 표시'}
+                </button>
+              </div>
             </div>
-
-            {/* 설정 옵션 */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() =>
-                  useSettingsStore.getState().setShowSentences(!showSentences)
-                }
-                className={`flex items-center gap-2 px-3 py-1.5 text-s rounded-md transition-all duration-200 font-medium ${
-                  showSentences
-                    ? "header-secondary-active"
-                    : "header-secondary-inactive"
-                }`}
-                title="문장 옵션 표시/숨기기"
-              >
-                <Settings className="w-4 h-4" />
-                문장
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </header>
