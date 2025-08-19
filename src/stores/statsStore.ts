@@ -53,32 +53,33 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
       return
     }
 
-    const correctKeystrokes = keystrokes.filter(k => k.correct).length
     const minutes = timeElapsed / 60
+    
+    // 실제 타이핑한 문자 수 사용 (currentIndex가 실제 진행률)
+    const charactersTyped = currentIndex
+    const correctCharacters = charactersTyped - mistakes.length
+    
+    // CPM 계산 (올바르게 타이핑한 문자 수 기준)
+    const cpm = minutes > 0 ? Math.round(correctCharacters / minutes) : 0
+    const rawCpm = minutes > 0 ? Math.round(charactersTyped / minutes) : 0
+    
+    // WPM 계산 (5문자 = 1단어 기준)
+    const wpm = minutes > 0 ? Math.round(correctCharacters / 5 / minutes) : 0
+    const rawWpm = minutes > 0 ? Math.round(charactersTyped / 5 / minutes) : 0
+    
+    // 정확도 계산
+    const accuracy = charactersTyped > 0 ? Math.round((correctCharacters / charactersTyped) * 100) : 100
 
-    // 텍스트 타입에 따른 WPM 계산
-    let wpm = 0
-    if (textType === 'sentences' || textType === 'short-sentences' || textType === 'medium-sentences' || textType === 'long-sentences') {
-      // 문장의 경우: 실제 완성된 단어 수 기준
-      wpm = minutes > 0 ? Math.round(correctKeystrokes / 5 / minutes) : 0
-    } else {
-      // 단어의 경우: 표준 5자 = 1단어 기준
-      wpm = minutes > 0 ? Math.round(correctKeystrokes / 5 / minutes) : 0
-    }
-
-    const rawWpm = minutes > 0 ? Math.round(keystrokes.length / 5 / minutes) : 0
-    const cpm = minutes > 0 ? Math.round(correctKeystrokes / minutes) : 0
-    const rawCpm = minutes > 0 ? Math.round(keystrokes.length / minutes) : 0
-    const accuracy = keystrokes.length > 0 ? Math.round((correctKeystrokes / keystrokes.length) * 100) : 100
-
-    // 일관성 계산 (간소화)
-    const consistency = keystrokes.length > 10 ? 
-      Math.max(0, 100 - (mistakes.length / keystrokes.length) * 100) : 100
+    // 일관성 계산 (실수 비율 기반)
+    const consistency = charactersTyped > 0 ? 
+      Math.max(0, 100 - Math.round((mistakes.length / charactersTyped) * 100)) : 100
 
     console.log(`📊 통계 업데이트 (${textType}):`, {
       timeElapsed: timeElapsed.toFixed(2),
-      keystrokes: keystrokes.length,
-      correct: correctKeystrokes,
+      charactersTyped,
+      correctCharacters,
+      mistakes: mistakes.length,
+      keystrokesCount: keystrokes.length,
       wpm,
       cpm,
       accuracy
@@ -90,10 +91,10 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
         rawWpm,
         cpm,
         rawCpm,
-        accuracy: Math.round(accuracy),
-        consistency: Math.round(consistency),
+        accuracy: Math.max(0, Math.min(100, accuracy)), // 0-100 범위 보장
+        consistency: Math.max(0, Math.min(100, consistency)), // 0-100 범위 보장
         timeElapsed,
-        charactersTyped: keystrokes.length,
+        charactersTyped,
         errorsCount: mistakes.length
       }
     })
@@ -103,40 +104,35 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     set({ liveStats: initialStats })
   },
 
-  // WPM 계산 (텍스트 타입별)
+  // WPM 계산 (실제 문자 수 기준)
   calculateWPM: (keystrokes, timeElapsed, textType = 'words') => {
     if (timeElapsed === 0) return 0
     
-    const correctKeystrokes = keystrokes.filter(k => k.correct)
+    const correctCharacters = keystrokes.filter(k => k.correct).length
     const minutes = timeElapsed / 60
     
-    if (textType === 'sentences' || textType === 'short-sentences' || textType === 'medium-sentences' || textType === 'long-sentences') {
-      // 문장의 경우: 완성된 단어 수 기준
-      return minutes > 0 ? Math.round(correctKeystrokes.length / 5 / minutes) : 0
-    } else {
-      // 단어의 경우: 표준 5자 = 1단어
-      return minutes > 0 ? Math.round(correctKeystrokes.length / 5 / minutes) : 0
-    }
+    // 모든 텍스트 타입에 대해 표준 5자 = 1단어 기준 사용
+    return minutes > 0 ? Math.round(correctCharacters / 5 / minutes) : 0
   },
 
   // Raw WPM 계산 (오타 포함)
   calculateRawWPM: (keystrokes, timeElapsed) => {
     if (timeElapsed === 0) return 0
     
-    const totalWords = keystrokes.length / 5
+    const totalCharacters = keystrokes.length
     const minutes = timeElapsed / 60
     
-    return minutes > 0 ? Math.round(totalWords / minutes) : 0
+    return minutes > 0 ? Math.round(totalCharacters / 5 / minutes) : 0
   },
 
   // CPM 계산 (오타 제외)
   calculateCPM: (keystrokes, timeElapsed) => {
     if (timeElapsed === 0) return 0
     
-    const correctKeystrokes = keystrokes.filter(k => k.correct)
+    const correctCharacters = keystrokes.filter(k => k.correct).length
     const minutes = timeElapsed / 60
     
-    return minutes > 0 ? Math.round(correctKeystrokes.length / minutes) : 0
+    return minutes > 0 ? Math.round(correctCharacters / minutes) : 0
   },
 
   // 정확도 계산
@@ -144,7 +140,7 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     if (keystrokes.length === 0) return 100
     
     const correctCount = keystrokes.filter(k => k.correct).length
-    return Math.round((correctCount / keystrokes.length) * 100)
+    return Math.max(0, Math.min(100, Math.round((correctCount / keystrokes.length) * 100)))
   },
 
   // 일관성 계산
@@ -153,6 +149,6 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     
     // 간단한 일관성 계산: 정확한 타이핑의 비율
     const correctCount = keystrokes.filter(k => k.correct).length
-    return Math.round((correctCount / keystrokes.length) * 100)
+    return Math.max(0, Math.min(100, Math.round((correctCount / keystrokes.length) * 100)))
   }
 }))
