@@ -140,7 +140,7 @@ export async function PUT(request: NextRequest) {
     // 문자별 통계 업데이트
     if (characterStats) {
       for (const stat of characterStats) {
-        const existing = userProgress.weakCharacters.find(c => c.char === stat.char)
+        const existing = userProgress.weakCharacters.find((c: any) => c.char === stat.char)
         if (existing) {
           existing.totalAttempts += stat.totalAttempts || 1
           existing.mistakes += stat.mistakes || 0
@@ -151,7 +151,7 @@ export async function PUT(request: NextRequest) {
       }
       
       // 실수율 순으로 정렬하고 상위 50개만 유지
-      userProgress.weakCharacters.sort((a, b) => {
+      userProgress.weakCharacters.sort((a: any, b: any) => {
         const errorRateA = a.mistakes / a.totalAttempts
         const errorRateB = b.mistakes / b.totalAttempts
         return errorRateB - errorRateA
@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
     if (mistakePatterns) {
       for (const pattern of mistakePatterns) {
         const existing = userProgress.commonMistakes.find(
-          m => m.wrong === pattern.wrong && m.correct === pattern.correct
+          (m: any) => m.wrong === pattern.wrong && m.correct === pattern.correct
         )
         if (existing) {
           existing.count += pattern.count || 1
@@ -173,7 +173,7 @@ export async function PUT(request: NextRequest) {
       }
       
       // 빈도 순으로 정렬하고 상위 30개만 유지
-      userProgress.commonMistakes.sort((a, b) => b.count - a.count)
+      userProgress.commonMistakes.sort((a: any, b: any) => b.count - a.count)
       userProgress.commonMistakes = userProgress.commonMistakes.slice(0, 30)
     }
     

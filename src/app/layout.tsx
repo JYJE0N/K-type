@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+
 export const metadata: Metadata = {
   title: '한글타입 - 한글 타자연습',
   description: '한글을 위한 타자연습 사이트. 실시간 통계와 정확한 한글 IME 처리로 효과적인 타자 연습을 경험하세요.',
@@ -22,6 +23,22 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link
+          rel="preconnect"
+          href="https://cdn.jsdelivr.net"
+          crossOrigin="anonymous"
+        />
+        <link
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+          rel="preload"
+        />
+        <link
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+          rel="stylesheet"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -44,7 +61,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-text-primary font-mono antialiased">
+      <body className="min-h-screen bg-background text-text-primary antialiased">
         {children}
       </body>
     </html>

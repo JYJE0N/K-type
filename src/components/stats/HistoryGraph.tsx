@@ -111,17 +111,29 @@ export function HistoryGraph() {
             strokeWidth={3}
             dot={{ fill: "var(--color-accent)", strokeWidth: 2, r: 4 }}
             activeDot={{ r: 6, stroke: "var(--color-accent)", strokeWidth: 2 }}
-            connectNulls={false}
+            connectNulls={true}
             name="cpm"
           />
 
           <Line
             type="monotone"
-            dataKey="accuracy"
-            stroke="var(--color-correct)"
+            dataKey="wpm"
+            stroke="var(--text-secondary)"
             strokeWidth={2}
-            dot={{ fill: "var(--color-correct)", strokeWidth: 2, r: 3 }}
-            connectNulls={false}
+            dot={{ fill: "var(--text-secondary)", strokeWidth: 2, r: 3 }}
+            activeDot={{ r: 5, stroke: "var(--text-secondary)", strokeWidth: 2 }}
+            connectNulls={true}
+            name="wpm"
+          />
+
+          <Line
+            type="monotone"
+            dataKey="accuracy"
+            stroke="var(--text-muted)"
+            strokeWidth={2}
+            dot={{ fill: "var(--text-muted)", strokeWidth: 2, r: 3 }}
+            activeDot={{ r: 5, stroke: "var(--text-muted)", strokeWidth: 2 }}
+            connectNulls={true}
             name="accuracy"
           />
         </LineChart>
@@ -130,11 +142,24 @@ export function HistoryGraph() {
       {/* 범례 */}
       <div className="flex justify-center items-center gap-6 mt-4">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-accent rounded-full"></div>
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: "var(--color-accent)" }}
+          ></div>
           <span className="text-sm text-primary font-medium">CPM</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-correct rounded-full"></div>
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: "var(--text-secondary)" }}
+          ></div>
+          <span className="text-sm text-primary font-medium">WPM</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: "var(--text-muted)" }}
+          ></div>
           <span className="text-sm text-primary font-medium">정확도 (%)</span>
         </div>
       </div>

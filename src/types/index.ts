@@ -8,7 +8,10 @@ export interface LanguagePack {
     punctuation: string[];   // 구두점 포함
     numbers: string[];       // 숫자 포함
   };
-  sentences?: string[];      // 문장 연습용
+  sentences?: string[];      // 문장 연습용 (레거시)
+  shortSentences?: string[]; // 단문: 속담, 격언 등 (10-25자)
+  mediumSentences?: string[]; // 중문: 노래 가사, 시 등 (50-100자)  
+  longSentences?: string[];  // 장문: 책 글귀, 신문 사설 등 (150자+)
 }
 
 // 테마 인터페이스
@@ -47,7 +50,7 @@ export interface Mistake {
 export type TestMode = 'time' | 'words';
 
 // 텍스트 타입
-export type TextType = 'words' | 'punctuation' | 'numbers' | 'sentences';
+export type TextType = 'words' | 'punctuation' | 'numbers' | 'sentences' | 'short-sentences' | 'medium-sentences' | 'long-sentences';
 
 // 디바이스 타입
 export type DeviceType = 'desktop' | 'tablet' | 'mobile';

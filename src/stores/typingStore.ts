@@ -8,6 +8,8 @@ interface TypingStore {
   isActive: boolean
   isPaused: boolean
   isCompleted: boolean
+  isCountingDown: boolean
+  countdownValue: number
   currentIndex: number
   targetText: string
   userInput: string
@@ -27,9 +29,11 @@ interface TypingStore {
 
   // Actions
   setTargetText: (text: string) => void
+  startCountdown: () => void
   startTest: () => void
   pauseTest: () => void
   resumeTest: () => void
+  stopTest: () => void
   resetTest: () => void
   completeTest: () => void
   handleKeyPress: (key: string) => void
@@ -125,6 +129,8 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   isActive: false,
   isPaused: false,
   isCompleted: false,
+  isCountingDown: false,
+  countdownValue: 3,
   currentIndex: 0,
   targetText: '',
   userInput: '',
@@ -156,14 +162,46 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       currentWordIndex: 0
     })
     
-    console.log('📝 텍스트 설정:', {
-      text: text.substring(0, 50) + '...',
-      totalWords: words.length,
-      words: words.slice(0, 5)
-    })
+    // console.log('📝 텍스트 설정:', {
+    //   text: text.substring(0, 50) + '...',
+    //   totalWords: words.length,
+    //   words: words.slice(0, 5)
+    // })
   },
 
-  // Start test
+  // Start countdown
+  startCountdown: () => {
+    const state = get()
+    if (state.isActive || state.isCountingDown) {
+      console.log('⚠️ Test already running or counting down')
+      return
+    }
+    
+    set({ isCountingDown: true, countdownValue: 3 })
+    console.log('⏰ Countdown started')
+    
+    // 카운트다운 로직
+    const countdownInterval = setInterval(() => {
+      const currentState = get()
+      
+      if (currentState.countdownValue <= 1) {
+        clearInterval(countdownInterval)
+        set({
+          isCountingDown: false,
+          isActive: true,
+          isPaused: false,
+          startTime: new Date(),
+          endTime: null
+        })
+        console.log('🚀 Test started after countdown!')
+      } else {
+        set({ countdownValue: currentState.countdownValue - 1 })
+        console.log(`⏰ Countdown: ${currentState.countdownValue - 1}`)
+      }
+    }, 1000)
+  },
+
+  // Start test (직접 시작, 카운트다운 없이)
   startTest: () => {
     const state = get()
     if (state.isActive) {
@@ -174,6 +212,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     set({ 
       isActive: true,
       isPaused: false,
+      isCountingDown: false,
       startTime: new Date(),
       endTime: null
     })
@@ -182,16 +221,35 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   },
 
   // Pause test
-  pauseTest: () => set({ isPaused: true }),
+  pauseTest: () => {
+    console.log('⏸️ Test paused')
+    set({ isPaused: true })
+  },
 
   // Resume test
-  resumeTest: () => set({ isPaused: false }),
+  resumeTest: () => {
+    console.log('▶️ Test resumed')
+    set({ isPaused: false })
+  },
+
+  // Stop test (완전 중단)
+  stopTest: () => {
+    console.log('⏹️ Test stopped')
+    set({
+      isActive: false,
+      isPaused: false,
+      isCountingDown: false,
+      isCompleted: false
+    })
+  },
 
   // Reset test
   resetTest: () => set({
     isActive: false,
     isPaused: false,
     isCompleted: false,
+    isCountingDown: false,
+    countdownValue: 3,
     currentIndex: 0,
     userInput: '',
     startTime: null,
@@ -231,8 +289,8 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const state = get()
     
     // Check test state
-    if (state.isCompleted || state.isPaused) {
-      console.log('❌ Input blocked: test completed or paused')
+    if (state.isCompleted || state.isPaused || state.isCountingDown) {
+      console.log('❌ Input blocked: test completed, paused, or counting down')
       return
     }
 
@@ -309,21 +367,13 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       newState.completedWords = newCompletedWords
     }
     
-    // MonkeyType 스타일 통계 계산
-    const avgCharsPerWord = state.textWords.length > 0 
-      ? state.targetText.replace(/\s/g, '').length / state.textWords.length 
-      : 4
-      
-    const monkeyTypeCPM = useStatsStore.getState().calculateMonkeyTypeCPM(
-      newState.completedWords,
-      avgCharsPerWord,
-      (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
-    )
+    // 간단한 통계 계산
+    const timeElapsed = (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
+    const minutes = timeElapsed / 60
     
-    const monkeyTypeWPM = useStatsStore.getState().calculateMonkeyTypeWPM(
-      newState.completedWords,
-      (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
-    )
+    // 기본 WPM/CPM 계산
+    const simpleWPM = minutes > 0 ? Math.round(newState.completedWords / minutes) : 0
+    const simpleCPM = minutes > 0 ? Math.round(newState.currentIndex / minutes) : 0
     
     // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산
     useStatsStore.getState().calculateStats(
@@ -333,7 +383,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       newState.currentIndex
     )
     
-    console.log(`📊 MonkeyType vs 기존: CPM ${monkeyTypeCPM} vs ${useStatsStore.getState().liveStats.cpm}, WPM ${monkeyTypeWPM} vs ${useStatsStore.getState().liveStats.wpm}`)
+    console.log(`📊 간단한 통계: CPM ${simpleCPM}, WPM ${simpleWPM}`)
     
     // Check for completion
     const newIndex = updates.currentIndex || state.currentIndex

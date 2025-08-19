@@ -188,6 +188,9 @@ export const useUserProgressStore = create<UserProgressStore>()(
       },
 
       recordTest: async (session: TypingSession) => {
+        // 실제 타이핑한 단어 수 계산 (현재 위치 기반)
+        const actualWordsTyped = Math.max(1, Math.ceil(session.keystrokes.length / 5))
+        
         // newRecord를 먼저 생성
         const newRecord: TestRecord = {
           id: `test-${Date.now()}`,
@@ -196,8 +199,8 @@ export const useUserProgressStore = create<UserProgressStore>()(
           textType: session.textType,
           language: session.language,
           duration: session.duration || 0,
-          wordsTyped: Math.max(1, Math.floor((session.keystrokes.filter(k => k.correct).length + 1) / 5)),
-          cpm: session.cpm,
+          wordsTyped: actualWordsTyped,
+          cpm: session.cpm,  // TestResult에서 표시하는 것과 동일한 값
           wpm: session.wpm,
           accuracy: session.accuracy,
           consistency: session.consistency || 0,

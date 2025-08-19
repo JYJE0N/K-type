@@ -223,9 +223,9 @@ export default function StatsPage() {
                               {(() => {
                                 // textType 기반으로 구분
                                 if (test.textType && (test.textType.includes('sentence') || test.textType.includes('문장'))) {
-                                  return `${test.target || test.wordsTyped}문장`
+                                  return `${test.wordsTyped || 0}문장`
                                 } else {
-                                  return `${test.target || test.wordsTyped}단어`
+                                  return `${test.wordsTyped || 0}단어`
                                 }
                               })()}
                             </span>

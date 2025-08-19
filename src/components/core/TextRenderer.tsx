@@ -241,7 +241,7 @@ export function TextRenderer({
     <div className={`text-renderer ${className}`}>
       {/* 표준 타이핑 영역 - 타이핑용 텍스트 */}
       <div
-        className="font-korean text-2xl leading-relaxed p-6 bg-surface rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center flex flex-wrap justify-center items-baseline"
+        className="font-korean text-2xl leading-relaxed p-6 bg-transparent rounded-md border-2 border-transparent focus-within:border-typing-accent transition-colors text-center flex flex-wrap justify-center items-baseline"
         style={{
           fontSize: "var(--font-size, 26px)",
           lineHeight: "1.8",
@@ -310,7 +310,8 @@ export function TextRenderer({
         </div>
       </div>
 
-      {/* 디버그 정보 */}
+      {/* 디버그 정보 (삭제됨) */}
+      {/* 
       {process.env.NODE_ENV === "development" && (
         <div className="mt-4 p-4 bg-surface rounded-lg">
           <div className="text-sm font-medium text-text-secondary mb-2">
@@ -353,6 +354,7 @@ export function TextRenderer({
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }

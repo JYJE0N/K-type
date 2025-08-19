@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
-import { Lightbulb, TrendingUp, Target, Zap } from "lucide-react";
+import { Lightbulb, TrendingUp, Target, Zap, Flame, AlertCircle, Info } from "lucide-react";
 
 interface Suggestion {
   type: "speed" | "accuracy" | "finger" | "posture";
@@ -121,29 +121,29 @@ export function ImprovementSuggestions() {
     setSuggestions(newSuggestions.slice(0, 3)); // 최대 3개만 표시
   }, [averageWPM, averageAccuracy, liveStats]);
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case "high":
-        return "text-red-400";
+        return Flame;
       case "medium":
-        return "text-yellow-400";
+        return AlertCircle;
       case "low":
-        return "text-green-400";
+        return Info;
       default:
-        return "text-text-secondary";
+        return Lightbulb;
     }
   };
 
-  const getPriorityBg = (priority: string) => {
+  const getPriorityLabel = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-50 border-red-200";
+        return "중요";
       case "medium":
-        return "bg-yellow-50 border-yellow-200";
+        return "권장";
       case "low":
-        return "bg-green-50 border-green-200";
+        return "참고";
       default:
-        return "bg-surface";
+        return "";
     }
   };
 
@@ -173,47 +173,33 @@ export function ImprovementSuggestions() {
         <h2 className="card-title">개선 제안</h2>
       </div>
 
-      <div className="card-content space-y-4">
+      <div className="card-content space-y-3">
         {suggestions.map((suggestion, index) => {
           const IconComponent = suggestion.icon;
+          const PriorityIcon = getPriorityIcon(suggestion.priority);
           return (
             <div
               key={index}
-              className="card border-none"
+              className="card"
               style={{
                 padding: "var(--spacing-md)",
-                backgroundColor:
-                  suggestion.priority === "high"
-                    ? "rgba(239, 68, 68, 0.05)"
-                    : suggestion.priority === "medium"
-                    ? "rgba(245, 158, 11, 0.05)"
-                    : "rgba(34, 197, 94, 0.05)",
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
               }}
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-surface">
-                  <IconComponent
-                    className={`w-4 h-4 ${getPriorityColor(
-                      suggestion.priority
-                    )}`}
-                  />
+                <div className="flex flex-col items-center gap-1">
+                  <PriorityIcon className="w-5 h-5 text-accent" />
+                  <span className="caption text-muted">
+                    {getPriorityLabel(suggestion.priority)}
+                  </span>
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <IconComponent className="w-4 h-4 text-accent" />
                     <h3 className="title-sm text-primary">
                       {suggestion.title}
                     </h3>
-                    <span
-                      className={`caption px-2 py-1 rounded-full bg-surface ${getPriorityColor(
-                        suggestion.priority
-                      )}`}
-                    >
-                      {suggestion.priority === "high"
-                        ? "높음"
-                        : suggestion.priority === "medium"
-                        ? "보통"
-                        : "낮음"}
-                    </span>
                   </div>
                   <p className="text-sm text-secondary leading-relaxed">
                     {suggestion.description}

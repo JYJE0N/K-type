@@ -18,6 +18,8 @@ export class TextGenerator {
   generateText(type: TextType, options: TextGenerationOptions = {}): string {
     const { wordCount = 50 } = options
 
+    console.log(`📝 텍스트 생성 - 타입: ${type}, 목표: ${wordCount}`)
+
     switch (type) {
       case 'words':
         return this.generateWords(wordCount)
@@ -26,61 +28,83 @@ export class TextGenerator {
       case 'numbers':
         return this.generateWithNumbers(wordCount)
       case 'sentences':
-        return this.generateSentences(wordCount)
+        return this.generateSentences(Math.ceil(wordCount / 10)) // 레거시 지원
+      case 'short-sentences':
+        return this.generateSentencesByLength(wordCount * 2, 'short')   // 단문: 글자수 기준 (적은 양)
+      case 'medium-sentences':
+        return this.generateSentencesByLength(wordCount * 3, 'medium')  // 중문: 글자수 기준 (중간 양)
+      case 'long-sentences':
+        return this.generateSentencesByLength(wordCount * 4, 'long')    // 장문: 글자수 기준 (많은 양)
       default:
         return this.generateWords(wordCount)
     }
   }
 
-  // 기본 단어 생성
+  // 순수 단어만 생성 (구두점, 숫자 제외)
   private generateWords(count: number): string {
     const words = this.languagePack.wordLists.common
     const selectedWords: string[] = []
+
+    console.log(`📝 순수 단어 생성 - 개수: ${count}`)
+    console.log(`📝 사용 가능한 단어 수: ${words.length}`)
+    console.log(`📝 첫 10개 단어: ${words.slice(0, 10).join(', ')}`)
 
     for (let i = 0; i < count; i++) {
       const randomWord = words[Math.floor(Math.random() * words.length)]
       selectedWords.push(randomWord)
     }
 
-    return selectedWords.join(' ')
+    const result = selectedWords.join(' ')
+    console.log(`📝 생성된 텍스트: ${result.substring(0, 100)}...`)
+    return result
   }
 
-  // 구두점 포함 텍스트 생성
+  // 구두점 포함 텍스트 생성 (단어 + 구두점 조합)
   private generateWithPunctuation(count: number): string {
     const punctuationWords = this.languagePack.wordLists.punctuation
     const regularWords = this.languagePack.wordLists.common
     const selectedWords: string[] = []
 
+    console.log(`📝 구두점 포함 텍스트 생성 - 개수: ${count}`)
+
     for (let i = 0; i < count; i++) {
-      // 30% 확률로 구두점 포함 단어 선택
-      const usePunctuation = Math.random() < 0.3
+      // 50% 확률로 구두점 포함 단어 선택 (더 높은 확률)
+      const usePunctuation = Math.random() < 0.5
       const sourceList = usePunctuation ? punctuationWords : regularWords
       const randomWord = sourceList[Math.floor(Math.random() * sourceList.length)]
       selectedWords.push(randomWord)
     }
 
-    return selectedWords.join(' ')
+    const result = selectedWords.join(' ')
+    console.log(`📝 구두점 포함 텍스트: ${result.substring(0, 100)}...`)
+    return result
   }
 
-  // 숫자 포함 텍스트 생성
+  // 숫자 포함 텍스트 생성 (단어 + 숫자 조합)
   private generateWithNumbers(count: number): string {
     const numberWords = this.languagePack.wordLists.numbers
     const regularWords = this.languagePack.wordLists.common
     const selectedWords: string[] = []
 
+    console.log(`📝 숫자 포함 텍스트 생성 - 개수: ${count}`)
+
     for (let i = 0; i < count; i++) {
-      // 25% 확률로 숫자 포함 단어 선택
-      const useNumbers = Math.random() < 0.25
+      // 40% 확률로 숫자 포함 단어 선택 (더 높은 확률)
+      const useNumbers = Math.random() < 0.4
       const sourceList = useNumbers ? numberWords : regularWords
       const randomWord = sourceList[Math.floor(Math.random() * sourceList.length)]
       selectedWords.push(randomWord)
     }
 
-    return selectedWords.join(' ')
+    const result = selectedWords.join(' ')
+    console.log(`📝 숫자 포함 텍스트: ${result.substring(0, 100)}...`)
+    return result
   }
 
-  // 문장 생성 (새로운 문장 데이터 활용)
-  private generateSentences(wordCount: number): string {
+  // 문장 생성 (실제 문장 단위로 생성)
+  private generateSentences(sentenceCount: number): string {
+    console.log(`📝 문장 생성 - 목표 문장 수: ${sentenceCount}`)
+    
     // 먼저 새로운 문장 데이터 시스템 사용 시도
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -88,18 +112,12 @@ export class TextGenerator {
       const language = this.languagePack.id === 'korean' ? 'ko' : 'en'
       
       // 랜덤 문장들 가져오기
-      const sentences = getRandomSentences(5, { language })
+      const sentences = getRandomSentences(sentenceCount, { language })
       
       if (sentences && sentences.length > 0) {
         const selectedTexts = sentences.map((s: { text: string }) => s.text)
-        let result = selectedTexts.join(' ')
-        
-        // 목표 단어 수에 맞게 조정
-        const words = result.split(/\s+/)
-        if (words.length > wordCount) {
-          result = words.slice(0, wordCount).join(' ')
-        }
-        
+        const result = selectedTexts.join(' ')
+        console.log(`📝 새 문장 시스템으로 생성: ${result.substring(0, 50)}...`)
         return result
       }
     } catch (error) {
@@ -109,30 +127,113 @@ export class TextGenerator {
     // 레거시 문장 시스템 폴백
     const sentences = this.languagePack.sentences || []
     if (sentences.length === 0) {
-      // 문장이 없으면 기본 단어로 대체
-      return this.generateWords(wordCount)
+      console.log('문장 데이터가 없어 기본 단어로 대체합니다.')
+      // 문장이 없으면 기본 단어로 대체 (단어 개수는 문장 수 * 10)
+      return this.generateWords(sentenceCount * 10)
     }
 
     const selectedSentences: string[] = []
-    let currentWordCount = 0
 
-    while (currentWordCount < wordCount) {
+    // 정확히 요청된 문장 수만큼 생성
+    for (let i = 0; i < sentenceCount; i++) {
       const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
       selectedSentences.push(randomSentence)
-      
-      // 대략적인 단어 수 계산 (공백 기준)
-      currentWordCount += randomSentence.split(' ').length
     }
 
     const result = selectedSentences.join(' ')
+    console.log(`📝 레거시 문장 시스템으로 생성: ${result.substring(0, 50)}...`)
+    return result
+  }
+
+  // 문장 타입별 생성 (글자수 기준)
+  private generateSentencesByLength(targetCharCount: number, sentenceType: 'short' | 'medium' | 'long' | 'any'): string {
+    console.log(`📝 문장 생성 - 타입: ${sentenceType}, 목표 글자수: ${targetCharCount}`)
     
-    // 목표 단어 수에 맞게 자르기
-    const words = result.split(' ')
-    if (words.length > wordCount) {
-      return words.slice(0, wordCount).join(' ')
+    // 문장 타입별 데이터 가져오기
+    let sentences: string[] = []
+    let typeName = ''
+    
+    switch (sentenceType) {
+      case 'short':
+        sentences = this.languagePack.shortSentences || []
+        typeName = '단문 (속담)'
+        break
+      case 'medium':
+        sentences = this.languagePack.mediumSentences || []
+        typeName = '중문 (가사/시)'
+        break
+      case 'long':
+        sentences = this.languagePack.longSentences || []
+        typeName = '장문 (책/사설)'
+        break
+      default:
+        sentences = this.languagePack.sentences || []
+        typeName = '일반 문장'
+        break
     }
 
+    console.log(`📝 ${typeName} 데이터 개수: ${sentences.length}`)
+
+    if (sentences.length === 0) {
+      console.log(`${typeName} 데이터가 없어 기본 단어로 대체합니다.`)
+      return this.generateWords(Math.ceil(targetCharCount / 3)) // 한글 평균 3글자 = 1단어
+    }
+
+    // 목표 글자수에 맞춰 문장들 선택
+    const selectedSentences: string[] = []
+    let currentCharCount = 0
+
+    while (currentCharCount < targetCharCount) {
+      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
+      selectedSentences.push(randomSentence)
+      currentCharCount += randomSentence.length
+      
+      // 무한 루프 방지
+      if (selectedSentences.length > 20) break
+    }
+
+    const result = selectedSentences.join(' ')
+    console.log(`📝 ${typeName} 생성 완료 - 실제 글자수: ${result.length}, 문장수: ${selectedSentences.length}`)
+    console.log(`📝 생성된 텍스트: ${result.substring(0, 100)}...`)
     return result
+  }
+
+  // 문장 길이별 필터 조건 생성
+  private getSentenceLengthFilter(length: 'short' | 'medium' | 'long') {
+    switch (length) {
+      case 'short':
+        return { minWords: 3, maxWords: 8 }  // 단문: 3-8단어
+      case 'medium':
+        return { minWords: 9, maxWords: 15 } // 중문: 9-15단어
+      case 'long':
+        return { minWords: 16, maxWords: 25 } // 장문: 16-25단어
+      default:
+        return { minWords: 5, maxWords: 15 }
+    }
+  }
+
+  // 문장 길이별 예상 단어 수
+  private getWordsPerSentence(length: 'short' | 'medium' | 'long'): number {
+    switch (length) {
+      case 'short':
+        return 6   // 단문 평균
+      case 'medium':
+        return 12  // 중문 평균
+      case 'long':
+        return 20  // 장문 평균
+      default:
+        return 10
+    }
+  }
+
+  // 레거시 문장 배열을 길이별로 필터링
+  private filterSentencesByLength(sentences: string[], length: 'short' | 'medium' | 'long'): string[] {
+    const { minWords, maxWords } = this.getSentenceLengthFilter(length)
+    
+    return sentences.filter(sentence => {
+      const wordCount = sentence.split(/\s+/).length
+      return wordCount >= minWords && wordCount <= maxWords
+    })
   }
 
   // 커스텀 텍스트 검증

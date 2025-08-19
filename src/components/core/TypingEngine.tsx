@@ -5,18 +5,12 @@ import { useTypingStore } from "@/stores/typingStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
-import { lazy, Suspense } from "react";
 import { TextRenderer } from "./TextRenderer";
 import { InputHandler } from "./InputHandler";
-import { StatsCalculator } from "./StatsCalculator";
 import { getLanguagePack } from "@/modules/languages";
 import { TextGenerator } from "@/utils/textGenerator";
 import { useRouter } from "next/navigation";
-
-// Lazy load the CPMGraph component to improve initial load time
-const CPMGraph = lazy(() =>
-  import("./CPMGraph").then((module) => ({ default: module.CPMGraph }))
-);
+import { PlayCircle, PauseCircle, StopCircle } from "lucide-react";
 
 interface TypingEngineProps {
   className?: string;
@@ -34,6 +28,8 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     isActive,
     isPaused,
     isCompleted,
+    isCountingDown,
+    countdownValue,
     targetText,
     currentIndex,
     userInput,
@@ -42,8 +38,11 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     startTime,
     resetTest,
     setTargetText,
+    startCountdown,
+    pauseTest,
+    resumeTest,
+    stopTest,
     getCurrentChar,
-    getProgress,
   } = useTypingStore();
 
   const { calculateStats, resetStats } = useStatsStore();
@@ -122,7 +121,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   useEffect(() => {
     if (isActive && !isPaused && !isCompleted) {
       intervalRef.current = setInterval(() => {
-        calculateStats(keystrokes, mistakes, startTime, currentIndex);
+        calculateStats(keystrokes, mistakes, startTime, currentIndex, undefined, textType);
       }, 250); // 250ms마다 더 자주 업데이트
     } else {
       if (intervalRef.current) {
@@ -330,7 +329,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
   // 진행률 계산
   // const progress = getProgress() // 미사용으로 주석 처리
-  const currentChar = getCurrentChar();
+  // const currentChar = getCurrentChar(); // 미사용으로 주석 처리
 
   return (
     <div
@@ -378,44 +377,112 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         )}
 
         {/* 텍스트 렌더러와 입력 핸들러를 감싸는 컨테이너 */}
-        <div className="relative">
+        <div className="relative mb-4">
           {/* 텍스트 렌더러 */}
           <TextRenderer
             text={targetText}
             currentIndex={currentIndex}
             userInput={userInput}
             mistakes={mistakes.map((m) => m.position)}
-            className="mb-4"
+            className={`transition-all duration-300 ${isCountingDown ? 'blur-sm opacity-50' : ''}`}
           />
 
           {/* 입력 핸들러 (숨겨진 인풋) - TextRenderer 위에 투명하게 */}
           <InputHandler
             onKeyPress={useTypingStore.getState().handleKeyPress}
             onBackspace={useTypingStore.getState().handleBackspace}
-            onTestStart={useTypingStore.getState().startTest}
+            onTestStart={startCountdown} // 카운트다운으로 변경
             onCompositionChange={handleCompositionChange}
-            disabled={false}
-            className="absolute inset-0 cursor-text z-10"
+            disabled={isCountingDown} // 카운트다운 중에는 비활성화
+            className="absolute inset-0 cursor-text z-5"
           />
         </div>
 
-        {/* 안내문구 - 텍스트박스 아래 */}
-        {!isActive && !isCompleted && (
-          <div
-            className="text-center"
-            style={{ marginTop: "var(--spacing-lg)" }}
+        {/* 카운트다운 오버레이 */}
+        {isCountingDown && (
+          <div 
+            className="absolute inset-0 flex items-center justify-center rounded-lg z-30 bg-surface/90 backdrop-blur-sm"
           >
+            <div className="text-center">
+              <div className="text-6xl font-bold mb-4 animate-pulse text-typing-accent">
+                {countdownValue === 0 ? '시작!' : countdownValue}
+              </div>
+              <p className="text-lg text-text-secondary">
+                준비하세요...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 컨트롤 버튼들 */}
+        <div className="flex justify-center gap-4 mt-6 relative z-40">
+          {!isActive && !isCompleted && !isCountingDown && (
+            <button
+              onClick={startCountdown}
+              className="btn btn-primary px-6 py-2"
+            >
+              시작하기
+            </button>
+          )}
+          
+          {isActive && !isPaused && !isCompleted && (
+            <>
+              <button
+                onClick={pauseTest}
+                className="btn btn-secondary px-4 py-2 flex items-center gap-2"
+              >
+                <PauseCircle className="w-5 h-5" />
+                일시정지
+              </button>
+              <button
+                onClick={stopTest}
+                className="btn btn-outline px-4 py-2 flex items-center gap-2"
+              >
+                <StopCircle className="w-5 h-5" />
+                중단
+              </button>
+            </>
+          )}
+          
+          {isPaused && (
+            <>
+              <button
+                onClick={resumeTest}
+                className="btn btn-primary px-4 py-2 flex items-center gap-2"
+              >
+                <PlayCircle className="w-5 h-5" />
+                계속
+              </button>
+              <button
+                onClick={stopTest}
+                className="btn btn-outline px-4 py-2 flex items-center gap-2"
+              >
+                <StopCircle className="w-5 h-5" />
+                중단
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* 안내문구 - 텍스트박스 아래 */}
+        <div
+          className="text-center"
+          style={{ marginTop: "var(--spacing-lg)" }}
+        >
+          {!isActive && !isCompleted && !isCountingDown && (
             <p className="text-md text-muted">
               <kbd>클릭</kbd> or <kbd>키</kbd>입력으로 시작
             </p>
+          )}
+          {!isCompleted && (
             <p
               className="text-sm text-muted"
               style={{ marginTop: "var(--spacing-xs)" }}
             >
-              재시작 <kbd>Shift</kbd> + <kbd>Enter</kbd>
+              새로 시작 <kbd>Shift</kbd> + <kbd>Enter</kbd>
             </p>
-          </div>
-        )}
+          )}
+        </div>
 
         {isPaused && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20">

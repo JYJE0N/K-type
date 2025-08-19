@@ -33,7 +33,7 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
   }, [isActive, isPaused, startTime])
 
   // 남은 시간/단어 계산
-  const getRemaining = () => {
+  const getRemaining = (): number => {
     if (testMode === 'time') {
       return Math.max(0, testTarget - displayTime)
     } else {
@@ -82,212 +82,51 @@ export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
   const isTimeMode = testMode === 'time'
 
 
+  // 완전히 비활성화된 상태 - 아무것도 렌더링하지 않음
+  return null
+  
+  // 주석처리된 기존 코드들
+  /*
   return (
     <div className={`stats-calculator ${className}`}>
-      {/* 핵심 통계 - 원형 그래프들 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 타수 (CPM) - 원형 그래프 */}
-        <div className="text-center py-4 flex flex-col items-center">
-          <div className="relative w-20 h-20 mb-2">
-            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 40 40">
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="text-text-secondary opacity-20"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 17}`}
-                strokeDashoffset={`${2 * Math.PI * 17 * (1 - Math.min(liveStats.cpm / 500, 1))}`}
-                className="text-typing-accent transition-all duration-500 ease-out"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-md font-semibold text-primary">
-                <AnimatedNumber value={liveStats.cpm} />
-              </span>
-              <span className="caption text-text-secondary">CPM</span>
-            </div>
-          </div>
-          <div className="text-sm text-secondary">타수</div>
-        </div>
 
-        {/* 정확도 - 원형 그래프 */}
-        <div className="text-center py-4 flex flex-col items-center">
-          <div className="relative w-20 h-20 mb-2">
-            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 40 40">
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="text-text-secondary opacity-20"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 17}`}
-                strokeDashoffset={`${2 * Math.PI * 17 * (1 - liveStats.accuracy / 100)}`}
-                className="text-typing-accent transition-all duration-300 ease-out"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-md font-semibold text-primary">
-                <AnimatedNumber value={liveStats.accuracy} />
-              </span>
-              <span className="caption text-text-secondary">%</span>
-            </div>
+      // 미니멀 버전 (비활성화)
+      <div className="flex justify-center items-center gap-8 py-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-primary tabular-nums">
+            {liveStats.charactersTyped}
           </div>
-          <div className="text-sm text-secondary">정확도</div>
+          <div className="text-sm text-text-secondary">현재위치</div>
         </div>
-
-        {/* 진행도 - 원형 그래프 */}
-        <div className="text-center py-4 flex flex-col items-center">
-          <div className="relative w-20 h-20 mb-2">
-            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 40 40">
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="text-text-secondary opacity-20"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 17}`}
-                strokeDashoffset={`${2 * Math.PI * 17 * (1 - (liveStats.charactersTyped / Math.max(liveStats.charactersTyped + remaining, 1)))}`}
-                className="text-typing-accent transition-all duration-300"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-md font-semibold text-primary">
-                {Math.round((liveStats.charactersTyped / Math.max(liveStats.charactersTyped + remaining, 1)) * 100)}
-              </span>
-              <span className="caption text-text-secondary">%</span>
-            </div>
+        
+        <div className="w-px h-12 bg-text-secondary opacity-30"></div>
+        
+        <div className="text-center">
+          <div className="text-2xl font-bold text-primary tabular-nums">
+            {liveStats.charactersTyped + remaining}
           </div>
-          <div className="text-sm text-secondary">진행도</div>
+          <div className="text-sm text-text-secondary">총문자</div>
         </div>
-
-        {/* 남은 단어/시간 - 원형 그래프 */}
-        <div className="text-center py-4 flex flex-col items-center">
-          <div className="relative w-20 h-20 mb-2">
-            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 40 40">
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="text-text-secondary opacity-20"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 17}`}
-                strokeDashoffset={`${2 * Math.PI * 17 * (1 - (remaining / Math.max(testTarget, 1)))}`}
-                className="text-typing-accent transition-all duration-300"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-md font-semibold text-primary">
-                <AnimatedNumber value={remaining} />
-              </span>
-              <span className="caption text-text-secondary">
-                {isTimeMode ? 's' : 'w'}
-              </span>
-            </div>
+        
+        <div className="w-px h-12 bg-text-secondary opacity-30"></div>
+        
+        <div className="text-center">
+          <div className="text-2xl font-bold text-typing-incorrect tabular-nums">
+            {liveStats.errorsCount}
           </div>
-          <div className="text-sm text-secondary">
-            {isTimeMode ? '남은 시간' : '남은 단어'}
+          <div className="text-sm text-text-secondary">실수</div>
+        </div>
+        
+        <div className="w-px h-12 bg-text-secondary opacity-30"></div>
+        
+        <div className="text-center">
+          <div className="text-2xl font-bold text-typing-accent tabular-nums">
+            <AnimatedNumber value={liveStats.accuracy} />%
           </div>
+          <div className="text-sm text-text-secondary">정확도</div>
         </div>
       </div>
-
-      {/* 추가 통계 (모바일용 확장 정보) */}
-      <div className="lg:hidden mt-4">
-        <details>
-          <summary className="p-4 cursor-pointer text-sm font-medium text-text-secondary hover:text-white transition-colors">
-            자세한 통계 보기
-          </summary>
-          <div className="px-4 pb-4 grid grid-cols-2 gap-6 text-center">
-            <div className="py-3">
-              <div className="text-xl font-bold text-typing-accent mb-1">
-                <AnimatedNumber value={liveStats.rawCpm} />
-              </div>
-              <div className="text-sm font-medium text-text-secondary">Raw 타수</div>
-              <div className="text-xs text-text-secondary opacity-70">오타 포함</div>
-            </div>
-            <div className="py-3">
-              <div className="text-xl font-bold text-white mb-1">
-                <AnimatedNumber value={liveStats.rawWpm} />
-              </div>
-              <div className="text-sm font-medium text-text-secondary">Raw WPM</div>
-              <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
-            </div>
-            <div className="py-3">
-              <div className="text-xl font-bold text-white mb-1">
-                <AnimatedNumber value={liveStats.consistency} suffix="%" />
-              </div>
-              <div className="text-sm font-medium text-text-secondary">일관성</div>
-              <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
-            </div>
-            <div className="py-3">
-              <div className="text-xl font-bold text-white mb-1">
-                {liveStats.charactersTyped}
-              </div>
-              <div className="text-sm font-medium text-text-secondary">입력한 문자</div>
-              <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
-            </div>
-            <div className="py-3">
-              <div className="text-xl font-bold text-typing-incorrect mb-1">
-                {liveStats.errorsCount}
-              </div>
-              <div className="text-sm font-medium text-text-secondary">오타</div>
-              <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
-            </div>
-            <div className="py-3">
-              <div className="text-xl font-bold text-text-secondary mb-1">
-                <AnimatedNumber value={liveStats.timeElapsed} suffix="초" precision={1} />
-              </div>
-              <div className="text-sm font-medium text-text-secondary">경과 시간</div>
-              <div className="text-xs text-text-secondary opacity-70">&nbsp;</div>
-            </div>
-          </div>
-        </details>
-      </div>
-
     </div>
   )
+  */
 }

@@ -60,7 +60,8 @@ export default function Home() {
           </ClientOnly>
         </section>
           
-        {/* 섹션 2: 간단한 실시간 통계만 */}
+        {/* 섹션 2: 간단한 실시간 통계만 (주석처리) */}
+        {/*
         <section className="w-full">
           <div className="card">
             <div className="card-content">
@@ -70,6 +71,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        */}
 
 
       </div>

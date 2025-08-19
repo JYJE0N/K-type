@@ -275,8 +275,8 @@ export function InputHandler({
 
   return (
     <div 
-      className={`input-handler ${className} relative cursor-text`} 
-      onClick={handleContainerClick}
+      className={`input-handler ${className} relative`} 
+      style={{ pointerEvents: 'none' }}
     >
       {/* Hidden input for IME */}
       <input
@@ -288,8 +288,10 @@ export function InputHandler({
           outline: 'none',
           fontSize: '1px',
           zIndex: 10,
-          cursor: 'text'
+          cursor: 'text',
+          pointerEvents: 'auto'
         }}
+        onClick={handleContainerClick}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}

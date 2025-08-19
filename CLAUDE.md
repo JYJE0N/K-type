@@ -59,3 +59,4 @@ This is a Korean/English typing practice web application built with Next.js 15, 
 ### Styling
 - Tailwind CSS with custom theme variables for dark/light/high-contrast modes
 - CSS variables defined in `globals.css` for consistent theming
+- 이모지 사용을 자제하세요

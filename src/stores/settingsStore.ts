@@ -14,6 +14,10 @@ interface SettingsStore extends Settings {
   setShowKeyboard: (show: boolean) => void
   setFontSize: (size: number) => void
   
+  // UI 표시 옵션
+  showSentences: boolean
+  setShowSentences: (show: boolean) => void
+  
   // 설정 리셋
   resetToDefaults: () => void
   
@@ -32,11 +36,16 @@ const defaultSettings: Settings = {
   fontSize: 24
 }
 
+const defaultUISettings = {
+  showSentences: false  // 기본적으로 문장 옵션 숨김
+}
+
 export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set, get) => ({
       // 기본 설정 값
       ...defaultSettings,
+      ...defaultUISettings,
 
       // 언어 설정
       setLanguage: (language: string) => set({ language }),
@@ -85,9 +94,12 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ fontSize: clampedSize })
       },
 
+      // 문장 옵션 표시 설정
+      setShowSentences: (show: boolean) => set({ showSentences: show }),
+
       // 기본값으로 리셋
       resetToDefaults: () => {
-        set(defaultSettings)
+        set({ ...defaultSettings, ...defaultUISettings })
         if (typeof document !== 'undefined') {
           const themeData = getTheme(defaultSettings.theme)
           if (themeData) {
