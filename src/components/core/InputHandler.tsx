@@ -30,7 +30,7 @@ export function InputHandler({
   const [testStarted, setTestStarted] = useState(false)
   const [showStartHint, setShowStartHint] = useState(true)
   
-  const { isCompleted, isActive } = useTypingStore()
+  const { isCompleted, isActive, setCompositionState } = useTypingStore()
 
   // Focus management
   const maintainFocus = useCallback(() => {
@@ -183,24 +183,27 @@ export function InputHandler({
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
     console.log('🎭 Composition started:', event.data)
     imeHandler.current.startComposition()
+    setCompositionState(true, event.data || '')
     onCompositionChange?.(true)
     
     // Hide start hint when user starts typing
     if (showStartHint) {
       setShowStartHint(false)
     }
-  }, [onCompositionChange, showStartHint])
+  }, [onCompositionChange, showStartHint, setCompositionState])
 
   const handleCompositionUpdate = useCallback((event: React.CompositionEvent) => {
     console.log('🎭 Composition update:', event.data)
     imeHandler.current.updateComposition(event.data || '')
-  }, [])
+    setCompositionState(true, event.data || '')
+  }, [setCompositionState])
 
   const handleCompositionEnd = useCallback((event: React.CompositionEvent) => {
     console.log('🎭 Composition ended:', event.data)
     
     const composedText = event.data || ''
     const newChars = imeHandler.current.endComposition(composedText)
+    setCompositionState(false, '')
     onCompositionChange?.(false)
     
     // Auto-start if this is the first input
@@ -217,7 +220,7 @@ export function InputHandler({
     if (inputRef.current) {
       inputRef.current.value = ''
     }
-  }, [testStarted, handleTestStart, processCharacter, onCompositionChange])
+  }, [testStarted, handleTestStart, processCharacter, onCompositionChange, setCompositionState])
 
   // Handle click to focus and start test
   const handleContainerClick = useCallback(() => {

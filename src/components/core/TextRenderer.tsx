@@ -74,19 +74,20 @@ export function TextRenderer({
 
     switch (status) {
       case "correct":
-        return `${baseClass} ${specialKeyClass} ${spaceClass} text-typing-correct`;
+        // 올바르게 타이핑한 글자: 파란색 + 페이드 인 효과
+        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-gray-400 opacity-50' : 'text-blue-400 transition-all duration-300 transform scale-105 typing-success'}`;
       case "incorrect":
-        return `${baseClass} ${specialKeyClass} text-red-500 font-bold bg-red-100 bg-opacity-20 rounded px-1`;
+        // 오타: 빨간색 + 샤키 효과
+        return `${baseClass} ${specialKeyClass} text-red-400 font-bold bg-red-500 bg-opacity-10 rounded px-1 border border-red-400 border-opacity-30 shake-animation`;
       case "current":
-        // MonkeyType 스타일: 현재 문자에 언더바 + 애니메이션
-        return `${baseClass} ${specialKeyClass} ${spaceClass} text-text-primary ${
+        // 현재 글자: 보라색 + 글로우 효과 + 언더라인 맥동
+        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-purple-400' : 'text-purple-400 font-semibold'} ${
           specialKey ? "font-bold" : ""
-        } current-char`;
+        } current-char-glow pulse-glow`;
       case "pending":
       default:
-        return `${baseClass} ${specialKeyClass} ${spaceClass} text-text-secondary ${
-          specialKey ? "opacity-50" : ""
-        }`;
+        // 아직 타이핑하지 않은 글자: 부드러운 회색
+        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-gray-500 opacity-20' : 'text-gray-400 opacity-70 hover:opacity-90 transition-opacity'}`;
     }
   };
 
@@ -103,13 +104,15 @@ export function TextRenderer({
         case "tab":
           return "⇥";
         case "space":
-          // 공백은 상태에 따라 표시 (current일 때만 기호, 나머지는 일반 공백)
+          // 공백 표시를 상태별로 구분하여 더 명확하게
           if (status === "current") {
-            return "⎵";
+            return "⎵"; // 현재 타이핑할 공백
           } else if (status === "incorrect") {
-            return "⎵"; // 실수한 스페이스도 표시
+            return "⎵"; // 실수한 공백
+          } else if (status === "correct") {
+            return "·"; // 올바르게 타이핑한 공백
           } else {
-            return "·"; // 일반 스페이스는 작은 점으로 표시
+            return "·"; // 아직 타이핑하지 않은 공백
           }
         default:
           return char;
@@ -174,16 +177,27 @@ export function TextRenderer({
               {state?.specialKey
                 ? renderSpecialKey(char, state.specialKey, state.status)
                 : char}
-              {/* 현재 문자 아래 Pulse 언더바 */}
+              {/* 현재 문자 아래 다이내믹 언더바 + 글로우 */}
               {state?.status === "current" && (
-                <span
-                  className="absolute left-0 w-full h-1 bg-typing-accent opacity-80 rounded-full shadow-sm"
-                  style={{
-                    bottom: "-2px", // 글자 베이스라인에서 살짝 아래
-                    animation: "pulse-underline 1.5s ease-in-out infinite",
-                    transform: "translateY(0)", // 정확한 위치 보장
-                  }}
-                />
+                <>
+                  <span
+                    className="absolute left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-400 opacity-90 rounded-full shadow-lg"
+                    style={{
+                      bottom: "-3px",
+                      animation: "rainbow-pulse 2s ease-in-out infinite, glow-intense 1.5s ease-in-out infinite",
+                      filter: "blur(0.5px)",
+                      boxShadow: "0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3)"
+                    }}
+                  />
+                  {/* 글로우 효과 */}
+                  <span
+                    className="absolute inset-0 rounded transition-all duration-200"
+                    style={{
+                      background: "radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%)",
+                      animation: "char-glow 2s ease-in-out infinite"
+                    }}
+                  />
+                </>
               )}
             </span>
           </span>
@@ -210,16 +224,26 @@ export function TextRenderer({
             {spaceState?.specialKey
               ? renderSpecialKey(" ", spaceState.specialKey, spaceState.status)
               : " "}
-            {/* 현재 스페이스 아래 Pulse 언더바 */}
+            {/* 현재 스페이스 아래 다이내믹 언더바 */}
             {spaceState?.status === "current" && (
-              <span
-                className="absolute left-0 w-full h-1 bg-typing-accent opacity-80 rounded-full shadow-sm"
-                style={{
-                  bottom: "-2px", // 글자 베이스라인에서 살짝 아래
-                  animation: "pulse-underline 1.5s ease-in-out infinite",
-                  transform: "translateY(0)", // 정확한 위치 보장
-                }}
-              />
+              <>
+                <span
+                  className="absolute left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-400 opacity-90 rounded-full shadow-lg"
+                  style={{
+                    bottom: "-3px",
+                    animation: "rainbow-pulse 2s ease-in-out infinite, glow-intense 1.5s ease-in-out infinite",
+                    filter: "blur(0.5px)",
+                    boxShadow: "0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3)"
+                  }}
+                />
+                <span
+                  className="absolute inset-0 rounded transition-all duration-200"
+                  style={{
+                    background: "radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%)",
+                    animation: "char-glow 2s ease-in-out infinite"
+                  }}
+                />
+              </>
             )}
           </span>
         </span>

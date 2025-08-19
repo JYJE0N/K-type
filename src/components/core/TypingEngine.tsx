@@ -7,6 +7,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { TextRenderer } from "./TextRenderer";
 import { InputHandler } from "./InputHandler";
+import { TypingVisualizer } from "./TypingVisualizer";
 import { getLanguagePack } from "@/modules/languages";
 import { TextGenerator } from "@/utils/textGenerator";
 import { useRouter } from "next/navigation";
@@ -412,6 +413,17 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             className="absolute inset-0 cursor-text z-5"
           />
         </div>
+
+        {/* 타이핑 진행 시각화 - 입력 필드 바로 아래 */}
+        {isActive && !isCountingDown && (
+          <div className="mt-4">
+            <TypingVisualizer 
+              text={targetText}
+              currentIndex={currentIndex}
+              className="transition-opacity duration-300"
+            />
+          </div>
+        )}
 
         {/* 카운트다운 오버레이 */}
         {isCountingDown && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Github } from 'lucide-react';
+import { IoGitBranchOutline } from "react-icons/io5";
 
 interface FooterProps {
   className?: string;
@@ -11,21 +11,24 @@ export function Footer({ className = "" }: FooterProps) {
     <footer
       className={`footer mt-auto border-t border-text-secondary border-opacity-10 flex justify-center ${className}`}
     >
-      <div className="w-full max-w-5xl" style={{ padding: 'var(--spacing-lg) var(--spacing-xl)' }}>
+      <div
+        className="w-full max-w-5xl"
+        style={{ padding: "var(--spacing-lg) var(--spacing-xl)" }}
+      >
         <div className="flex items-center justify-between">
-          <div className="caption text-muted">
-            © 2025 K-Types
+          <div className="text-xs text-muted">
+            Ⓒ 2025 월루타자기. All rights reserved.
           </div>
           <div className="flex items-center gap-3">
-            <span className="caption text-muted">Made by Doomock</span>
-            <a 
-              href="https://github.com/Doomock"
+            <span className="text-xs text-muted">Made by Doomock</span>
+            <a
+              href="https://github.com/JYJE0N"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-muted hover:text-primary transition-colors"
               aria-label="GitHub"
             >
-              <Github className="w-4 h-4" />
+              <IoGitBranchOutline className="w-4 h-4" />
             </a>
           </div>
         </div>

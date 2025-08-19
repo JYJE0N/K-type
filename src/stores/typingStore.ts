@@ -26,6 +26,10 @@ interface TypingStore {
   textWords: string[]
   completedWords: number
   currentWordIndex: number
+  
+  // IME composition state
+  isComposing: boolean
+  composingText: string
 
   // Actions
   setTargetText: (text: string) => void
@@ -41,6 +45,7 @@ interface TypingStore {
   getCurrentChar: () => string
   getProgress: () => number
   isCurrentCharCorrect: () => boolean
+  setCompositionState: (isComposing: boolean, text?: string) => void
 }
 
 // Utility to check if this is a duplicate input (더 관대하게 수정)
@@ -143,6 +148,8 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   textWords: [],
   completedWords: 0,
   currentWordIndex: 0,
+  isComposing: false,
+  composingText: '',
 
   // Set target text
   setTargetText: (text: string) => {
@@ -259,7 +266,9 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     lastProcessedChar: null,
     lastProcessedTime: 0,
     completedWords: 0,
-    currentWordIndex: 0
+    currentWordIndex: 0,
+    isComposing: false,
+    composingText: ''
   }),
 
   // Complete test
@@ -445,5 +454,10 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const { targetText, userInput, currentIndex } = get()
     if (currentIndex >= userInput.length) return true
     return targetText[currentIndex] === userInput[currentIndex]
+  },
+
+  // Set composition state
+  setCompositionState: (isComposing: boolean, text = '') => {
+    set({ isComposing, composingText: text })
   }
 }))

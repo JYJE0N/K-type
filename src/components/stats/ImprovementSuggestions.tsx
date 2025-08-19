@@ -147,6 +147,19 @@ export function ImprovementSuggestions() {
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "medium":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "low":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
   if (suggestions.length === 0) {
     return (
       <div className="card">
@@ -173,35 +186,30 @@ export function ImprovementSuggestions() {
         <h2 className="card-title">개선 제안</h2>
       </div>
 
-      <div className="card-content space-y-3">
+      <div className="card-content space-y-8">
         {suggestions.map((suggestion, index) => {
           const IconComponent = suggestion.icon;
-          const PriorityIcon = getPriorityIcon(suggestion.priority);
           return (
             <div
               key={index}
-              className="card"
-              style={{
-                padding: "var(--spacing-md)",
-                backgroundColor: "var(--surface)",
-                border: "1px solid var(--border)",
-              }}
+              className="bg-surface rounded-lg p-6 border border-white/10 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start gap-3">
-                <div className="flex flex-col items-center gap-1">
-                  <PriorityIcon className="w-5 h-5 text-accent" />
-                  <span className="caption text-muted">
-                    {getPriorityLabel(suggestion.priority)}
-                  </span>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-typing-accent/10 rounded-full flex items-center justify-center">
+                    <IconComponent className="w-5 h-5 text-typing-accent" />
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <IconComponent className="w-4 h-4 text-accent" />
-                    <h3 className="title-sm text-primary">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-lg font-semibold text-text-primary">
                       {suggestion.title}
                     </h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(suggestion.priority)}`}>
+                      {getPriorityLabel(suggestion.priority)}
+                    </span>
                   </div>
-                  <p className="text-sm text-secondary leading-relaxed">
+                  <p className="text-sm text-text-secondary leading-relaxed">
                     {suggestion.description}
                   </p>
                 </div>
