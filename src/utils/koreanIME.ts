@@ -8,15 +8,15 @@
  * 한글 자모(자음/모음) 판별
  */
 export function isKoreanJamo(char: string): boolean {
-  if (!char || char.length !== 1) return false
-  
-  const code = char.charCodeAt(0)
+  if (!char || char.length !== 1) return false;
+
+  const code = char.charCodeAt(0);
   return (
-    (code >= 0x3131 && code <= 0x314F) || // 한글 호환 자모 (ㄱ-ㅎ, ㅏ-ㅣ)
-    (code >= 0x1100 && code <= 0x11FF) || // 한글 자모
-    (code >= 0x3130 && code <= 0x318F) || // 한글 호환 자모 확장
-    (code >= 0xA960 && code <= 0xA97F)    // 한글 확장-A
-  )
+    (code >= 0x3131 && code <= 0x314f) || // 한글 호환 자모 (ㄱ-ㅎ, ㅏ-ㅣ)
+    (code >= 0x1100 && code <= 0x11ff) || // 한글 자모
+    (code >= 0x3130 && code <= 0x318f) || // 한글 호환 자모 확장
+    (code >= 0xa960 && code <= 0xa97f) // 한글 확장-A
+  );
 }
 
 /**
@@ -24,10 +24,10 @@ export function isKoreanJamo(char: string): boolean {
  * 완성된 한글 음절 판별 (가-힣)
  */
 export function isCompletedKorean(char: string): boolean {
-  if (!char || char.length !== 1) return false
-  
-  const code = char.charCodeAt(0)
-  return code >= 0xAC00 && code <= 0xD7A3 // 한글 음절 (가-힣)
+  if (!char || char.length !== 1) return false;
+
+  const code = char.charCodeAt(0);
+  return code >= 0xac00 && code <= 0xd7a3; // 한글 음절 (가-힣)
 }
 
 /**
@@ -35,14 +35,14 @@ export function isCompletedKorean(char: string): boolean {
  * 텍스트에 한글이 포함되어 있는지 확인
  */
 export function containsKorean(text: string): boolean {
-  if (!text) return false
-  
+  if (!text) return false;
+
   for (const char of text) {
     if (isKoreanJamo(char) || isCompletedKorean(char)) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }
 
 /**
@@ -50,9 +50,12 @@ export function containsKorean(text: string): boolean {
  * 한글 자모를 제거하고 완성된 문자만 남김
  */
 export function filterKoreanJamo(text: string): string {
-  if (!text) return ''
-  
-  return text.split('').filter(char => !isKoreanJamo(char)).join('')
+  if (!text) return "";
+
+  return text
+    .split("")
+    .filter((char) => !isKoreanJamo(char))
+    .join("");
 }
 
 /**
@@ -60,60 +63,60 @@ export function filterKoreanJamo(text: string): string {
  * 브라우저별 IME 조합 처리
  */
 export interface IMECompositionState {
-  isComposing: boolean
-  lastComposedText: string
-  processedChars: Set<string>
+  isComposing: boolean;
+  lastComposedText: string;
+  processedChars: Set<string>;
 }
 
 export class IMEHandler {
   private state: IMECompositionState = {
     isComposing: false,
-    lastComposedText: '',
-    processedChars: new Set()
-  }
+    lastComposedText: "",
+    processedChars: new Set(),
+  };
 
   startComposition(): void {
-    this.state.isComposing = true
-    this.state.processedChars.clear()
+    this.state.isComposing = true;
+    this.state.processedChars.clear();
   }
 
   updateComposition(text: string): void {
-    this.state.lastComposedText = text
+    this.state.lastComposedText = text;
   }
 
   endComposition(text: string): string[] {
-    this.state.isComposing = false
-    
+    this.state.isComposing = false;
+
     // Get only new characters that haven't been processed
-    const newChars: string[] = []
-    
+    const newChars: string[] = [];
+
     for (const char of text) {
-      const charKey = `${char}-${Date.now()}`
+      const charKey = `${char}-${Date.now()}`;
       if (!this.state.processedChars.has(charKey) && !isKoreanJamo(char)) {
-        newChars.push(char)
-        this.state.processedChars.add(charKey)
+        newChars.push(char);
+        this.state.processedChars.add(charKey);
       }
     }
-    
+
     // Clear after processing
     if (!this.state.isComposing) {
-      this.state.lastComposedText = ''
-      this.state.processedChars.clear()
+      this.state.lastComposedText = "";
+      this.state.processedChars.clear();
     }
-    
-    return newChars
+
+    return newChars;
   }
 
   isComposing(): boolean {
-    return this.state.isComposing
+    return this.state.isComposing;
   }
 
   reset(): void {
     this.state = {
       isComposing: false,
-      lastComposedText: '',
-      processedChars: new Set()
-    }
+      lastComposedText: "",
+      processedChars: new Set(),
+    };
   }
 }
 
@@ -121,18 +124,23 @@ export class IMEHandler {
  * Detect browser type for IME-specific handling
  * IME 처리를 위한 브라우저 타입 감지
  */
-export function getBrowserType(): 'chrome' | 'firefox' | 'safari' | 'other' {
-  const userAgent = navigator.userAgent.toLowerCase()
-  
-  if (userAgent.includes('chrome') && !userAgent.includes('edg')) {
-    return 'chrome'
-  } else if (userAgent.includes('firefox')) {
-    return 'firefox'
-  } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
-    return 'safari'
+export function getBrowserType(): "chrome" | "firefox" | "safari" | "other" {
+  // 서버 사이드 렌더링 중에는 'other'를 반환하도록 수정
+  if (typeof navigator === "undefined") {
+    return "other";
   }
-  
-  return 'other'
+
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  if (userAgent.includes("chrome") && !userAgent.includes("edg")) {
+    return "chrome";
+  } else if (userAgent.includes("firefox")) {
+    return "firefox";
+  } else if (userAgent.includes("safari") && !userAgent.includes("chrome")) {
+    return "safari";
+  }
+
+  return "other";
 }
 
 /**
@@ -140,5 +148,5 @@ export function getBrowserType(): 'chrome' | 'firefox' | 'safari' | 'other' {
  * CompositionEvent 지원 여부 확인
  */
 export function supportsCompositionEvent(): boolean {
-  return 'CompositionEvent' in window
+  return "CompositionEvent" in window;
 }
