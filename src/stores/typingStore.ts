@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Keystroke, Mistake } from '@/types'
 import { isKoreanJamo } from '@/utils/koreanIME'
-import { useStatsStore } from '@/stores/statsStore'
+import { eventBus } from '@/utils/eventBus'
 
 interface TypingStore {
   // State
@@ -285,12 +285,17 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const state = get()
     const endTime = new Date()
     
-    // Calculate final stats
+    // Calculate final stats via event bus
     if (state.startTime) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useStatsStore } = require('@/stores/statsStore')
-      const { calculateStats } = useStatsStore.getState()
-      calculateStats(state.keystrokes, state.mistakes, state.startTime, state.currentIndex, endTime)
+      eventBus.emit('test:completed', {
+        keystrokes: state.keystrokes,
+        mistakes: state.mistakes,
+        startTime: state.startTime,
+        currentIndex: state.currentIndex,
+        currentTime: endTime,
+        userInput: state.userInput,
+        firstKeystrokeTime: state.firstKeystrokeTime
+      })
       console.log('✅ Test completed - Final stats calculated')
     }
     
@@ -333,13 +338,15 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
         lastProcessedTime: currentTime
       })
       
-      // 통계 업데이트
-      useStatsStore.getState().calculateStats(
-        [...state.keystrokes, jamoKeystroke],
-        state.mistakes,
-        state.startTime,
-        state.currentIndex
-      )
+      // 통계 업데이트 via event bus
+      eventBus.emit('stats:update', {
+        keystrokes: [...state.keystrokes, jamoKeystroke],
+        mistakes: state.mistakes,
+        startTime: state.startTime,
+        currentIndex: state.currentIndex,
+        userInput: state.userInput,
+        firstKeystrokeTime: state.firstKeystrokeTime
+      })
       return
     }
 
@@ -393,13 +400,15 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const simpleWPM = minutes > 0 ? Math.round(newState.completedWords / minutes) : 0
     const simpleCPM = minutes > 0 ? Math.round(newState.currentIndex / minutes) : 0
     
-    // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산
-    useStatsStore.getState().calculateStats(
-      newState.keystrokes, 
-      newState.mistakes, 
-      newState.startTime, 
-      newState.currentIndex
-    )
+    // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산 via event bus
+    eventBus.emit('stats:update', {
+      keystrokes: newState.keystrokes,
+      mistakes: newState.mistakes,
+      startTime: newState.startTime,
+      currentIndex: newState.currentIndex,
+      userInput: newState.userInput,
+      firstKeystrokeTime: newState.firstKeystrokeTime
+    })
     
     console.log(`📊 간단한 통계: CPM ${simpleCPM}, WPM ${simpleWPM}`)
     

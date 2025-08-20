@@ -7,6 +7,7 @@ import {
   calculateTextStrokes 
 } from '@/utils/koreanStrokeCalculator'
 import { containsKorean } from '@/utils/koreanIME'
+import { eventBus } from '@/utils/eventBus'
 
 interface StatsStore {
   liveStats: LiveStats
@@ -46,7 +47,9 @@ const initialStats: LiveStats = {
   errorsCount: 0
 }
 
-export const useStatsStore = create<StatsStore>((set, get) => ({
+export const useStatsStore = create<StatsStore>((set, get) => {
+  // 이벤트 버스 리스너 등록
+  const store = {
   liveStats: initialStats,
 
   // 실시간 통계 계산 (스트로크 기반 개선된 버전)
@@ -212,4 +215,36 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     const correctCount = keystrokes.filter(k => k.correct).length
     return Math.max(0, Math.min(100, Math.round((correctCount / keystrokes.length) * 100)))
   }
-}))
+}
+
+  // 이벤트 버스 리스너 등록
+  eventBus.on('stats:update', (data) => {
+    store.calculateStats(
+      data.keystrokes,
+      data.mistakes,
+      data.startTime,
+      data.currentIndex,
+      data.currentTime,
+      data.textType,
+      data.currentText,
+      data.userInput,
+      data.firstKeystrokeTime
+    )
+  })
+
+  eventBus.on('test:completed', (data) => {
+    store.calculateStats(
+      data.keystrokes,
+      data.mistakes,
+      data.startTime,
+      data.currentIndex,
+      data.currentTime,
+      data.textType,
+      data.currentText,
+      data.userInput,
+      data.firstKeystrokeTime
+    )
+  })
+
+  return store
+})
