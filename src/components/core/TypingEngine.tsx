@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { PlayCircle, PauseCircle, StopCircle, Globe } from "lucide-react";
 import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
 import { ghostModeManager } from "@/utils/ghostMode";
+import type { DeviceType } from "@/types";
 
 interface TypingEngineProps {
   className?: string;
@@ -309,7 +310,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             target: testTarget,
             textType,
             language,
-            device: "desktop",
+            device: "desktop" as DeviceType,
             duration,
             cpm: validCPM,
             wpm: validWPM,
@@ -319,9 +320,10 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             consistency: validConsistency,
             mistakes,
             keystrokes: keystrokes.map(k => ({
+              key: k.key,
               timestamp: k.timestamp - startTime.getTime(), // 상대 시간으로 변환
-              position: k.position,
-              correct: k.correct
+              correct: k.correct,
+              timeDelta: k.timeDelta
             })),
             completedText: targetText.substring(0, currentIndex),
             date: new Date()
@@ -343,7 +345,11 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
               wpm: newTestRecord.wpm,
               accuracy: newTestRecord.accuracy,
               duration: newTestRecord.duration,
-              keystrokes: newTestRecord.keystrokes,
+              keystrokes: newTestRecord.keystrokes.map((k, index) => ({
+                timestamp: k.timestamp,
+                position: index, // 키스트로크 순서를 position으로 사용
+                correct: k.correct
+              })),
               completedText: newTestRecord.completedText
             });
           }

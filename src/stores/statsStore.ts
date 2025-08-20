@@ -53,7 +53,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   liveStats: initialStats,
 
   // 실시간 통계 계산 (스트로크 기반 개선된 버전)
-  calculateStats: (keystrokes, mistakes, startTime, currentIndex = 0, currentTime = new Date(), textType = 'words', currentText = '', userInput = '', firstKeystrokeTime = null) => {
+  calculateStats: (keystrokes: Keystroke[], mistakes: Mistake[], startTime: Date | null, currentIndex = 0, currentTime = new Date(), textType: TextType = 'words', currentText = '', userInput = '', firstKeystrokeTime: Date | null | undefined = null) => {
     // 🎯 몽키타입 스타일: 첫 키 입력 시점부터 계산
     const actualStartTime = firstKeystrokeTime || startTime
     
@@ -150,7 +150,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // WPM 계산 (스트로크 기반 개선된 방식)
-  calculateWPM: (keystrokes, timeElapsed, textType = 'words', completedText = '') => {
+  calculateWPM: (keystrokes: Keystroke[], timeElapsed: number, textType: TextType = 'words', completedText = '') => {
     if (timeElapsed === 0 || keystrokes.length === 0) return 0
     
     const correctCharacters = keystrokes.filter(k => k.correct).length
@@ -170,7 +170,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // Raw WPM 계산 (오타 포함)
-  calculateRawWPM: (keystrokes, timeElapsed) => {
+  calculateRawWPM: (keystrokes: Keystroke[], timeElapsed: number) => {
     if (timeElapsed === 0) return 0
     
     const totalCharacters = keystrokes.length
@@ -180,7 +180,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // CPM 계산 (스트로크 기반 개선된 방식)
-  calculateCPM: (keystrokes, timeElapsed, completedText = '') => {
+  calculateCPM: (keystrokes: Keystroke[], timeElapsed: number, completedText = '') => {
     if (timeElapsed === 0 || keystrokes.length === 0) return 0
     
     const correctCharacters = keystrokes.filter(k => k.correct).length
@@ -200,7 +200,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // 정확도 계산
-  calculateAccuracy: (keystrokes) => {
+  calculateAccuracy: (keystrokes: Keystroke[]) => {
     if (keystrokes.length === 0) return 100
     
     const correctCount = keystrokes.filter(k => k.correct).length
@@ -208,7 +208,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // 일관성 계산
-  calculateConsistency: (keystrokes) => {
+  calculateConsistency: (keystrokes: Keystroke[]) => {
     if (keystrokes.length < 10) return 100
     
     // 간단한 일관성 계산: 정확한 타이핑의 비율
