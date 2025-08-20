@@ -97,13 +97,17 @@ export interface TypingState {
 export interface LiveStats {
   wpm: number;
   rawWpm: number;
-  cpm: number;              // Characters Per Minute (분당 타수)
+  cpm: number;              // Characters Per Minute (분당 타수/스트로크)
   rawCpm: number;           // 오타 포함 CPM
   accuracy: number;
   consistency: number;
   timeElapsed: number;      // 경과 시간 (초)
   charactersTyped: number;
   errorsCount: number;
+  
+  // 한글 특화 통계 (선택적)
+  koreanStrokes?: number;   // 한글 조합 스트로크 수
+  isKoreanText?: boolean;   // 한글 텍스트 여부
 }
 
 // 설정 인터페이스

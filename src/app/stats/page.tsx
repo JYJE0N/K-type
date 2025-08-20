@@ -5,6 +5,8 @@ import { useUserProgressStore } from "@/stores/userProgressStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTypingStore } from "@/stores/typingStore";
 import { ImprovementSuggestions } from "@/components/stats/ImprovementSuggestions";
+import { TierDisplay } from "@/components/gamification/TierDisplay";
+import { KeyCap } from "@/components/ui/KeyCap";
 import { Layout } from "@/components/ui/Layout";
 import { ThemeInitializer } from "@/components/ThemeInitializer";
 import Link from "next/link";
@@ -122,8 +124,6 @@ export default function StatsPage() {
     setMounted(true);
   }, []);
 
-
-
   // 클라이언트에서만 조건부 렌더링 상태 결정
   useEffect(() => {
     if (mounted) {
@@ -165,7 +165,6 @@ export default function StatsPage() {
       <ThemeInitializer />
       <Layout>
         <div className="w-full max-w-6xl mx-auto px-4 py-8 lg:px-8 font-korean">
-
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-text-primary">
@@ -173,19 +172,15 @@ export default function StatsPage() {
             </h1>
             <Link
               href="/"
-              className="px-4 py-2 bg-typing-accent text-background rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+              className="btn-primary flex items-center gap-3"
               title="Shift + Tab 또는 Shift + Enter"
             >
               연습 계속하기
-              <span className="text-xs opacity-70">
-                <kbd className="px-1 py-0.5 bg-white/20 rounded text-xs">
-                  Shift
-                </kbd>
-                +
-                <kbd className="px-1 py-0.5 bg-white/20 rounded text-xs">
-                  Tab
-                </kbd>
-              </span>
+              <div className="flex items-center gap-1 opacity-80">
+                <KeyCap size="sm">Shift</KeyCap>
+                <span className="text-xs">+</span>
+                <KeyCap size="sm">Tab</KeyCap>
+              </div>
             </Link>
           </div>
 
@@ -319,20 +314,31 @@ export default function StatsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* 성과 추이 그래프 */}
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">성과 추이</h2>
-              </div>
-              <div
-                className="card-content"
-                style={{ minHeight: "320px" }}
-              >
-                <DynamicHistoryGraph />
-              </div>
+          {/* 티어 및 그래프 섹션 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* 티어 시스템 */}
+            <div className="lg:col-span-1">
+              <TierDisplay />
             </div>
 
+            {/* 성과 추이 그래프 */}
+            <div className="lg:col-span-2">
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">성과 추이</h2>
+                </div>
+                <div
+                  className="card-content"
+                  style={{ minHeight: "320px" }}
+                >
+                  <DynamicHistoryGraph />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 최근 기록과 개선 제안 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             {/* 최근 테스트 기록 */}
             <div className="card">
               <div className="card-header">
@@ -340,24 +346,13 @@ export default function StatsPage() {
               </div>
               <div className="card-content">
                 {hasRecentTests ? (
-                  <div
-                    className="max-h-96 overflow-y-auto"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--spacing-md)",
-                    }}
-                  >
+                  <div className="max-h-96 overflow-y-auto space-y-3">
                     {recentTests.slice(0, 10).map((test, index) => (
                       <div
                         key={test.id || index}
-                        className="bg-background rounded-lg"
-                        style={{ padding: "var(--spacing-md)" }}
+                        className="bg-background rounded-lg p-4 border border-interactive-primary border-opacity-10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-opacity-20"
                       >
-                        <div
-                          className="flex justify-between items-start"
-                          style={{ marginBottom: "var(--spacing-sm)" }}
-                        >
+                        <div className="flex justify-between items-start mb-3">
                           <div className="text-sm text-secondary">
                             {new Date(test.date).toLocaleDateString("ko-KR", {
                               month: "short",
@@ -367,13 +362,13 @@ export default function StatsPage() {
                               timeZone: "Asia/Seoul",
                             })}
                           </div>
-                          <div className="caption text-secondary">
+                          <div className="text-secondary">
                             {test.mode === "time" ? (
-                              <span className="px-2 py-1 bg-surface rounded text-xs border border-text-secondary border-opacity-20">
+                              <span className="px-3 py-1 bg-surface rounded-full text-xs border border-interactive-secondary border-opacity-20 font-medium">
                                 {test.duration}초
                               </span>
                             ) : (
-                              <span className="px-2 py-1 bg-surface rounded text-xs border border-text-secondary border-opacity-20">
+                              <span className="px-3 py-1 bg-surface rounded-full text-xs border border-interactive-secondary border-opacity-20 font-medium">
                                 {(() => {
                                   // textType 기반으로 구분
                                   if (
@@ -425,11 +420,11 @@ export default function StatsPage() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* 개선 제안 섹션 */}
-          <div className="mt-8">
-            <ImprovementSuggestions />
+            {/* 개선 제안 섹션 */}
+            <div>
+              <ImprovementSuggestions />
+            </div>
           </div>
 
           {/* 전체 통계 - 인포그래픽 스타일 */}

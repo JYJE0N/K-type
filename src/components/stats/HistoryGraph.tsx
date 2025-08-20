@@ -77,18 +77,18 @@ export function HistoryGraph() {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="var(--text-secondary)"
-                opacity={0.2}
+                stroke="var(--color-text-secondary)"
+                opacity={0.3}
               />
               <XAxis
                 dataKey="testNumber"
-                stroke="var(--text-secondary)"
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
+                stroke="var(--color-text-secondary)"
+                tick={{ fill: "var(--color-text-secondary)", fontSize: 12 }}
                 tickFormatter={(value) => `#${value}`}
               />
               <YAxis
-                stroke="var(--text-secondary)"
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
+                stroke="var(--color-text-secondary)"
+                tick={{ fill: "var(--color-text-secondary)", fontSize: 12 }}
                 width={50}
                 tickFormatter={(value) =>
                   value > 999 ? `${(value / 1000).toFixed(1)}k` : value
@@ -96,13 +96,14 @@ export function HistoryGraph() {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--text-secondary)",
+                  backgroundColor: "var(--color-surface)",
+                  border: "1px solid var(--color-interactive-primary)",
                   borderRadius: "8px",
-                  padding: "8px",
+                  padding: "12px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ color: "var(--text-primary)" }}
-                itemStyle={{ color: "var(--text-primary)" }}
+                labelStyle={{ color: "var(--color-text-primary)", fontWeight: "600" }}
+                itemStyle={{ color: "var(--color-text-primary)" }}
                 formatter={(value: number, name: string) => {
                   if (name === "cpm") return [`${value} CPM`, "CPM"];
                   if (name === "wpm") return [`${value} WPM`, "WPM"];
@@ -115,13 +116,14 @@ export function HistoryGraph() {
               <Line
                 type="monotone"
                 dataKey="cpm"
-                stroke="var(--color-accent)"
+                stroke="var(--color-interactive-primary)"
                 strokeWidth={3}
-                dot={{ fill: "var(--color-accent)", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "var(--color-interactive-primary)", strokeWidth: 2, r: 4 }}
                 activeDot={{
                   r: 6,
-                  stroke: "var(--color-accent)",
-                  strokeWidth: 2,
+                  stroke: "var(--color-interactive-primary)",
+                  strokeWidth: 3,
+                  fill: "var(--color-background)",
                 }}
                 connectNulls={true}
                 name="cpm"
@@ -130,13 +132,14 @@ export function HistoryGraph() {
               <Line
                 type="monotone"
                 dataKey="wpm"
-                stroke="var(--text-secondary)"
+                stroke="var(--color-interactive-secondary)"
                 strokeWidth={2}
-                dot={{ fill: "var(--text-secondary)", strokeWidth: 2, r: 3 }}
+                dot={{ fill: "var(--color-interactive-secondary)", strokeWidth: 2, r: 3 }}
                 activeDot={{
                   r: 5,
-                  stroke: "var(--text-secondary)",
+                  stroke: "var(--color-interactive-secondary)",
                   strokeWidth: 2,
+                  fill: "var(--color-background)",
                 }}
                 connectNulls={true}
                 name="wpm"
@@ -145,13 +148,14 @@ export function HistoryGraph() {
               <Line
                 type="monotone"
                 dataKey="accuracy"
-                stroke="var(--text-muted)"
+                stroke="var(--color-feedback-success)"
                 strokeWidth={2}
-                dot={{ fill: "var(--text-muted)", strokeWidth: 2, r: 3 }}
+                dot={{ fill: "var(--color-feedback-success)", strokeWidth: 2, r: 3 }}
                 activeDot={{
                   r: 5,
-                  stroke: "var(--text-muted)",
+                  stroke: "var(--color-feedback-success)",
                   strokeWidth: 2,
+                  fill: "var(--color-background)",
                 }}
                 connectNulls={true}
                 name="accuracy"
@@ -162,26 +166,26 @@ export function HistoryGraph() {
       </div>
 
       {/* 범례 */}
-      <div className="rounded-lg p-2">
+      <div className="bg-surface rounded-lg p-4 border border-opacity-20 border-interactive-primary">
         <div className="flex justify-center items-center gap-6">
           <div className="flex items-center gap-2">
             <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: "var(--color-accent)" }}
+              className="w-4 h-4 rounded-full shadow-sm"
+              style={{ backgroundColor: "var(--color-interactive-primary)" }}
             ></div>
             <span className="text-sm text-primary font-medium">CPM</span>
           </div>
           <div className="flex items-center gap-2">
             <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: "var(--text-secondary)" }}
+              className="w-4 h-4 rounded-full shadow-sm"
+              style={{ backgroundColor: "var(--color-interactive-secondary)" }}
             ></div>
             <span className="text-sm text-primary font-medium">WPM</span>
           </div>
           <div className="flex items-center gap-2">
             <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: "var(--text-muted)" }}
+              className="w-4 h-4 rounded-full shadow-sm"
+              style={{ backgroundColor: "var(--color-feedback-success)" }}
             ></div>
             <span className="text-sm text-primary font-medium">정확도 (%)</span>
           </div>

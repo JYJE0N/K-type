@@ -27,6 +27,25 @@ export function ThemeSelector() {
           border: '#ff9f0a',
           shadow: '0 2px 8px rgba(255, 159, 10, 0.4)'
         }
+      // 🕴️ 은밀모드 테마들
+      case 'stealth':
+        return {
+          background: 'linear-gradient(135deg, #f7f8fc 0%, #0052cc 100%)',
+          border: '#0052cc',
+          shadow: '0 2px 8px rgba(0, 82, 204, 0.3)'
+        }
+      case 'stealth-docs':
+        return {
+          background: 'linear-gradient(135deg, #ffffff 0%, #1a73e8 100%)',
+          border: '#1a73e8',
+          shadow: '0 2px 8px rgba(26, 115, 232, 0.3)'
+        }
+      case 'stealth-slack':
+        return {
+          background: 'linear-gradient(135deg, #f8f8f8 0%, #1264a3 100%)',
+          border: '#1264a3',
+          shadow: '0 2px 8px rgba(18, 100, 163, 0.3)'
+        }
       default: 
         return {
           background: 'linear-gradient(135deg, #323437 0%, #e2b714 100%)',

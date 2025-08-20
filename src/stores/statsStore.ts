@@ -1,5 +1,12 @@
 import { create } from 'zustand'
 import { LiveStats, Keystroke, Mistake, TextType } from '@/types'
+import { 
+  calculateKoreanStrokeCPM, 
+  calculateKoreanStrokeWPM,
+  analyzeTextStrokes,
+  calculateTextStrokes 
+} from '@/utils/koreanStrokeCalculator'
+import { containsKorean } from '@/utils/koreanIME'
 
 interface StatsStore {
   liveStats: LiveStats
@@ -11,7 +18,10 @@ interface StatsStore {
     startTime: Date | null,
     currentIndex?: number,
     currentTime?: Date,
-    textType?: TextType
+    textType?: TextType,
+    currentText?: string,
+    userInput?: string,        // 🔥 실제 사용자 입력 (오타 포함)
+    firstKeystrokeTime?: Date | null  // 🎯 첫 키 입력 시점
   ) => void
   
   resetStats: () => void
@@ -39,14 +49,18 @@ const initialStats: LiveStats = {
 export const useStatsStore = create<StatsStore>((set, get) => ({
   liveStats: initialStats,
 
-  // 실시간 통계 계산 (개선된 버전)
-  calculateStats: (keystrokes, mistakes, startTime, currentIndex = 0, currentTime = new Date(), textType = 'words') => {
-    if (!startTime) {
+  // 실시간 통계 계산 (스트로크 기반 개선된 버전)
+  calculateStats: (keystrokes, mistakes, startTime, currentIndex = 0, currentTime = new Date(), textType = 'words', currentText = '', userInput = '', firstKeystrokeTime = null) => {
+    // 🎯 몽키타입 스타일: 첫 키 입력 시점부터 계산
+    const actualStartTime = firstKeystrokeTime || startTime
+    
+    if (!actualStartTime) {
       set({ liveStats: initialStats })
       return
     }
 
-    const timeElapsed = (currentTime.getTime() - startTime.getTime()) / 1000 // 초 단위
+    // 🎯 실제 타이핑 시간만 계산 (카운트다운 제외)
+    const timeElapsed = (currentTime.getTime() - actualStartTime.getTime()) / 1000 // 초 단위
     
     // 0.5초 이상부터 통계 계산 (더 빠른 피드백)
     if (timeElapsed < 0.5) {
@@ -55,21 +69,43 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
 
     const minutes = timeElapsed / 60
     
-    // 실제 키스트로크 수 사용 (한글 자모 포함)
+    // 키스트로크 및 오타 기본 통계
     const keystrokesCount = keystrokes.length
     const mistakeCount = mistakes.length
     const correctKeystrokes = keystrokes.filter(k => k.correct).length
-    
-    // 개선된 CPM 계산: Raw CPM을 기본으로 하고 정확도로 보정
-    const rawCpm = minutes > 0 ? Math.round(keystrokesCount / minutes) : 0
     const accuracyRate = keystrokesCount > 0 ? correctKeystrokes / keystrokesCount : 1
+
+    // 🔥 실제 입력한 모든 키스트로크 기준으로 계산 (오타 포함)
+    const actualUserInput = userInput || currentText.substring(0, currentIndex)
     
-    // CPM: Raw CPM을 더 관대하게 계산 (300타 이상 가능하게)
-    const cpm = Math.round(rawCpm * Math.max(0.85, accuracyRate)) // 최소 85%는 유지
-    
-    // WPM 계산: 실제 완성된 문자 수 기준
-    const rawWpm = minutes > 0 ? Math.round(currentIndex / 5 / minutes) : 0
-    const wpm = Math.round(rawWpm * Math.max(0.85, accuracyRate))
+    let cpm = 0
+    let rawCpm = 0
+    let wpm = 0
+    let rawWpm = 0
+
+    // 한글 포함 여부에 따른 CPM/WPM 계산 방식 분기
+    if (containsKorean(actualUserInput)) {
+      // 🇰🇷 한글 스트로크 기반 계산 (실제 입력 기준, 오타 포함)
+      rawCpm = calculateKoreanStrokeCPM(actualUserInput, minutes, 1.0) // 정확도 보정 없음
+      cpm = calculateKoreanStrokeCPM(actualUserInput, minutes, accuracyRate) // 약간의 정확도 보정만
+      rawWpm = calculateKoreanStrokeWPM(actualUserInput, minutes, 1.0)
+      wpm = calculateKoreanStrokeWPM(actualUserInput, minutes, accuracyRate)
+
+      // 추가 통계 정보 로그
+      const strokeAnalysis = analyzeTextStrokes(actualUserInput)
+      console.log('🎯 한글 스트로크 분석 (오타 포함):', {
+        text: actualUserInput.length > 20 ? actualUserInput.substring(0, 20) + '...' : actualUserInput,
+        expectedText: currentText.substring(0, 20) + '...',
+        ...strokeAnalysis
+      })
+      
+    } else {
+      // 🌍 영문/기타 언어 기존 계산 방식
+      rawCpm = minutes > 0 ? Math.round(keystrokesCount / minutes) : 0
+      cpm = Math.round(rawCpm * Math.max(0.85, accuracyRate))
+      rawWpm = minutes > 0 ? Math.round(currentIndex / 5 / minutes) : 0
+      wpm = Math.round(rawWpm * Math.max(0.85, accuracyRate))
+    }
     
     // 정확도 계산 (키스트로크 기준)
     const accuracy = keystrokesCount > 0 ? 
@@ -79,9 +115,9 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     const mistakeRate = keystrokesCount > 0 ? mistakeCount / keystrokesCount : 0
     const consistency = Math.round(100 - (mistakeRate * 60)) // 실수 영향 완화
 
-    console.log(`🚀 개선된 통계 (${textType}):`, {
+    console.log(`🚀 월급루팡 통계 (${containsKorean(actualUserInput) ? '한글' : '영문'}, ${textType}):`, {
       timeElapsed: timeElapsed.toFixed(2),
-      charactersCompleted: currentIndex,
+      completedChars: currentIndex,
       keystrokesCount,
       correctKeystrokes,
       mistakes: mistakeCount,
@@ -110,21 +146,23 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     set({ liveStats: initialStats })
   },
 
-  // WPM 계산 (개선된 방식)
-  calculateWPM: (keystrokes, timeElapsed, textType = 'words') => {
+  // WPM 계산 (스트로크 기반 개선된 방식)
+  calculateWPM: (keystrokes, timeElapsed, textType = 'words', completedText = '') => {
     if (timeElapsed === 0 || keystrokes.length === 0) return 0
     
-    const totalCharacters = keystrokes.length
     const correctCharacters = keystrokes.filter(k => k.correct).length
+    const accuracyRate = correctCharacters / keystrokes.length
     const minutes = timeElapsed / 60
     
     if (minutes <= 0) return 0
     
-    // Raw WPM 계산
-    const rawWpm = Math.round(totalCharacters / 5 / minutes)
-    const accuracyRate = correctCharacters / totalCharacters
+    // 한글 포함 시 스트로크 기반 계산
+    if (containsKorean(completedText)) {
+      return calculateKoreanStrokeWPM(completedText, minutes, accuracyRate)
+    }
     
-    // 정확도 보정을 통한 최종 WPM (최소 85% 보장)
+    // 영문의 경우 기존 방식 (5타 = 1단어)
+    const rawWpm = Math.round(keystrokes.length / 5 / minutes)
     return Math.round(rawWpm * Math.max(0.85, accuracyRate))
   },
 
@@ -138,21 +176,23 @@ export const useStatsStore = create<StatsStore>((set, get) => ({
     return minutes > 0 ? Math.round(totalCharacters / 5 / minutes) : 0
   },
 
-  // CPM 계산 (개선된 방식)
-  calculateCPM: (keystrokes, timeElapsed) => {
+  // CPM 계산 (스트로크 기반 개선된 방식)
+  calculateCPM: (keystrokes, timeElapsed, completedText = '') => {
     if (timeElapsed === 0 || keystrokes.length === 0) return 0
     
-    const totalCharacters = keystrokes.length
     const correctCharacters = keystrokes.filter(k => k.correct).length
+    const accuracyRate = correctCharacters / keystrokes.length
     const minutes = timeElapsed / 60
     
     if (minutes <= 0) return 0
     
-    // Raw CPM 계산
-    const rawCpm = Math.round(totalCharacters / minutes)
-    const accuracyRate = correctCharacters / totalCharacters
+    // 한글 포함 시 스트로크 기반 계산
+    if (containsKorean(completedText)) {
+      return calculateKoreanStrokeCPM(completedText, minutes, accuracyRate)
+    }
     
-    // 정확도 보정을 통한 최종 CPM (최소 85% 보장)
+    // 영문의 경우 기존 방식
+    const rawCpm = Math.round(keystrokes.length / minutes)
     return Math.round(rawCpm * Math.max(0.85, accuracyRate))
   },
 

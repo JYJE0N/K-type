@@ -16,16 +16,16 @@ export function Footer({ className = "" }: FooterProps) {
         style={{ padding: "var(--spacing-lg) var(--spacing-xl)" }}
       >
         <div className="flex items-center justify-between">
-          <div className="text-xs text-muted">
+          <div className="text-caption text-text-tertiary">
             Ⓒ 2025 월루타자기. All rights reserved.
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted">Made by Doomock</span>
+            <span className="text-caption text-text-tertiary">Made by Doomock</span>
             <a
               href="https://github.com/JYJE0N"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-muted hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-text-tertiary hover:text-interactive-primary transition-colors"
               aria-label="GitHub"
             >
               <IoGitBranchOutline className="w-4 h-4" />

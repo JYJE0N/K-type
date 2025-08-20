@@ -14,6 +14,7 @@ interface TypingStore {
   targetText: string
   userInput: string
   startTime: Date | null
+  firstKeystrokeTime: Date | null  // 실제 첫 키 입력 시점 (몽키타입 스타일)
   endTime: Date | null
   keystrokes: Keystroke[]
   mistakes: Mistake[]
@@ -53,8 +54,10 @@ function isDuplicateInput(state: TypingStore, key: string): boolean {
   const now = Date.now()
   const timeDiff = now - state.lastProcessedTime
   
-  // 중복 방지를 매우 관대하게: 5ms 이하 + 동일 문자일 때만  
-  if (state.lastProcessedChar === key && timeDiff < 5) {
+  // 띄어쓰기는 더 관대하게, 다른 키는 엄격하게
+  const duplicateThreshold = key === ' ' ? 1 : 3  // 띄어쓰기는 1ms, 다른 키는 3ms
+  
+  if (state.lastProcessedChar === key && timeDiff < duplicateThreshold) {
     console.log(`⚠️ Duplicate input detected: "${key}" within ${timeDiff}ms`)
     return true
   }
@@ -99,6 +102,9 @@ function processKeystroke(
   const lastKeystroke = state.keystrokes[state.keystrokes.length - 1]
   const timeDelta = lastKeystroke ? currentTime - lastKeystroke.timestamp : 0
 
+  // 🎯 첫 키 입력 시점 기록 (몽키타입 스타일)
+  const firstKeystrokeTime = state.firstKeystrokeTime || new Date(currentTime)
+
   // Create keystroke record
   const keystroke: Keystroke = {
     key,
@@ -124,6 +130,7 @@ function processKeystroke(
     mistakes,
     currentIndex: state.currentIndex + 1,
     userInput: state.userInput + key,
+    firstKeystrokeTime, // 첫 키 입력 시점 기록
     lastProcessedChar: key,
     lastProcessedTime: currentTime
   }
@@ -140,6 +147,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
   targetText: '',
   userInput: '',
   startTime: null,
+  firstKeystrokeTime: null,
   endTime: null,
   keystrokes: [],
   mistakes: [],
@@ -260,6 +268,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     currentIndex: 0,
     userInput: '',
     startTime: null,
+    firstKeystrokeTime: null,
     endTime: null,
     keystrokes: [],
     mistakes: [],

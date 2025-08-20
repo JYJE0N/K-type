@@ -186,46 +186,45 @@ export function ImprovementSuggestions() {
         <h2 className="card-title">개선 제안</h2>
       </div>
 
-      <div className="card-content space-y-8">
-        {suggestions.map((suggestion, index) => {
-          const IconComponent = suggestion.icon;
-          return (
-            <div
-              key={index}
-              className="bg-surface rounded-lg p-6 border border-white/10 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-typing-accent/10 rounded-full flex items-center justify-center">
-                    <IconComponent className="w-5 h-5 text-typing-accent" />
+      <div className="card-content">
+        <div className="space-y-4">
+          {suggestions.map((suggestion, index) => {
+            const IconComponent = suggestion.icon;
+            return (
+              <div
+                key={index}
+                className="bg-background rounded-lg p-4 border border-interactive-primary border-opacity-20 shadow-sm hover:shadow-md transition-all duration-200 hover:border-opacity-40"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-interactive-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                      <IconComponent className="w-5 h-5 text-interactive-primary" />
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-lg font-semibold text-text-primary">
-                      {suggestion.title}
-                    </h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(suggestion.priority)}`}>
-                      {getPriorityLabel(suggestion.priority)}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-primary">
+                        {suggestion.title}
+                      </h3>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(suggestion.priority)}`}>
+                        {getPriorityLabel(suggestion.priority)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-secondary leading-relaxed">
+                      {suggestion.description}
+                    </p>
                   </div>
-                  <p className="text-sm text-text-secondary leading-relaxed">
-                    {suggestion.description}
-                  </p>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      <div
-        style={{ marginTop: "var(--spacing-lg)", padding: "var(--spacing-md)" }}
-        className="bg-background rounded-lg border border-opacity-10"
-      >
-        <p className="text-sm text-muted text-center">
-          개선 제안은 통계를 기반으로 제공됩니다.
-        </p>
+        <div className="mt-6 p-4 bg-surface rounded-lg border border-interactive-secondary border-opacity-20">
+          <p className="text-sm text-muted text-center">
+            💡 개선 제안은 통계를 기반으로 제공됩니다.
+          </p>
+        </div>
       </div>
     </div>
   );

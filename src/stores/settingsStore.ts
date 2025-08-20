@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Settings, TestMode, TextType } from '@/types'
-import { applyTheme, getTheme } from '@/modules/themes'
+import { applyThemeVariables } from '@/styles/theme-provider'
+import type { ThemeId } from '@/styles/design-tokens'
 
 interface SettingsStore extends Settings {
   // 설정 업데이트 액션
@@ -17,6 +18,10 @@ interface SettingsStore extends Settings {
   // UI 표시 옵션
   showSentences: boolean
   setShowSentences: (show: boolean) => void
+  
+  // 고스트 모드 설정
+  ghostModeEnabled: boolean
+  setGhostModeEnabled: (enabled: boolean) => void
   
   // 설정 리셋
   resetToDefaults: () => void
@@ -37,7 +42,8 @@ const defaultSettings: Settings = {
 }
 
 const defaultUISettings = {
-  showSentences: false  // 기본적으로 문장 옵션 숨김
+  showSentences: false,  // 기본적으로 문장 옵션 숨김
+  ghostModeEnabled: true // 고스트 모드 기본 활성화
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -50,20 +56,15 @@ export const useSettingsStore = create<SettingsStore>()(
       // 언어 설정
       setLanguage: (language: string) => set({ language }),
 
-      // 테마 설정
+      // 테마 설정 (새로운 디자인 토큰 시스템)
       setTheme: (theme: string) => {
         console.log('🎨 Setting theme:', theme)
         set({ theme })
-        // DOM에 테마 적용
+        // 새로운 CSS Variables 기반 테마 적용
         if (typeof document !== 'undefined') {
-          const themeData = getTheme(theme)
-          console.log('🎨 Theme data:', themeData)
-          if (themeData) {
-            applyTheme(themeData)
-            console.log('🎨 Theme applied successfully')
-          } else {
-            console.error('🎨 Theme not found:', theme)
-          }
+          applyThemeVariables(theme as ThemeId)
+          document.documentElement.setAttribute('data-theme-loaded', 'true')
+          console.log('🎨 Theme applied successfully:', theme)
         }
       },
 
@@ -97,14 +98,15 @@ export const useSettingsStore = create<SettingsStore>()(
       // 문장 옵션 표시 설정
       setShowSentences: (show: boolean) => set({ showSentences: show }),
 
+      // 고스트 모드 설정
+      setGhostModeEnabled: (enabled: boolean) => set({ ghostModeEnabled: enabled }),
+
       // 기본값으로 리셋
       resetToDefaults: () => {
         set({ ...defaultSettings, ...defaultUISettings })
         if (typeof document !== 'undefined') {
-          const themeData = getTheme(defaultSettings.theme)
-          if (themeData) {
-            applyTheme(themeData)
-          }
+          applyThemeVariables(defaultSettings.theme as ThemeId)
+          document.documentElement.setAttribute('data-theme-loaded', 'true')
         }
       },
 
@@ -125,9 +127,7 @@ export const useSettingsStore = create<SettingsStore>()(
 export const initializeTheme = () => {
   if (typeof window !== 'undefined') {
     const theme = useSettingsStore.getState().theme
-    const themeData = getTheme(theme)
-    if (themeData) {
-      applyTheme(themeData)
-    }
+    applyThemeVariables(theme as ThemeId)
+    document.documentElement.setAttribute('data-theme-loaded', 'true')
   }
 }
