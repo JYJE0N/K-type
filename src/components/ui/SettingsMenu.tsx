@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { ThemeSelector } from "./ThemeSelector";
 import { Settings, Clock, Hash, FileText, Target, Ghost } from "lucide-react";
 
 interface SettingsMenuProps {
@@ -85,7 +86,7 @@ export function SettingsMenu({ className = '' }: SettingsMenuProps) {
       {/* 드롭다운 메뉴 */}
       {isOpen && (
         <div className={`
-          absolute top-full right-0 mt-2 w-64
+          absolute top-full right-0 mt-2 w-56
           bg-background-secondary rounded-lg 
           border border-text-tertiary border-opacity-20
           shadow-xl shadow-black/10
@@ -177,19 +178,23 @@ export function SettingsMenu({ className = '' }: SettingsMenuProps) {
               </div>
             </div>
 
-            {/* 고스트 모드 토글 */}
+            {/* 테마 및 고급 옵션 */}
             <div className="border-t border-text-tertiary border-opacity-10 pt-3">
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
-                고급 옵션
+                기타 설정
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-3">
+                {/* 테마 선택 */}
+                <div>
+                  <span className="text-sm text-text-primary mb-2 block">테마</span>
+                  <ThemeSelector />
+                </div>
+                
+                {/* 고스트 모드 토글 */}
                 <label className="flex items-center justify-between p-2 rounded-md hover:bg-background-elevated transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <Ghost className="w-4 h-4 text-purple-500" />
-                    <div className="flex flex-col">
-                      <span className="text-sm text-text-primary">고스트 모드</span>
-                      <span className="text-xs text-text-secondary">개인 기록과 경쟁</span>
-                    </div>
+                    <span className="text-sm text-text-primary">고스트 모드</span>
                   </div>
                   <div 
                     className={`

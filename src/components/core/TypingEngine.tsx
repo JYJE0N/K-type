@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { PlayCircle, PauseCircle, StopCircle, Globe } from "lucide-react";
 import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
 import { ghostModeManager } from "@/utils/ghostMode";
+import { typingEffectsManager } from "@/utils/typingEffects";
 import type { DeviceType } from "@/types";
 
 interface TypingEngineProps {
@@ -173,6 +174,12 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     const initialize = async () => {
       await initializeUser();
       await fetchProgress();
+      
+      // 타이핑 이펙트 매니저 초기화
+      const typingContainer = document.querySelector('.typing-engine-container') as HTMLElement;
+      if (typingContainer) {
+        typingEffectsManager.setContainer(typingContainer);
+      }
       
       // 고스트 모드 자동 활성화 (설정이 켜져 있고 최고 기록이 있는 경우)
       if (ghostModeEnabled) {
@@ -477,43 +484,36 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
   return (
     <div
-      className={`typing-engine ${className}`}
+      className={`typing-engine typing-engine-container relative ${className}`}
       style={{
         paddingTop: "var(--spacing-lg)",
         paddingBottom: "var(--spacing-lg)",
       }}
     >
 
-      {/* 언어 선택 - 깔끔한 아이콘 포함 */}
-      <div className="flex justify-center mb-8">
-        <div className="flex items-center gap-3 bg-background-secondary rounded-xl p-3 border border-text-tertiary border-opacity-20 shadow-sm">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Globe className="w-4 h-4" />
-            <span className="text-caption font-medium">언어</span>
-          </div>
-          <div className="w-px h-5 bg-text-tertiary bg-opacity-20"></div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => useSettingsStore.getState().setLanguage("korean")}
-              className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
-                language === "korean" 
-                  ? "bg-interactive-primary text-text-inverse shadow-sm" 
-                  : "text-text-secondary hover:text-text-primary hover:bg-background-elevated"
-              }`}
-            >
-              한국어
-            </button>
-            <button
-              onClick={() => useSettingsStore.getState().setLanguage("english")}
-              className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
-                language === "english" 
-                  ? "bg-interactive-primary text-text-inverse shadow-sm" 
-                  : "text-text-secondary hover:text-text-primary hover:bg-background-elevated"
-              }`}
-            >
-              English
-            </button>
-          </div>
+      {/* 간단한 언어 선택 */}
+      <div className="flex justify-center mb-6">
+        <div className="flex bg-background-secondary rounded-lg p-1">
+          <button
+            onClick={() => useSettingsStore.getState().setLanguage("korean")}
+            className={`px-3 py-1 text-sm rounded font-medium transition-colors ${
+              language === "korean" 
+                ? "bg-interactive-primary text-text-inverse" 
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            한국어
+          </button>
+          <button
+            onClick={() => useSettingsStore.getState().setLanguage("english")}
+            className={`px-3 py-1 text-sm rounded font-medium transition-colors ${
+              language === "english" 
+                ? "bg-interactive-primary text-text-inverse" 
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            English
+          </button>
         </div>
       </div>
 

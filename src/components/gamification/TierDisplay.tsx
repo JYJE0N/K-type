@@ -1,7 +1,8 @@
 "use client";
 
 import { useUserProgressStore } from "@/stores/userProgressStore";
-import { defaultTierSystem, getTierColor, formatProgress, type TierConfig } from "@/utils/tierSystem";
+import { defaultTierSystem, formatProgress, type TierConfig } from "@/utils/tierSystem";
+import { TierBadge } from "./TierBadge";
 import { useEffect, useState } from "react";
 import { Trophy, TrendingUp, Target, Users, Award } from "lucide-react";
 
@@ -51,24 +52,16 @@ export function TierDisplay({
 
   if (compact) {
     return (
-      <div className={`flex items-center gap-3 ${className}`}>
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2"
-          style={{
-            background: getTierColor(currentTier, 'gradient'),
-            borderColor: currentTier.color
-          }}
-        >
-          {currentTier.icon}
-        </div>
-        <div>
-          <div className="font-semibold text-primary" style={{ color: currentTier.color }}>
-            {currentTier.name}
-          </div>
-          <div className="text-xs text-secondary">
-            {currentTier.rewards.title}
-          </div>
-        </div>
+      <div className={`${className}`}>
+        <TierBadge
+          tier={currentTier}
+          progress={progress ? (
+            Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
+          ) : 0}
+          level={Math.min(10, Math.floor(totalTests / 10) + 1)}
+          size="sm"
+          showProgress={showProgress}
+        />
       </div>
     );
   }
@@ -84,25 +77,16 @@ export function TierDisplay({
 
       <div className="card-content">
         {/* 현재 티어 표시 */}
-        <div className="text-center mb-6">
-          <div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full text-4xl font-bold border-4 mb-4 shadow-lg"
-            style={{
-              background: getTierColor(currentTier, 'gradient'),
-              borderColor: currentTier.color
-            }}
-          >
-            {currentTier.icon}
-          </div>
-          <h3 className="text-2xl font-bold mb-2" style={{ color: currentTier.color }}>
-            {currentTier.name}
-          </h3>
-          <p className="text-secondary text-sm mb-1">
-            {currentTier.rewards.title}
-          </p>
-          <p className="text-muted text-xs">
-            {currentTier.description}
-          </p>
+        <div className="flex justify-center mb-6">
+          <TierBadge
+            tier={currentTier}
+            progress={progress ? (
+              Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
+            ) : 0}
+            level={Math.min(10, Math.floor(totalTests / 10) + 1)}
+            size="lg"
+            showProgress={showProgress}
+          />
         </div>
 
         {/* 승급 가능 여부 */}
@@ -228,27 +212,24 @@ export function TierDisplay({
             {defaultTierSystem.getAllTiers().map((tier) => (
               <div
                 key={tier.id}
-                className={`text-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                className={`flex justify-center p-2 rounded-lg border-2 transition-all duration-200 ${
                   tier.id === currentTier.id
                     ? 'border-interactive-primary bg-interactive-primary bg-opacity-10'
                     : 'border-background-elevated bg-background-elevated hover:border-interactive-secondary'
                 }`}
+                style={{
+                  filter: tier.id === currentTier.id ? 'none' : 'grayscale(50%)',
+                  opacity: tier.id === currentTier.id ? 1 : 0.8
+                }}
               >
-                <div
-                  className="text-2xl mb-1"
-                  style={{ 
-                    filter: tier.id === currentTier.id ? 'none' : 'grayscale(70%)',
-                    opacity: tier.id === currentTier.id ? 1 : 0.7
-                  }}
-                >
-                  {tier.icon}
-                </div>
-                <div className="text-xs font-medium text-primary">
-                  {tier.name}
-                </div>
-                <div className="text-xs text-muted mt-1">
-                  {tier.minCPM}+ CPM
-                </div>
+                <TierBadge
+                  tier={tier}
+                  progress={tier.id === currentTier.id ? (progress ? (
+                    Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
+                  ) : 0) : 0}
+                  size="sm"
+                  showProgress={false}
+                />
               </div>
             ))}
           </div>

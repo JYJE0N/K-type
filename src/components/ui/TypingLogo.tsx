@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface TypingLogoProps {
   className?: string;
@@ -45,7 +46,7 @@ export function TypingLogo({ className = '' }: TypingLogoProps) {
   }, []);
 
   return (
-    <div className={`flex items-center ${className}`}>
+    <Link href="/" className={`flex items-center hover:opacity-80 transition-opacity cursor-pointer ${className}`}>
       <h1 className="text-title font-bold text-text-primary">
         {displayedText}
         <span 
@@ -56,6 +57,6 @@ export function TypingLogo({ className = '' }: TypingLogoProps) {
           aria-hidden="true"
         />
       </h1>
-    </div>
+    </Link>
   );
 }

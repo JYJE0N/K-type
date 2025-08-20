@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { Keystroke, Mistake } from '@/types'
 import { isKoreanJamo } from '@/utils/koreanIME'
 import { eventBus } from '@/utils/eventBus'
+import { typingEffectsManager } from '@/utils/typingEffects'
 
 interface TypingStore {
   // State
@@ -381,6 +382,22 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     // Process the keystroke
     const updates = processKeystroke(state, key, expectedChar, isCorrect)
     set(updates)
+    
+    // 타이핑 이펙트 트리거
+    const effectsTimeElapsed = (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
+    const effectsMinutes = effectsTimeElapsed / 60
+    const currentCPM = effectsMinutes > 0 ? Math.round(state.currentIndex / effectsMinutes) : 0
+    const currentAccuracy = state.keystrokes.length > 0 
+      ? Math.round((state.keystrokes.filter(k => k.correct).length / state.keystrokes.length) * 100)
+      : 100
+      
+    if (isCorrect) {
+      // 정확한 키 입력 시 이펙트 트리거
+      typingEffectsManager.onCorrectKeystroke(currentCPM, currentAccuracy)
+    } else {
+      // 실수 시 콤보 리셋
+      typingEffectsManager.onIncorrectKeystroke()
+    }
     
     // 단어 완성 체크
     const newState = { ...state, ...updates }
