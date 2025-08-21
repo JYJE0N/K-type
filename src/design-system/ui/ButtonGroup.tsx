@@ -5,18 +5,19 @@
 
 import React from 'react';
 import { createFlexStyles } from '../components';
+import { spacing } from '../tokens';
 
 interface ButtonGroupProps {
   children: React.ReactNode;
   orientation?: 'horizontal' | 'vertical';
-  spacing?: '1' | '2' | '3' | '4';
+  spacing?: keyof typeof spacing;
   className?: string;
 }
 
 export const ButtonGroup: React.FC<ButtonGroupProps> = ({
   children,
   orientation = 'horizontal',
-  spacing = '2',
+  spacing = 2,
   className = ''
 }) => {
   const direction = orientation === 'horizontal' ? 'row' : 'col';

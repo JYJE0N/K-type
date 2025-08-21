@@ -23,7 +23,6 @@ export function Footer({ className = "" }: FooterProps) {
             <Button
               variant="ghost"
               size="sm"
-              asChild
               className="h-10 w-10 p-0"
             >
               <a

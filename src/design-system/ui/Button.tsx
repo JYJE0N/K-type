@@ -11,18 +11,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   isActive?: boolean;
   isLoading?: boolean;
-  asChild?: boolean;
   children: React.ReactNode;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { 
-      variant = 'default', 
+      variant = 'primary', 
       size = 'base', 
       isActive = false,
       isLoading = false,
-      asChild = false,
       className = '',
       disabled,
       children, 
@@ -33,14 +31,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const buttonStyles = createButtonStyles(variant, size, isActive);
     const combinedClassName = `${buttonStyles} ${className}`.trim();
     
-    if (asChild) {
-      // asChild가 true면 children을 복제하고 스타일을 적용
-      return React.cloneElement(children as React.ReactElement, {
-        className: combinedClassName,
-        ref,
-        ...props
-      });
-    }
     
     return (
       <button

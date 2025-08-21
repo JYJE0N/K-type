@@ -18,7 +18,7 @@ export const TestModeSelector: React.FC<TestModeSelectorProps> = ({
   const { testMode, setTestMode } = useSettingsStore();
   
   return (
-    <ButtonGroup className={className} spacing="1">
+    <ButtonGroup className={className} spacing={1}>
       <Button
         variant={testMode === "time" ? "primary" : "outline"}
         size="lg"

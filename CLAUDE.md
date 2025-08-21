@@ -27,18 +27,21 @@ yarn type-check
 ## Critical Development Conventions
 
 ### Korean IME Handling
+
 - Always use `isKoreanJamo()` utility from `@/utils/koreanIME` before processing keystroke events
 - Korean jamo characters (자모) should be counted for CPM calculation but NOT for text progression
 - IME composition state must be tracked to prevent duplicate keystroke registration
 - Use `IMEHandler` class for cross-browser IME compatibility
 
 ### State Management Architecture
+
 - All typing state flows through `typingStore.ts` - never bypass this store
-- Use `eventBus` from `@/utils/eventBus` for cross-store communication 
+- Use `eventBus` from `@/utils/eventBus` for cross-store communication
 - Statistics updates are batched via `eventBus.emit('stats:update')` to prevent performance issues
 - MongoDB operations go through `userProgressStore.ts`
 
 ### Performance Requirements
+
 - Keystroke handling must complete within 16ms (60fps requirement)
 - Use `setTimeout` with minimal delays for test completion to ensure proper state settling
 - Statistics calculations are batched every 250ms during active typing
@@ -51,11 +54,13 @@ This is a Korean/English typing practice web application built with Next.js 15, 
 ### Key Architecture Components
 
 1. **State Management (Zustand stores)**
+
    - `typingStore.ts`: Core typing state including current position, keystrokes, mistakes, and test progress. Handles Korean jamo filtering to prevent double-counting during IME composition.
    - `statsStore.ts`: Real-time typing statistics calculation (CPM/WPM, accuracy, consistency)
    - `settingsStore.ts`: User preferences for language, theme, test mode, and test targets
 
 2. **Typing Engine (`src/components/core/`)**
+
    - `TypingEngine.tsx`: Main orchestrator component managing test lifecycle, timers, and IME composition states. Handles auto-navigation to `/stats` page on completion.
    - `InputHandler.tsx`: Captures keyboard input and handles IME composition events using transparent overlay
    - `TextRenderer.tsx`: Visual rendering of text with current position, correct/incorrect highlighting
@@ -65,11 +70,13 @@ This is a Korean/English typing practice web application built with Next.js 15, 
    - `GhostIndicator.tsx`: Shows comparison with personal best performance
 
 3. **Korean IME Handling**
+
    - Special logic to filter Korean jamo characters (Unicode ranges 0x3131-0x314F, 0x1100-0x11FF)
    - Composition state tracking to prevent duplicate keystroke registration during Hangul assembly
    - Accurate character comparison considering IME intermediate states
 
 4. **Test Modes**
+
    - Time-based: Fixed duration tests (15/30/60/120 seconds)
    - Word-based: Fixed word count tests (10/25/50/100 words)
    - Dynamic text generation based on language pack and text type
@@ -81,15 +88,18 @@ This is a Korean/English typing practice web application built with Next.js 15, 
    - `tierSystem.ts`: Gamification with promotion system based on performance metrics
 
 ### Path Aliases
+
 - `@/*` maps to `./src/*` for cleaner imports
 
 ### Styling
+
 - Tailwind CSS 3.4 with extensive custom configuration in `tailwind.config.js`
 - CSS variables for theme system supporting dark/light/high-contrast modes
 - Custom Tailwind components for typing-specific UI (`.typing-text`, `.typing-char`, etc.)
 - Pretendard font for Korean text, JetBrains Mono for typing interface
 
 ### Database Integration
+
 - MongoDB with Mongoose ODM for user progress and test results
 - Connection string should be provided via environment variables
 - API routes in `/api` handle database operations
@@ -128,12 +138,14 @@ K-types/
 #### ✅ 완료된 기능 (Completed Features)
 
 1. **한글 IME 처리**
+
    - 한글 자모 필터링 (isKoreanJamo)
    - IME 조합 상태 추적
    - 중복 입력 방지
    - 브라우저별 호환성 (Chrome, Firefox, Safari)
 
 2. **타이핑 엔진 코어**
+
    - 실시간 키스트로크 추적
    - 정확도 계산
    - 실수 위치 기록
@@ -141,25 +153,30 @@ K-types/
    - 테스트 완료 처리
 
 3. **텍스트 렌더링**
+
    - 현재 위치 하이라이트
    - 정확/오타 시각적 표시
    - 특수 키 처리 (스페이스, 엔터, 탭)
    - 스크롤 자동 조정
 
 4. **설정 관리**
+
    - 언어 선택 (한국어/English)
    - 테마 선택 (다크/라이트/고대비)
    - 테스트 모드 (시간/단어 기반)
    - 텍스트 타입 (일반/구두점/숫자)
+   - 센텐스 타입 (단문/중문/장문)
    - 로컬 스토리지 영속화
 
 5. **통계 시스템**
+
    - 실시간 CPM/WPM 계산
    - 정확도 추적
    - 일관성 측정
    - 테스트 결과 저장
 
 6. **데이터베이스 연동**
+
    - MongoDB 연결
    - 사용자 진행률 저장
    - 테스트 기록 관리
@@ -174,6 +191,7 @@ K-types/
 #### 🔄 진행 중인 기능 (In Progress Features)
 
 1. **게임화 시스템**
+
    - 배지 시스템 구현
    - 티어 시스템
    - 기록 비교
@@ -188,11 +206,13 @@ K-types/
 #### 📋 계획된 기능 (Planned Features)
 
 1. **설정 토글 옵션**
+
    - 실시간 통계 표시/숨김 토글
    - 최소한의 정보만 표시 옵션
    - 사용자 정의 가능한 UI
 
 2. **추가 언어 지원**
+
    - 일본어 지원
    - 중국어 지원
    - 기타 언어 확장
@@ -205,6 +225,7 @@ K-types/
 ### 🛠️ 기술 스택 (Technology Stack)
 
 #### 프론트엔드
+
 - **Next.js 15** - React 프레임워크
 - **React 19** - UI 라이브러리
 - **TypeScript** - 타입 안전성
@@ -214,11 +235,13 @@ K-types/
 - **Recharts** - 차트/그래프
 
 #### 백엔드 & 데이터베이스
+
 - **MongoDB** - 데이터베이스
 - **Mongoose** - MongoDB ODM
 - **Next.js API Routes** - 백엔드 API
 
 #### 개발 도구
+
 - **ESLint** - 코드 린팅
 - **Prettier** - 코드 포매팅
 - **TypeScript Compiler** - 타입 체크
@@ -235,11 +258,13 @@ K-types/
 ### 🎨 디자인 철학 (Design Philosophy)
 
 1. **기능에 충실한 미니멀 디자인**
+
    - 불필요한 요소 제거
    - 타이핑에 집중할 수 있는 환경
    - 깔끔한 시각적 피드백
 
 2. **한국어 특화**
+
    - 한글 IME 완벽 지원
    - 한글 폰트 최적화
    - 문화적 맥락 고려
@@ -252,14 +277,17 @@ K-types/
 ### 🔍 주요 기술적 도전과 해결책
 
 1. **한글 IME 처리**
+
    - **문제**: 한글 입력 시 자모 분리로 인한 중복 카운팅
    - **해결**: 유니코드 범위 기반 jamo 필터링, 조합 상태 추적
 
 2. **실시간 성능 최적화**
+
    - **문제**: 키스트로크마다 통계 재계산으로 인한 성능 저하
    - **해결**: 메모이제이션, 배치 처리, 최적화된 상태 업데이트
 
 3. **크로스 브라우저 호환성**
+
    - **문제**: 브라우저별 IME 동작 차이
    - **해결**: 브라우저 감지 및 개별 대응 로직
 
@@ -277,8 +305,9 @@ K-types/
 - **성능 최적화** (메모이제이션, 지연 로딩)
 
 ### Key File Locations
+
 - Main typing page: `src/app/page.tsx`
-- Statistics results: `src/app/stats/page.tsx`  
+- Statistics results: `src/app/stats/page.tsx`
 - Theme initialization: `src/app/layout.tsx` (includes SSR-safe theme script)
 - Global styles with CSS variables: `src/app/globals.css`
 - Language packs: `src/modules/languages/` and `src/data/sentences/`

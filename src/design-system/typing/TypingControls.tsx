@@ -49,7 +49,7 @@ export const TypingControls: React.FC<TypingControlsProps> = ({
   // 활성 상태 (타이핑 중)
   if (isActive && !isPaused && !isCompleted) {
     return (
-      <ButtonGroup className={`justify-center ${className}`} spacing="4">
+      <ButtonGroup className={`justify-center ${className}`} spacing={4}>
         <Button
           variant="secondary"
           size="lg"
@@ -76,7 +76,7 @@ export const TypingControls: React.FC<TypingControlsProps> = ({
   // 일시정지 상태
   if (isPaused) {
     return (
-      <ButtonGroup className={`justify-center ${className}`} spacing="4">
+      <ButtonGroup className={`justify-center ${className}`} spacing={4}>
         <Button
           variant="primary"
           size="lg"

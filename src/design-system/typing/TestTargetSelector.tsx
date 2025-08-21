@@ -22,7 +22,7 @@ export const TestTargetSelector: React.FC<TestTargetSelectorProps> = ({
   const unit = testMode === "time" ? "초" : "단어";
   
   return (
-    <ButtonGroup className={className} spacing="1">
+    <ButtonGroup className={className} spacing={1}>
       {targets.map((target) => (
         <Button
           key={target}

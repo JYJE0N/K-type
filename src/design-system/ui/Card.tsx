@@ -17,7 +17,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({
   variant = 'default',
-  padding = '6',
+  padding = 6,
   children,
   className = '',
   onClick
