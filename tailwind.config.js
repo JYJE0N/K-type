@@ -56,26 +56,38 @@ module.exports = {
         },
         
         // CSS 변수 기반 테마 컬러 (런타임 변경용)
-        background: 'var(--color-background)',
+        background: {
+          DEFAULT: 'var(--color-background)',
+          secondary: 'var(--color-background-secondary)',
+          elevated: 'var(--color-background-elevated)'
+        },
         surface: 'var(--color-surface)',
         elevated: 'var(--color-elevated)',
-        'text-primary': 'var(--color-text-primary)',
-        'text-secondary': 'var(--color-text-secondary)', 
-        'text-tertiary': 'var(--color-text-tertiary)',
-        'text-inverse': 'var(--color-text-inverse)',
-        'interactive-primary': 'var(--color-interactive-primary)',
-        'interactive-primary-hover': 'var(--color-interactive-primary-hover)',
-        'interactive-secondary': 'var(--color-interactive-secondary)',
-        'interactive-secondary-hover': 'var(--color-interactive-secondary-hover)',
-        'interactive-disabled': 'var(--color-interactive-disabled)',
-        'feedback-success': 'var(--color-feedback-success)',
-        'feedback-warning': 'var(--color-feedback-warning)',
-        'feedback-error': 'var(--color-feedback-error)',
-        'feedback-info': 'var(--color-feedback-info)',
-        'typing-correct': 'var(--color-typing-correct)',
-        'typing-incorrect': 'var(--color-typing-incorrect)',
-        'typing-current': 'var(--color-typing-current)',
-        'typing-cursor': 'var(--color-typing-cursor)'
+        text: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)', 
+          tertiary: 'var(--color-text-tertiary)',
+          inverse: 'var(--color-text-inverse)'
+        },
+        interactive: {
+          primary: 'var(--color-interactive-primary)',
+          'primary-hover': 'var(--color-interactive-primary-hover)',
+          secondary: 'var(--color-interactive-secondary)',
+          'secondary-hover': 'var(--color-interactive-secondary-hover)',
+          disabled: 'var(--color-interactive-disabled)'
+        },
+        feedback: {
+          success: 'var(--color-feedback-success)',
+          warning: 'var(--color-feedback-warning)',
+          error: 'var(--color-feedback-error)',
+          info: 'var(--color-feedback-info)'
+        },
+        typing: {
+          correct: 'var(--color-typing-correct)',
+          incorrect: 'var(--color-typing-incorrect)',
+          current: 'var(--color-typing-current)',
+          cursor: 'var(--color-typing-cursor)'
+        }
       },
 
       // 🔤 타이포그래피

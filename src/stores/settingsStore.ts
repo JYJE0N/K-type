@@ -23,6 +23,10 @@ interface SettingsStore extends Settings {
   ghostModeEnabled: boolean
   setGhostModeEnabled: (enabled: boolean) => void
   
+  // 타이핑 이펙트 설정
+  typingEffectsEnabled: boolean
+  setTypingEffectsEnabled: (enabled: boolean) => void
+  
   // 설정 리셋
   resetToDefaults: () => void
   
@@ -43,7 +47,8 @@ const defaultSettings: Settings = {
 
 const defaultUISettings = {
   showSentences: false,  // 기본적으로 문장 옵션 숨김
-  ghostModeEnabled: true // 고스트 모드 기본 활성화
+  ghostModeEnabled: true, // 고스트 모드 기본 활성화
+  typingEffectsEnabled: true // 타이핑 이펙트 기본 활성화
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -100,6 +105,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       // 고스트 모드 설정
       setGhostModeEnabled: (enabled: boolean) => set({ ghostModeEnabled: enabled }),
+
+      // 타이핑 이펙트 설정
+      setTypingEffectsEnabled: (enabled: boolean) => set({ typingEffectsEnabled: enabled }),
 
       // 기본값으로 리셋
       resetToDefaults: () => {

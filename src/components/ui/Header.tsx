@@ -16,7 +16,7 @@ export function Header({ className = "" }: HeaderProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
-    <header className={`header ${className} bg-surface flex justify-center`}>
+    <header className={`${className} flex justify-center`} style={{ backgroundColor: '#212229' }}>
       <div className="w-full max-w-4xl px-6 py-6">
         {/* 메인 타이틀 */}
         <div className="text-center mb-6">
@@ -25,16 +25,17 @@ export function Header({ className = "" }: HeaderProps) {
 
         {/* 기본 설정 - 테스트 모드와 목표값만 */}
         <div className="flex justify-center">
-          <div className="header-main-settings flex items-center bg-surface/60 backdrop-blur-sm rounded-lg p-2 gap-4">
+          <div className="flex items-center bg-background-elevated/60 backdrop-blur-sm rounded-lg p-2 gap-4">
             {/* 테스트 모드 */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => useSettingsStore.getState().setTestMode("time")}
                 className={`flex items-center gap-2 px-4 py-2 text-lg rounded-md transition-all duration-200 font-medium ${
                   testMode === "time"
-                    ? "header-menu-active"
-                    : "header-menu-inactive"
+                    ? "shadow-sm"
+                    : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary"
                 }`}
+                style={testMode === "time" ? { backgroundColor: '#ff79c6', color: '#282a36' } : {}}
               >
                 <IoTime className="w-5 h-5" />
                 시간
@@ -43,9 +44,10 @@ export function Header({ className = "" }: HeaderProps) {
                 onClick={() => useSettingsStore.getState().setTestMode("words")}
                 className={`flex items-center gap-2 px-4 py-2 text-lg rounded-md transition-all duration-200 font-medium ${
                   testMode === "words"
-                    ? "header-menu-active"
-                    : "header-menu-inactive"
+                    ? "shadow-sm"
+                    : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary"
                 }`}
+                style={testMode === "words" ? { backgroundColor: '#ff79c6', color: '#282a36' } : {}}
               >
                 <IoText className="w-5 h-5" />
                 단어
@@ -53,7 +55,7 @@ export function Header({ className = "" }: HeaderProps) {
             </div>
 
             {/* 구분선 */}
-            <div className="w-px h-8 bg-surface/30"></div>
+            <div className="w-px h-8 bg-text-tertiary/40"></div>
 
             {/* 목표값 */}
             <div className="flex items-center gap-1">
@@ -66,9 +68,10 @@ export function Header({ className = "" }: HeaderProps) {
                       }
                       className={`px-4 py-2 text-md rounded-md transition-all duration-200 font-medium ${
                         testTarget === time
-                          ? "header-menu-active"
-                          : "header-menu-inactive"
+                          ? "shadow-sm"
+                          : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary"
                       }`}
+                      style={testTarget === time ? { backgroundColor: '#ff79c6', color: '#282a36' } : {}}
                     >
                       {time}초
                     </button>
@@ -81,9 +84,10 @@ export function Header({ className = "" }: HeaderProps) {
                       }
                       className={`px-4 py-2 text-md rounded-md transition-all duration-200 font-medium ${
                         testTarget === words
-                          ? "header-menu-active"
-                          : "header-menu-inactive"
+                          ? "shadow-sm"
+                          : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary"
                       }`}
+                      style={testTarget === words ? { backgroundColor: '#ff79c6', color: '#282a36' } : {}}
                     >
                       {words}단어
                     </button>
@@ -91,16 +95,17 @@ export function Header({ className = "" }: HeaderProps) {
             </div>
 
             {/* 구분선 */}
-            <div className="w-px h-8 bg-surface/30"></div>
+            <div className="w-px h-8 bg-text-tertiary/40"></div>
 
             {/* 고급 설정 토글 */}
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className={`flex items-center gap-2 px-4 py-2 text-md rounded-md font-medium settings-toggle-button ${
+              className={`flex items-center gap-2 px-4 py-2 text-md rounded-md font-medium transition-all duration-200 ${
                 showAdvanced
-                  ? "header-secondary-active active"
-                  : "header-menu-inactive"
+                  ? "shadow-sm"
+                  : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary"
               }`}
+              style={showAdvanced ? { backgroundColor: '#bd93f9', color: '#f8f8f2' } : {}}
               title="고급 설정 토글"
             >
               <Settings className="w-4 h-4" />
@@ -115,12 +120,12 @@ export function Header({ className = "" }: HeaderProps) {
 
         {/* 고급 설정 (조건부 표시) */}
         <div
-          className={`advanced-settings-panel overflow-hidden transition-all duration-400 ${
+          className={`overflow-hidden transition-all duration-400 ${
             showAdvanced ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
           {showAdvanced && (
-            <div className="flex flex-col items-center mt-6 gap-4 bg-surface/80 backdrop-blur-md rounded-xl p-6 shadow-lg">
+            <div className="flex flex-col items-center mt-6 gap-4 bg-background-elevated/80 backdrop-blur-md rounded-xl p-6 shadow-lg">
               {/* 텍스트 타입 */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -135,8 +140,8 @@ export function Header({ className = "" }: HeaderProps) {
                   }
                   className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                     textType === "words"
-                      ? "header-secondary-active"
-                      : "header-secondary-inactive"
+                      ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                      : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                   }`}
                 >
                   일반
@@ -147,8 +152,8 @@ export function Header({ className = "" }: HeaderProps) {
                   }
                   className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                     textType === "punctuation"
-                      ? "header-secondary-active"
-                      : "header-secondary-inactive"
+                      ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                      : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                   }`}
                 >
                   구두점
@@ -159,8 +164,8 @@ export function Header({ className = "" }: HeaderProps) {
                   }
                   className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                     textType === "numbers"
-                      ? "header-secondary-active"
-                      : "header-secondary-inactive"
+                      ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                      : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                   }`}
                 >
                   숫자
@@ -169,7 +174,7 @@ export function Header({ className = "" }: HeaderProps) {
                 {/* 문장 옵션 */}
                 {showSentences && (
                   <>
-                    <span className="w-px h-4 bg-text-secondary opacity-20 mx-1"></span>
+                    <span className="w-px h-4 bg-text-tertiary/40 mx-1"></span>
                     <button
                       onClick={() =>
                         useSettingsStore
@@ -178,8 +183,8 @@ export function Header({ className = "" }: HeaderProps) {
                       }
                       className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                         textType === "short-sentences"
-                          ? "header-secondary-active"
-                          : "header-secondary-inactive"
+                          ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                          : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                       }`}
                     >
                       단문
@@ -192,8 +197,8 @@ export function Header({ className = "" }: HeaderProps) {
                       }
                       className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                         textType === "medium-sentences"
-                          ? "header-secondary-active"
-                          : "header-secondary-inactive"
+                          ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                          : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                       }`}
                     >
                       중문
@@ -206,8 +211,8 @@ export function Header({ className = "" }: HeaderProps) {
                       }
                       className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
                         textType === "long-sentences"
-                          ? "header-secondary-active"
-                          : "header-secondary-inactive"
+                          ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                          : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                       }`}
                     >
                       장문
@@ -224,8 +229,8 @@ export function Header({ className = "" }: HeaderProps) {
                   }
                   className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
                     showSentences
-                      ? "header-secondary-active"
-                      : "header-secondary-inactive"
+                      ? "bg-interactive-primary/20 text-interactive-primary border border-interactive-primary/30"
+                      : "bg-transparent text-text-secondary hover:bg-background-elevated hover:text-text-primary border border-transparent"
                   }`}
                   title="문장 옵션 표시/숨기기"
                 >

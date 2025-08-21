@@ -144,13 +144,13 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
       {/* 드롭다운 메뉴 */}
       {isOpen && (
         <div className={`
-          absolute top-full left-0 mt-2 w-72 
-          bg-background-secondary rounded-lg 
-          border border-text-tertiary border-opacity-20
-          shadow-xl shadow-black/10
-          backdrop-blur-sm
-          z-50
+          absolute top-full left-0 mt-2 w-72 max-h-80
+          bg-background-elevated rounded-lg 
+          border border-text-tertiary/30
+          shadow-xl shadow-black/40
+          z-[9999]
           animate-in slide-in-from-top-2 duration-200
+          overflow-y-auto scrollbar-hide
         `}>
           <div className="p-2">
             {Object.entries(groupedThemes).map(([category, themes]) => (

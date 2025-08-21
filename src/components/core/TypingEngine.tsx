@@ -62,7 +62,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   } = useTypingStore();
 
   const { calculateStats, resetStats } = useStatsStore();
-  const { language, textType, testMode, testTarget, ghostModeEnabled } = useSettingsStore();
+  const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled } = useSettingsStore();
   const {
     initializeUser,
     recordTest,
@@ -179,6 +179,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       const typingContainer = document.querySelector('.typing-engine-container') as HTMLElement;
       if (typingContainer) {
         typingEffectsManager.setContainer(typingContainer);
+        typingEffectsManager.setEnabled(typingEffectsEnabled);
       }
       
       // 고스트 모드 자동 활성화 (설정이 켜져 있고 최고 기록이 있는 경우)
@@ -231,6 +232,11 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       console.log('⚪ 고스트 모드 비활성화: 설정 꺼짐');
     }
   }, [ghostModeEnabled, language, textType, testMode, testTarget, recentTests]);
+  
+  // 타이핑 이펙트 설정 변경 시 반영
+  useEffect(() => {
+    typingEffectsManager.setEnabled(typingEffectsEnabled);
+  }, [typingEffectsEnabled]);
 
   // 테스트 완료 시 MongoDB에 저장 및 stats 페이지로 이동
   useEffect(() => {

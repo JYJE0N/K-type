@@ -25,6 +25,8 @@ export function applyThemeVariables(themeId: ThemeId) {
     '--color-background': tokens.background.primary,
     '--color-background-secondary': tokens.background.secondary,
     '--color-background-elevated': tokens.background.elevated,
+    '--color-surface': tokens.background.secondary,
+    '--color-elevated': tokens.background.elevated,
 
     // 텍스트 컬러 (토큰 기반)
     '--color-text-primary': tokens.text.primary,

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ThemeSelector } from "./ThemeSelector";
-import { Settings, Clock, Hash, FileText, Target, Ghost } from "lucide-react";
+import { Settings, Clock, Hash, FileText, Target, Ghost, Sparkles } from "lucide-react";
 
 interface SettingsMenuProps {
   className?: string;
@@ -18,10 +18,12 @@ export function SettingsMenu({ className = '' }: SettingsMenuProps) {
     testTarget, 
     textType,
     ghostModeEnabled,
+    typingEffectsEnabled,
     setTestMode, 
     setTestTarget, 
     setTextType,
-    setGhostModeEnabled
+    setGhostModeEnabled,
+    setTypingEffectsEnabled
   } = useSettingsStore();
 
   // 외부 클릭시 드롭다운 닫기
@@ -87,11 +89,10 @@ export function SettingsMenu({ className = '' }: SettingsMenuProps) {
       {isOpen && (
         <div className={`
           absolute top-full right-0 mt-2 w-56
-          bg-background-secondary rounded-lg 
-          border border-text-tertiary border-opacity-20
-          shadow-xl shadow-black/10
-          backdrop-blur-sm
-          z-50
+          bg-background-elevated rounded-lg 
+          border border-text-tertiary/30
+          shadow-xl shadow-black/40
+          z-[9999]
           animate-in slide-in-from-top-2 duration-200
         `}>
           <div className="p-3">
@@ -214,6 +215,35 @@ export function SettingsMenu({ className = '' }: SettingsMenuProps) {
                         inline-block w-3 h-3 bg-white rounded-full 
                         transform transition-transform duration-200
                         ${ghostModeEnabled ? 'translate-x-6' : 'translate-x-1'}
+                      `}
+                    />
+                  </div>
+                </label>
+                
+                {/* 타이핑 이펙트 토글 */}
+                <label className="flex items-center justify-between p-2 rounded-md hover:bg-background-elevated transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm text-text-primary">타이핑 이펙트</span>
+                  </div>
+                  <div 
+                    className={`
+                      relative inline-flex w-10 h-5 items-center rounded-full 
+                      transition-colors duration-200
+                      ${typingEffectsEnabled ? 'bg-yellow-500' : 'bg-text-tertiary bg-opacity-30'}
+                    `}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={typingEffectsEnabled}
+                      onChange={(e) => setTypingEffectsEnabled(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`
+                        inline-block w-3 h-3 bg-white rounded-full 
+                        transform transition-transform duration-200
+                        ${typingEffectsEnabled ? 'translate-x-6' : 'translate-x-1'}
                       `}
                     />
                   </div>

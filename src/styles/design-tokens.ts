@@ -450,37 +450,37 @@ export type ThemeTokens = {
   }
 }
 
-// 다크 테마 토큰
+// 다크 테마 토큰 (드라큘라 스타일 - 눈의 피로도 최소화)
 export const darkTokens: ThemeTokens = {
   background: {
-    primary: colorPalette.brand.navy[700],
-    secondary: colorPalette.brand.navy[800], 
-    elevated: colorPalette.brand.navy[600]
+    primary: '#282a36',    // 드라큘라 배경 - 부드러운 어두운 보라빛 회색
+    secondary: '#44475a',  // 드라큘라 selection - 밝은 회색
+    elevated: '#6272a4'    // 드라큘라 comment - 연한 파란빛 회색
   },
   text: {
-    primary: colorPalette.brand.purple[200],
-    secondary: colorPalette.brand.purple[300],
-    tertiary: colorPalette.brand.purple[400],
-    inverse: colorPalette.brand.navy[900]
+    primary: '#f8f8f2',    // 드라큘라 foreground - 부드러운 흰색
+    secondary: '#bd93f9',   // 드라큘라 purple - 연한 보라색
+    tertiary: '#8be9fd',    // 드라큘라 cyan - 밝은 청록색
+    inverse: '#282a36'      // 반전 시 배경색 사용
   },
   interactive: {
-    primary: colorPalette.brand.pink[500],
-    primaryHover: colorPalette.brand.pink[400],
-    secondary: colorPalette.brand.purple[500], 
-    secondaryHover: colorPalette.brand.purple[400],
-    disabled: colorPalette.gray[600]
+    primary: '#ff79c6',     // 드라큘라 pink - 부드러운 핑크
+    primaryHover: '#ffb3d9', // 더 밝은 핑크
+    secondary: '#bd93f9',   // 드라큘라 purple
+    secondaryHover: '#d4b5fd', // 더 밝은 보라색
+    disabled: '#6272a4'     // 비활성화는 comment 색상
   },
   feedback: {
-    success: colorPalette.semantic.success[500],
-    warning: colorPalette.semantic.warning[500],
-    error: colorPalette.semantic.error[500],
-    info: colorPalette.brand.navy[400]
+    success: '#50fa7b',     // 드라큘라 green - 밝은 연두색
+    warning: '#ffb86c',     // 드라큘라 orange - 부드러운 주황색
+    error: '#ff5555',       // 드라큘라 red - 부드러운 빨간색
+    info: '#8be9fd'         // 드라큘라 cyan - 정보용 청록색
   },
   typing: {
-    correct: colorPalette.brand.purple[300],
-    incorrect: '#ff1744',
-    current: colorPalette.brand.purple[200],
-    cursor: colorPalette.brand.pink[500]
+    correct: '#50fa7b',     // 올바른 타이핑 - 초록색
+    incorrect: '#ff5555',   // 틀린 타이핑 - 빨간색
+    current: '#f1fa8c',     // 드라큘라 yellow - 현재 위치
+    cursor: '#ff79c6'       // 커서 - 핑크색
   }
 }
 

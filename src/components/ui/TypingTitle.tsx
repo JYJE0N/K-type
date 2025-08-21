@@ -52,12 +52,16 @@ export function TypingTitle({
       className={`typing-title cursor-pointer hover:opacity-90 transition-opacity duration-200 ${className}`}
       title="메인 페이지로 이동"
     >
-      <span className="text-4xl font-bold bg-gradient-to-r from-accent via-typing-accent to-accent bg-clip-text">
+      <span className="text-4xl font-bold bg-gradient-to-r from-interactive-primary via-interactive-secondary to-interactive-primary bg-clip-text text-transparent leading-tight">
         {displayedText}
       </span>
-      <span className={`inline-block w-0.5 h-8 bg-accent ml-1 transition-opacity duration-100 ${
+      <span className={`inline-block w-0.5 bg-interactive-primary ml-1 transition-opacity duration-100 ${
         showCursor ? 'opacity-100' : 'opacity-0'
-      }`} style={{ verticalAlign: 'text-bottom' }} />
+      }`} style={{ 
+        height: '2.25rem', // text-4xl에 맞는 높이 (36px)
+        verticalAlign: 'baseline',
+        marginBottom: '0.125rem' // 텍스트 베이스라인과 정렬
+      }} />
     </button>
   )
 }

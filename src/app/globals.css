@@ -47,27 +47,29 @@ body {
    =============================== */
 
 :root {
-  /* 🎨 컬러 토큰 - 다크 테마 기본값 */
-  --color-background: #1a1b3a;
-  --color-background-secondary: #2a2d5a;
-  --color-background-elevated: #374151;
-  --color-text-primary: #c8b5db;
-  --color-text-secondary: #c084fc;
-  --color-text-tertiary: #9ca3af;
-  --color-text-inverse: #111827;
-  --color-interactive-primary: #ec4899;
-  --color-interactive-primary-hover: #f472b6;
-  --color-interactive-secondary: #a855f7;
-  --color-interactive-secondary-hover: #c084fc;
-  --color-interactive-disabled: #6b7280;
-  --color-feedback-success: #22c55e;
-  --color-feedback-warning: #f59e0b;
-  --color-feedback-error: #ef4444;
-  --color-feedback-info: #818cf8;
-  --color-typing-correct: #c8b5db;
-  --color-typing-incorrect: #ff1744;
-  --color-typing-current: #c8b5db;
-  --color-typing-cursor: #ec4899;
+  /* 🎨 컬러 토큰 - 드라큘라 다크 테마 기본값 (눈의 피로도 최소화) */
+  --color-background: #282a36;
+  --color-background-secondary: #44475a;
+  --color-background-elevated: #6272a4;
+  --color-surface: #44475a;
+  --color-elevated: #6272a4;
+  --color-text-primary: #f8f8f2;
+  --color-text-secondary: #bd93f9;
+  --color-text-tertiary: #8be9fd;
+  --color-text-inverse: #282a36;
+  --color-interactive-primary: #ff79c6;
+  --color-interactive-primary-hover: #ffb3d9;
+  --color-interactive-secondary: #bd93f9;
+  --color-interactive-secondary-hover: #d4b5fd;
+  --color-interactive-disabled: #6272a4;
+  --color-feedback-success: #50fa7b;
+  --color-feedback-warning: #ffb86c;
+  --color-feedback-error: #ff5555;
+  --color-feedback-info: #8be9fd;
+  --color-typing-correct: #50fa7b;
+  --color-typing-incorrect: #ff5555;
+  --color-typing-current: #f1fa8c;
+  --color-typing-cursor: #ff79c6;
   
   /* 📏 스페이싱 토큰 */
   --spacing-0: 0;
@@ -247,58 +249,7 @@ body {
   margin-bottom: var(--spacing-2);
 }
 
-/* 🔘 버튼 스타일 (완전 토큰 기반) */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-}
-
-.btn-sm {
-  padding: var(--spacing-1) var(--spacing-3);
-  font-size: var(--font-size-xs);
-}
-
-.btn-primary {
-  background-color: var(--color-interactive-primary);
-  color: var(--color-text-inverse);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-interactive-primary-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background-color: var(--color-interactive-secondary);
-  color: var(--color-text-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-interactive-secondary-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: var(--color-text-primary);
-  border: var(--border-width-1) solid var(--color-interactive-primary);
-}
-
-.btn-outline:hover {
-  background-color: var(--color-interactive-primary);
-  color: var(--color-text-inverse);
-}
+/* ✅ 버튼 스타일은 이제 Tailwind 토큰 클래스로 대체됨 */
 
 /* 📝 텍스트 스타일 (완전 토큰 기반) */
 .title-sm {
@@ -347,27 +298,7 @@ body {
   margin-top: auto;
 }
 
-/* 🍔 헤더 메뉴 스타일 (완전 토큰 기반) */
-.header-menu-active {
-  background-color: var(--color-interactive-primary);
-  color: var(--color-text-inverse);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-}
-
-.header-menu-inactive {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-}
-
-.header-menu-inactive:hover {
-  background-color: var(--color-background-secondary);
-  color: var(--color-text-primary);
-}
+/* ✅ 헤더 메뉴 스타일은 이제 Tailwind 토큰 클래스로 대체됨 */
 
 /* ===============================
    📝 텍스트 타이포그래피 시스템
@@ -423,126 +354,7 @@ body {
   text-transform: uppercase;
 }
 
-/* ===============================
-   🔘 버튼 상태 시스템
-   =============================== */
-
-/* Primary 버튼 */
-.btn-primary {
-  background-color: var(--color-interactive-primary);
-  color: var(--color-text-inverse);
-  border: 1px solid var(--color-interactive-primary);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  font-weight: 500;
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-  cursor: pointer;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-interactive-primary-hover);
-  border-color: var(--color-interactive-primary-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active:not(:disabled) {
-  background-color: var(--color-interactive-primary);
-  border-color: var(--color-interactive-primary);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(0px);
-}
-
-.btn-primary:disabled {
-  background-color: var(--color-interactive-disabled);
-  color: var(--color-text-tertiary);
-  border-color: var(--color-interactive-disabled);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Secondary 버튼 */
-.btn-secondary {
-  background-color: transparent;
-  color: var(--color-interactive-primary);
-  border: 1px solid var(--color-interactive-primary);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  font-weight: 500;
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-  cursor: pointer;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-interactive-primary);
-  color: var(--color-text-inverse);
-  border-color: var(--color-interactive-primary);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn-secondary:active:not(:disabled) {
-  background-color: var(--color-interactive-primary-hover);
-  color: var(--color-text-inverse);
-  border-color: var(--color-interactive-primary-hover);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(0px);
-}
-
-.btn-secondary:disabled {
-  background-color: transparent;
-  color: var(--color-interactive-disabled);
-  border-color: var(--color-interactive-disabled);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Ghost 버튼 */
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-interactive-primary);
-  border: 1px solid transparent;
-  box-shadow: none;
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  font-weight: 500;
-  transition: all var(--animation-duration-base) var(--animation-easing-out);
-  cursor: pointer;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--color-background-secondary);
-  color: var(--color-interactive-primary-hover);
-  border-color: transparent;
-}
-
-.btn-ghost:active:not(:disabled) {
-  background-color: var(--color-background-elevated);
-  color: var(--color-interactive-primary);
-  border-color: transparent;
-}
-
-.btn-ghost:disabled {
-  background-color: transparent;
-  color: var(--color-interactive-disabled);
-  border-color: transparent;
-  cursor: not-allowed;
-}
-
-/* 버튼 크기 변형 */
-.btn-sm {
-  padding: var(--spacing-1) var(--spacing-3);
-  font-size: var(--font-size-sm);
-}
-
-.btn-lg {
-  padding: var(--spacing-3) var(--spacing-6);
-  font-size: var(--font-size-lg);
-}
+/* ✅ 버튼 상태 시스템은 이제 Tailwind 토큰 클래스로 대체됨 */
 
 /* ===============================
    ⚡ 성능 최적화
