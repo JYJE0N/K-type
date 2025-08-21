@@ -69,30 +69,30 @@ export function TestResult({ onRestart, className = '' }: TestResultProps) {
         </div>
 
         {/* 주요 통계 */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
-            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-token-lg">
+          <div className="text-center p-token-md">
+            <div className="title-lg text-accent mb-token-sm">
               {liveStats.cpm}
             </div>
             <div className="text-sm text-secondary">분당 타수 (CPM)</div>
           </div>
           
-          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
-            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
+          <div className="text-center p-token-md">
+            <div className="title-lg text-accent mb-token-sm">
               {liveStats.accuracy}%
             </div>
             <div className="text-sm text-secondary">정확도</div>
           </div>
           
-          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
-            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
+          <div className="text-center p-token-md">
+            <div className="title-lg text-accent mb-token-sm">
               {liveStats.wpm}
             </div>
             <div className="text-sm text-secondary">WPM</div>
           </div>
           
-          <div className="text-center" style={{ padding: 'var(--spacing-md)' }}>
-            <div className="title-lg text-accent" style={{ marginBottom: 'var(--spacing-sm)' }}>
+          <div className="text-center p-token-md">
+            <div className="title-lg text-accent mb-token-sm">
               {Math.round(testDuration)}초
             </div>
             <div className="text-sm text-secondary">소요 시간</div>

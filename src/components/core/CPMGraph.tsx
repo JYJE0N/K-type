@@ -91,7 +91,7 @@ export function CPMGraph() {
 
   return (
     <div className="flex flex-col" style={{ height: '100%' }}>
-      <div className="flex justify-between items-center" style={{ marginBottom: 'var(--spacing-sm)' }}>
+      <div className="flex justify-between items-center mb-token-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-accent rounded"></div>
@@ -190,14 +190,14 @@ export function CPMGraph() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center text-secondary bg-surface bg-opacity-90 px-4 py-2 rounded-lg backdrop-blur-sm border border-text-secondary border-opacity-10">
               <div className="text-sm">타이핑 시작 대기 중</div>
-              <div className="caption text-muted" style={{ marginTop: 'var(--spacing-xs)' }}>실시간 CPM이 여기에 표시됩니다</div>
+              <div className="caption text-muted mt-token-xs">실시간 CPM이 여기에 표시됩니다</div>
             </div>
           </div>
         )}
       </div>
       
       {data.length > 0 && (
-        <div className="flex justify-between" style={{ marginTop: 'var(--spacing-sm)' }}>
+        <div className="flex justify-between mt-token-sm">
           <div className="text-sm text-secondary">
             현재: <span className="text-accent font-semibold">{data[data.length - 1].cpm}</span> <span className="text-muted">CPM</span>
           </div>

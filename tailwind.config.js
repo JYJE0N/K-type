@@ -67,7 +67,8 @@ module.exports = {
           primary: 'var(--color-text-primary)',
           secondary: 'var(--color-text-secondary)', 
           tertiary: 'var(--color-text-tertiary)',
-          inverse: 'var(--color-text-inverse)'
+          inverse: 'var(--color-text-inverse)',
+          muted: 'var(--color-text-muted)'
         },
         interactive: {
           primary: 'var(--color-interactive-primary)',
@@ -279,6 +280,98 @@ module.exports = {
           backgroundColor: 'var(--color-typing-cursor)',
           borderRadius: theme('borderRadius.sm'),
           animation: 'pulse-cursor 1s ease-in-out infinite'
+        },
+
+        // 🎯 버튼 시스템 - 기본
+        '.btn': {
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: theme('borderRadius.lg'),
+          fontWeight: theme('fontWeight.medium'),
+          transition: `all ${theme('transitionDuration.base')} ${theme('transitionTimingFunction.out')}`,
+          '&:focus': {
+            outline: 'none',
+            boxShadow: `0 0 0 2px var(--color-interactive-primary-hover)`
+          },
+          '&:disabled': {
+            opacity: '0.5',
+            cursor: 'not-allowed'
+          },
+          '&:active': {
+            transform: 'scale(0.98)'
+          }
+        },
+
+        '.btn-primary': {
+          backgroundColor: 'var(--color-interactive-primary)',
+          color: 'var(--color-text-inverse)',
+          border: '1px solid transparent',
+          '&:hover:not(:disabled)': {
+            backgroundColor: 'var(--color-interactive-primary-hover)',
+            transform: 'scale(1.02)'
+          }
+        },
+
+        '.btn-secondary': {
+          backgroundColor: 'var(--color-background-secondary)',
+          color: 'var(--color-text-primary)',
+          border: '1px solid rgb(from var(--color-text-tertiary) r g b / 0.2)',
+          '&:hover:not(:disabled)': {
+            backgroundColor: 'var(--color-background-elevated)',
+            borderColor: 'rgb(from var(--color-text-tertiary) r g b / 0.4)'
+          }
+        },
+
+        '.btn-ghost': {
+          backgroundColor: 'transparent',
+          color: 'var(--color-text-secondary)',
+          border: '1px solid transparent',
+          '&:hover:not(:disabled)': {
+            backgroundColor: 'var(--color-background-secondary)',
+            color: 'var(--color-text-primary)'
+          }
+        },
+
+        '.btn-outline': {
+          backgroundColor: 'transparent',
+          color: 'var(--color-text-primary)',
+          border: '1px solid rgb(from var(--color-interactive-primary) r g b / 0.5)',
+          '&:hover:not(:disabled)': {
+            backgroundColor: 'var(--color-interactive-primary)',
+            color: 'var(--color-text-inverse)',
+            borderColor: 'var(--color-interactive-primary)'
+          }
+        },
+
+        '.btn-accent': {
+          backgroundColor: 'var(--color-interactive-secondary)',
+          color: 'var(--color-text-primary)',
+          border: '1px solid transparent',
+          '&:hover:not(:disabled)': {
+            backgroundColor: 'var(--color-interactive-secondary-hover)'
+          }
+        },
+
+        // 버튼 크기
+        '.btn-sm': {
+          padding: `${theme('spacing.1')} ${theme('spacing.3')}`,
+          fontSize: theme('fontSize.sm')
+        },
+
+        '.btn-md': {
+          padding: `${theme('spacing.2')} ${theme('spacing.4')}`,
+          fontSize: theme('fontSize.base')
+        },
+
+        '.btn-lg': {
+          padding: `${theme('spacing.3')} ${theme('spacing.6')}`,
+          fontSize: theme('fontSize.lg')
+        },
+
+        '.btn-xl': {
+          padding: `${theme('spacing.4')} ${theme('spacing.8')}`,
+          fontSize: theme('fontSize.xl')
         },
 
         // 🕴️ 은밀모드 카드 스타일 

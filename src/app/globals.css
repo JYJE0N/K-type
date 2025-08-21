@@ -1,8 +1,20 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
-/* 🎨 폰트 import */
+/* ===============================
+   📦 임포트
+   =============================== */
+   
+@import '../styles/tokens.css';
+@import '../styles/themes.css';
+
+/* ===============================
+   🎨 폰트 import
+   =============================== */
+   
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
 
@@ -43,116 +55,6 @@ body {
 }
 
 /* ===============================
-   🎨 CSS Variables (런타임 테마)
-   =============================== */
-
-:root {
-  /* 🎨 컬러 토큰 - 드라큘라 다크 테마 기본값 (눈의 피로도 최소화) */
-  --color-background: #282a36;
-  --color-background-secondary: #44475a;
-  --color-background-elevated: #6272a4;
-  --color-surface: #44475a;
-  --color-elevated: #6272a4;
-  --color-text-primary: #f8f8f2;
-  --color-text-secondary: #bd93f9;
-  --color-text-tertiary: #8be9fd;
-  --color-text-inverse: #282a36;
-  --color-interactive-primary: #ff79c6;
-  --color-interactive-primary-hover: #ffb3d9;
-  --color-interactive-secondary: #bd93f9;
-  --color-interactive-secondary-hover: #d4b5fd;
-  --color-interactive-disabled: #6272a4;
-  --color-feedback-success: #50fa7b;
-  --color-feedback-warning: #ffb86c;
-  --color-feedback-error: #ff5555;
-  --color-feedback-info: #8be9fd;
-  --color-typing-correct: #50fa7b;
-  --color-typing-incorrect: #ff5555;
-  --color-typing-current: #f1fa8c;
-  --color-typing-cursor: #ff79c6;
-  
-  /* 📏 스페이싱 토큰 */
-  --spacing-0: 0;
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-5: 1.25rem;
-  --spacing-6: 1.5rem;
-  --spacing-8: 2rem;
-  --spacing-10: 2.5rem;
-  --spacing-12: 3rem;
-  --spacing-16: 4rem;
-  --spacing-20: 5rem;
-  --spacing-24: 6rem;
-  
-  /* 🔤 타이포그래피 토큰 */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
-  
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-  
-  /* 🔳 보더 토큰 */
-  --border-radius-none: 0;
-  --border-radius-sm: 0.125rem;
-  --border-radius-base: 0.25rem;
-  --border-radius-md: 0.375rem;
-  --border-radius-lg: 0.5rem;
-  --border-radius-xl: 0.75rem;
-  --border-radius-2xl: 1rem;
-  --border-radius-full: 9999px;
-  
-  --border-width-0: 0px;
-  --border-width-1: 1px;
-  --border-width-2: 2px;
-  --border-width-4: 4px;
-  
-  /* 🌑 그림자 토큰 */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
-  /* ⚡ 애니메이션 토큰 */
-  --animation-duration-fast: 150ms;
-  --animation-duration-base: 200ms;
-  --animation-duration-slow: 300ms;
-  --animation-duration-slower: 500ms;
-  
-  --animation-easing-linear: linear;
-  --animation-easing-out: cubic-bezier(0, 0, 0.2, 1);
-  --animation-easing-in: cubic-bezier(0.4, 0, 1, 1);
-  --animation-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --animation-easing-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* ===============================
-   🚫 불필요한 스타일 제거됨
-   ===============================
-   
-   기존 1900줄 → 새로운 토큰 기반 시스템으로 대체
-   - Tailwind 커스텀 클래스들로 이동
-   - CSS Variables로 런타임 테마 변경
-   - 중복 코드 완전 제거
-   
-   =============================== */
-
-/* ===============================
    ⌨️ 타이핑 특화 스타일
    =============================== */
 
@@ -166,13 +68,46 @@ body {
 }
 
 /* ===============================
-   🔧 유틸리티 클래스
+   🔧 유틸리티 클래스 (공통)
    =============================== */
 
 /* 포커스 아웃라인 제거 */
 *:focus {
   outline: none;
 }
+
+/* 자주 사용되는 스페이싱 유틸리티 */
+.p-token-sm { padding: var(--spacing-2); }
+.p-token-md { padding: var(--spacing-4); }
+.p-token-lg { padding: var(--spacing-6); }
+.p-token-xl { padding: var(--spacing-8); }
+.p-token-2xl { padding: var(--spacing-12); }
+
+/* 복합 패딩 유틸리티 (Layout 전용) */
+.p-layout-main { padding: var(--spacing-12) var(--spacing-6); }
+
+.py-token-sm { padding-top: var(--spacing-2); padding-bottom: var(--spacing-2); }
+.py-token-md { padding-top: var(--spacing-4); padding-bottom: var(--spacing-4); }
+.py-token-lg { padding-top: var(--spacing-6); padding-bottom: var(--spacing-6); }
+.py-token-xl { padding-top: var(--spacing-8); padding-bottom: var(--spacing-8); }
+.py-token-2xl { padding-top: var(--spacing-12); padding-bottom: var(--spacing-12); }
+
+.px-token-sm { padding-left: var(--spacing-2); padding-right: var(--spacing-2); }
+.px-token-md { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+.px-token-lg { padding-left: var(--spacing-6); padding-right: var(--spacing-6); }
+.px-token-xl { padding-left: var(--spacing-8); padding-right: var(--spacing-8); }
+.px-token-2xl { padding-left: var(--spacing-12); padding-right: var(--spacing-12); }
+
+.mt-token-xs { margin-top: var(--spacing-1); }
+.mt-token-sm { margin-top: var(--spacing-2); }
+.mt-token-md { margin-top: var(--spacing-4); }
+.mt-token-lg { margin-top: var(--spacing-6); }
+.mt-token-xl { margin-top: var(--spacing-8); }
+
+.mb-token-sm { margin-bottom: var(--spacing-2); }
+.mb-token-md { margin-bottom: var(--spacing-4); }
+.mb-token-lg { margin-bottom: var(--spacing-6); }
+.mb-token-xl { margin-bottom: var(--spacing-8); }
 
 /* 스크롤바 스타일 */
 ::-webkit-scrollbar {
@@ -192,6 +127,17 @@ body {
   background: var(--color-text-primary);
 }
 
+/* GPU 가속 유틸리티 */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ===============================
    📱 반응형 최적화
    =============================== */
@@ -207,327 +153,3 @@ body {
     font-size: 13px;
   }
 }
-
-/* ===============================
-   🎭 은밀모드 전용 스타일
-   =============================== */
-
-[data-stealth="true"] {
-  /* 은밀모드에서 특별한 스타일링 */
-  --color-typing-cursor: var(--color-interactive-primary);
-}
-
-[data-stealth="true"] .typing-area {
-  font-family: 'Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', sans-serif;
-  /* 업무용 폰트로 변경 */
-}
-
-/* ===============================
-   🎴 기본 컴포넌트 스타일
-   =============================== */
-
-/* 🎴 카드 스타일 (완전 토큰 기반) */
-.card {
-  background-color: var(--color-background-secondary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
-  border: var(--border-width-1) solid rgb(from var(--color-interactive-primary) r g b / 0.1);
-}
-
-.card-header {
-  padding: var(--spacing-6) var(--spacing-6) 0;
-}
-
-.card-content {
-  padding: var(--spacing-6);
-}
-
-.card-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-2);
-}
-
-/* ✅ 버튼 스타일은 이제 Tailwind 토큰 클래스로 대체됨 */
-
-/* 📝 텍스트 스타일 (완전 토큰 기반) */
-.title-sm {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
-}
-
-.title-md {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
-}
-
-.title-lg {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
-}
-
-.text-secondary {
-  color: var(--color-text-secondary);
-}
-
-.text-muted {
-  color: var(--color-text-tertiary);
-}
-
-.text-primary {
-  color: var(--color-text-primary);
-}
-
-.caption {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-}
-
-/* 🦶 푸터 스타일 (완전 토큰 기반) */
-.footer {
-  background-color: var(--color-background-secondary);
-  border-top: var(--border-width-1) solid rgb(from var(--color-text-secondary) r g b / 0.1);
-  padding: var(--spacing-8) 0;
-  margin-top: auto;
-}
-
-/* ✅ 헤더 메뉴 스타일은 이제 Tailwind 토큰 클래스로 대체됨 */
-
-/* ===============================
-   📝 텍스트 타이포그래피 시스템
-   =============================== */
-
-.text-headline {
-  font-size: 2.25rem;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-}
-
-.text-title {
-  font-size: 1.875rem;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-
-.text-subtitle {
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: 0em;
-}
-
-.text-body {
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0em;
-}
-
-.text-description {
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0em;
-}
-
-.text-caption {
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-}
-
-.text-accent {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-/* ✅ 버튼 상태 시스템은 이제 Tailwind 토큰 클래스로 대체됨 */
-
-/* ===============================
-   ⚡ 성능 최적화
-   =============================== */
-
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform, opacity;
-}
-
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* ===============================
-   🎆 타이핑 이펙트 애니메이션
-   =============================== */
-
-/* 파티클 이펙트 애니메이션 */
-@keyframes particle-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-30px);
-  }
-  60% {
-    transform: translateY(-15px);
-  }
-}
-
-@keyframes particle-fade-out {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-}
-
-@keyframes particle-spark {
-  0% {
-    opacity: 1;
-    transform: scale(0.5) rotate(0deg);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.2) rotate(180deg);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.3) rotate(360deg);
-  }
-}
-
-/* 콤보 애니메이션 */
-@keyframes combo-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes rainbow-glow {
-  0% { filter: hue-rotate(0deg) saturate(1); }
-  25% { filter: hue-rotate(90deg) saturate(1.2); }
-  50% { filter: hue-rotate(180deg) saturate(1.4); }
-  75% { filter: hue-rotate(270deg) saturate(1.2); }
-  100% { filter: hue-rotate(360deg) saturate(1); }
-}
-
-@keyframes screen-glow {
-  0% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: inset 0 0 30px 0 var(--color-interactive-primary);
-  }
-  100% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
-}
-
-/* 타이핑 이펙트 클래스 */
-.particle-effect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.particle-spark {
-  animation: particle-spark var(--duration, 800ms) ease-out forwards;
-}
-
-.particle-bounce {
-  animation: particle-bounce var(--duration, 1000ms) ease-out forwards;
-}
-
-.particle-fade {
-  animation: particle-fade-out var(--duration, 1200ms) ease-out forwards;
-}
-
-.animate-combo {
-  animation: combo-pulse 0.3s ease-in-out;
-}
-
-.animate-rainbow {
-  animation: rainbow-glow 2s ease-in-out infinite;
-}
-
-.animate-screen-glow {
-  animation: screen-glow 1s ease-in-out;
-}
-
-/* 타이핑 속도별 글로우 효과 */
-.typing-glow-gold {
-  box-shadow: 0 0 20px #ffd700;
-  transition: box-shadow 0.3s ease;
-}
-
-.typing-glow-blue {
-  box-shadow: 0 0 25px #00bfff;
-  transition: box-shadow 0.3s ease;
-}
-
-.typing-glow-orange {
-  box-shadow: 0 0 30px #ff4500;
-  transition: box-shadow 0.3s ease;
-}
-
-.typing-glow-rainbow {
-  box-shadow: 0 0 35px #ff69b4;
-  transition: box-shadow 0.3s ease;
-  animation: rainbow-glow 2s ease-in-out infinite;
-}
-
-/* GPU 가속 적용 */
-.particle-effect,
-.typing-glow-gold,
-.typing-glow-blue,
-.typing-glow-orange,
-.typing-glow-rainbow {
-  transform: translateZ(0);
-  will-change: transform, opacity, box-shadow;
-}
-
-/* ===============================
-   끝! 🎉
-   =============================== */
-
-/*
-  이제 모든 스타일링은:
-  1. Tailwind 클래스 (design-tokens.ts 기반)
-  2. CSS Variables (런타임 테마 변경)
-  3. 컴포넌트별 전용 클래스
-  4. 타이핑 이펙트 애니메이션 ✨
-  
-  로 관리됩니다!
-  
-  기존 1900줄 → 200줄로 진화 🚀
-*/

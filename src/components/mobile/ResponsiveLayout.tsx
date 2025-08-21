@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { useDeviceInfo } from '@/utils/mobileDetection';
+import { useDeviceInfo, OSType } from '@/utils/mobileDetection';
 import { useVirtualKeyboardHeight } from './TouchKeyboard';
 
 /**
@@ -131,7 +131,7 @@ export const ResponsiveLayout = memo<ResponsiveLayoutProps>(({
     }
     
     // 안전 영역 고려 (iOS 노치 등)
-    if (deviceInfo?.isIOS()) {
+    if (deviceInfo?.os === OSType.IOS) {
       styles.paddingTop = 'env(safe-area-inset-top)';
       styles.paddingLeft = 'env(safe-area-inset-left)';
       styles.paddingRight = 'env(safe-area-inset-right)';

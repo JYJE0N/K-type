@@ -1,6 +1,8 @@
 "use client";
 
+import React from "react";
 import { IoGitBranchOutline } from "react-icons/io5";
+import { Button } from "@/design-system/ui";
 
 interface FooterProps {
   className?: string;
@@ -8,28 +10,32 @@ interface FooterProps {
 
 export function Footer({ className = "" }: FooterProps) {
   return (
-    <footer
-      className={`footer mt-auto border-t border-text-secondary border-opacity-10 flex justify-center ${className}`}
-    >
-      <div
-        className="w-full max-w-5xl"
-        style={{ padding: "var(--spacing-lg) var(--spacing-xl)" }}
-      >
+    <footer className={`mt-auto bg-gray-900 ${className}`}>
+      <div className="w-full max-w-4xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="text-caption text-text-tertiary">
-            Ⓒ 2025 월루타자기. All rights reserved.
+          <div className="text-sm text-text-muted">
+            © 2025 월루타자기. All rights reserved.
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-caption text-text-tertiary">Made by Doomock</span>
-            <a
-              href="https://github.com/JYJE0N"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-text-tertiary hover:text-interactive-primary transition-colors"
-              aria-label="GitHub"
+
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-text-muted">Made by Doomock</span>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-10 w-10 p-0"
             >
-              <IoGitBranchOutline className="w-4 h-4" />
-            </a>
+              <a
+                href="https://github.com/JYJE0N"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Profile"
+                className="text-text-muted hover:text-white transition-colors"
+              >
+                <IoGitBranchOutline className="w-6 h-6 text-text-muted" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>

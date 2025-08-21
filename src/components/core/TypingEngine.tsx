@@ -19,6 +19,13 @@ import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
 import { ghostModeManager } from "@/utils/ghostMode";
 import { typingEffectsManager } from "@/utils/typingEffects";
 import type { DeviceType } from "@/types";
+import { TypingControls } from "@/design-system/typing";
+import {
+  createFlexClasses,
+  createCardClasses,
+  typingLayoutStyles,
+} from "@/styles/layout-system";
+import { typingButtonStyles } from "@/styles/button-system";
 
 interface TypingEngineProps {
   className?: string;
@@ -30,7 +37,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isComposing = useRef(false);
   const [currentTime, setCurrentTime] = useState(0);
-  
+
   // 티어 승급 모달 상태
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [promotionData, setPromotionData] = useState<{
@@ -51,7 +58,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     keystrokes,
     mistakes,
     startTime,
-    firstKeystrokeTime,  // 첫 키 입력 시점 추가
+    firstKeystrokeTime, // 첫 키 입력 시점 추가
     resetTest,
     setTargetText,
     startCountdown,
@@ -62,7 +69,14 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   } = useTypingStore();
 
   const { calculateStats, resetStats } = useStatsStore();
-  const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled } = useSettingsStore();
+  const {
+    language,
+    textType,
+    testMode,
+    testTarget,
+    ghostModeEnabled,
+    typingEffectsEnabled,
+  } = useSettingsStore();
   const {
     initializeUser,
     recordTest,
@@ -143,7 +157,17 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   useEffect(() => {
     if (isActive && !isPaused && !isCompleted) {
       intervalRef.current = setInterval(() => {
-        calculateStats(keystrokes, mistakes, startTime, currentIndex, undefined, textType, targetText, userInput, firstKeystrokeTime);
+        calculateStats(
+          keystrokes,
+          mistakes,
+          startTime,
+          currentIndex,
+          undefined,
+          textType,
+          targetText,
+          userInput,
+          firstKeystrokeTime
+        );
       }, 250); // 250ms마다 더 자주 업데이트
     } else {
       if (intervalRef.current) {
@@ -172,16 +196,23 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   // 컴포넌트 초기화 - 사용자 초기화 및 고스트 모드 설정
   useEffect(() => {
     const initialize = async () => {
-      await initializeUser();
-      await fetchProgress();
-      
+      try {
+        await initializeUser();
+        await fetchProgress();
+      } catch (error) {
+        // API 에러 무시 - 로컬 스토리지만 사용
+        console.log("Progress API not available, using local storage only");
+      }
+
       // 타이핑 이펙트 매니저 초기화
-      const typingContainer = document.querySelector('.typing-engine-container') as HTMLElement;
+      const typingContainer = document.querySelector(
+        ".typing-engine-container"
+      ) as HTMLElement;
       if (typingContainer) {
         typingEffectsManager.setContainer(typingContainer);
         typingEffectsManager.setEnabled(typingEffectsEnabled);
       }
-      
+
       // 고스트 모드 자동 활성화 (설정이 켜져 있고 최고 기록이 있는 경우)
       if (ghostModeEnabled) {
         const bestRecord = ghostModeManager.findBestRecord(
@@ -191,18 +222,18 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
           testMode,
           testTarget
         );
-        
+
         if (bestRecord) {
           ghostModeManager.startGhostMode(bestRecord);
-          console.log('🏁 고스트 모드 자동 활성화:', {
+          console.log("🏁 고스트 모드 자동 활성화:", {
             ghostCPM: bestRecord.cpm,
             ghostAccuracy: bestRecord.accuracy,
-            recordDate: bestRecord.date.toLocaleDateString('ko-KR')
+            recordDate: bestRecord.date.toLocaleDateString("ko-KR"),
           });
         }
       }
     };
-    
+
     initialize();
   }, [initializeUser, fetchProgress]);
 
@@ -216,23 +247,23 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         testMode,
         testTarget
       );
-      
+
       if (bestRecord) {
         ghostModeManager.startGhostMode(bestRecord);
-        console.log('🏁 고스트 모드 활성화:', {
+        console.log("🏁 고스트 모드 활성화:", {
           ghostCPM: bestRecord.cpm,
-          ghostAccuracy: bestRecord.accuracy
+          ghostAccuracy: bestRecord.accuracy,
         });
       } else {
         ghostModeManager.stopGhostMode();
-        console.log('⚪ 고스트 모드 비활성화: 기록 없음');
+        console.log("⚪ 고스트 모드 비활성화: 기록 없음");
       }
     } else {
       ghostModeManager.stopGhostMode();
-      console.log('⚪ 고스트 모드 비활성화: 설정 꺼짐');
+      console.log("⚪ 고스트 모드 비활성화: 설정 꺼짐");
     }
   }, [ghostModeEnabled, language, textType, testMode, testTarget, recentTests]);
-  
+
   // 타이핑 이펙트 설정 변경 시 반영
   useEffect(() => {
     typingEffectsManager.setEnabled(typingEffectsEnabled);
@@ -248,8 +279,18 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
         // 🔥 최종 통계 강제 계산 (한글 스트로크 적용)
         const { calculateStats } = useStatsStore.getState();
-        calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), 'words', targetText, userInput, firstKeystrokeTime);
-        
+        calculateStats(
+          keystrokes,
+          mistakes,
+          startTime,
+          currentIndex,
+          new Date(),
+          "words",
+          targetText,
+          userInput,
+          firstKeystrokeTime
+        );
+
         // 현재 통계 store에서 최신 값 가져오기
         const currentStats = useStatsStore.getState().liveStats;
 
@@ -267,7 +308,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         // NaN 체크 및 기본값 설정 (한글 스트로크 계산 적용)
         const validCPM =
           isNaN(currentStats.cpm) || !isFinite(currentStats.cpm)
-            ? Math.round((currentIndex * 1.2) / (duration / 60))  // 🚀 한글 보정 적용
+            ? Math.round((currentIndex * 1.2) / (duration / 60)) // 🚀 한글 보정 적용
             : currentStats.cpm;
         const validWPM =
           isNaN(currentStats.wpm) || !isFinite(currentStats.wpm)
@@ -303,18 +344,29 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
           const currentStats = {
             averageCPM: averageCPM || 0,
             averageAccuracy: averageAccuracy || 0,
-            averageConsistency: Math.max(0, 100 - (Math.abs((averageCPM || 0) - (averageWPM || 0) * 5) / (averageCPM || 1)) * 100) || 85,
-            totalTests: totalTests || 0
+            averageConsistency:
+              Math.max(
+                0,
+                100 -
+                  (Math.abs((averageCPM || 0) - (averageWPM || 0) * 5) /
+                    (averageCPM || 1)) *
+                    100
+              ) || 85,
+            totalTests: totalTests || 0,
           };
 
-          const beforeTier = defaultTierSystem.calculateCurrentTier(currentStats);
-          
+          const beforeTier =
+            defaultTierSystem.calculateCurrentTier(currentStats);
+
           // 새 테스트 결과로 승급 시뮬레이션
-          const promotionResult = defaultTierSystem.simulatePromotion(currentStats, {
-            cpm: validCPM,
-            accuracy: validAccuracy,
-            consistency: validConsistency
-          });
+          const promotionResult = defaultTierSystem.simulatePromotion(
+            currentStats,
+            {
+              cpm: validCPM,
+              accuracy: validAccuracy,
+              consistency: validConsistency,
+            }
+          );
 
           // 고스트 모드를 위한 새 기록 생성
           const newTestRecord = {
@@ -332,14 +384,14 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             accuracy: validAccuracy,
             consistency: validConsistency,
             mistakes,
-            keystrokes: keystrokes.map(k => ({
+            keystrokes: keystrokes.map((k) => ({
               key: k.key,
               timestamp: k.timestamp - startTime.getTime(), // 상대 시간으로 변환
               correct: k.correct,
-              timeDelta: k.timeDelta
+              timeDelta: k.timeDelta,
             })),
             completedText: targetText.substring(0, currentIndex),
-            date: new Date()
+            date: new Date(),
           };
 
           // MongoDB에 테스트 결과 저장
@@ -361,9 +413,9 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
               keystrokes: newTestRecord.keystrokes.map((k, index) => ({
                 timestamp: k.timestamp,
                 position: index, // 키스트로크 순서를 position으로 사용
-                correct: k.correct
+                correct: k.correct,
               })),
-              completedText: newTestRecord.completedText
+              completedText: newTestRecord.completedText,
             });
           }
 
@@ -371,14 +423,14 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
           if (promotionResult.promoted) {
             console.log("🏆 티어 승급!", {
               from: promotionResult.beforeTier.name,
-              to: promotionResult.afterTier.name
+              to: promotionResult.afterTier.name,
             });
-            
+
             setPromotionData({
               fromTier: promotionResult.beforeTier,
-              toTier: promotionResult.afterTier
+              toTier: promotionResult.afterTier,
             });
-            
+
             // 잠시 후 승급 모달 표시 (통계 페이지 이동 전)
             setTimeout(() => {
               setShowPromotionModal(true);
@@ -490,52 +542,15 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
   return (
     <div
-      className={`typing-engine typing-engine-container relative ${className}`}
-      style={{
-        paddingTop: "var(--spacing-lg)",
-        paddingBottom: "var(--spacing-lg)",
-      }}
+      className={`typing-engine typing-engine-container relative py-8 ${className}`}
     >
-
-      {/* 간단한 언어 선택 */}
-      <div className="flex justify-center mb-6">
-        <div className="flex bg-background-secondary rounded-lg p-1">
-          <button
-            onClick={() => useSettingsStore.getState().setLanguage("korean")}
-            className={`px-3 py-1 text-sm rounded font-medium transition-colors ${
-              language === "korean" 
-                ? "bg-interactive-primary text-text-inverse" 
-                : "text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            한국어
-          </button>
-          <button
-            onClick={() => useSettingsStore.getState().setLanguage("english")}
-            className={`px-3 py-1 text-sm rounded font-medium transition-colors ${
-              language === "english" 
-                ? "bg-interactive-primary text-text-inverse" 
-                : "text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            English
-          </button>
-        </div>
-      </div>
-
       {/* 메인 타이핑 영역 */}
       <div className="relative">
         {/* 시간 표시 (인풋 필드 위) */}
         {isActive && !isPaused && !isCompleted && (
-          <div
-            className="text-center"
-            style={{ marginBottom: "var(--spacing-md)" }}
-          >
-            <div
-              className="inline-flex items-center btn btn-sm btn-secondary"
-              style={{ cursor: "default" }}
-            >
-              <div className="text-md font-mono text-typing-accent">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center bg-background-secondary rounded-lg px-4 py-2 cursor-default">
+              <div className="text-lg font-mono text-interactive-primary">
                 {(() => {
                   const mins = Math.floor(currentTime / 60);
                   const secs = Math.floor(currentTime % 60);
@@ -556,7 +571,9 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             currentIndex={currentIndex}
             userInput={userInput}
             mistakes={mistakes.map((m) => m.position)}
-            className={`transition-all duration-300 ${isCountingDown ? 'blur-sm opacity-50' : ''}`}
+            className={`transition-all duration-300 ${
+              isCountingDown ? "blur-sm opacity-50" : ""
+            }`}
           />
 
           {/* 입력 핸들러 (숨겨진 인풋) - TextRenderer 위에 투명하게 */}
@@ -573,7 +590,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         {/* 타이핑 진행 시각화 - 입력 필드 바로 아래 */}
         {isActive && !isCountingDown && (
           <div className="mt-4">
-            <TypingVisualizer 
+            <TypingVisualizer
               text={targetText}
               currentIndex={currentIndex}
               className="transition-opacity duration-300"
@@ -590,62 +607,60 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
         {/* 카운트다운 오버레이 */}
         {isCountingDown && (
-          <div 
-            className="absolute inset-0 flex items-center justify-center rounded-lg z-30 bg-surface/90 backdrop-blur-sm"
-          >
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg z-30 bg-surface/90 backdrop-blur-sm">
             <div className="text-center">
               <div className="text-6xl font-bold mb-4 animate-pulse text-typing-accent">
-                {countdownValue === 0 ? '시작!' : countdownValue}
+                {countdownValue === 0 ? "시작!" : countdownValue}
               </div>
-              <p className="text-lg text-text-secondary">
-                준비하세요...
-              </p>
+              <p className="text-lg text-text-secondary">준비하세요...</p>
             </div>
           </div>
         )}
 
         {/* 컨트롤 버튼들 */}
-        <div className="flex justify-center gap-4 mt-6 relative z-40">
-          {!isActive && !isCompleted && !isCountingDown && (
-            <button
-              onClick={startCountdown}
-              className="btn-primary btn-lg"
-            >
-              시작하기
-            </button>
-          )}
-          
+        <div className="flex justify-center gap-4 mt-6 relative z-10">
+          <TypingControls
+            isActive={isActive}
+            isPaused={isPaused}
+            isCompleted={isCompleted}
+            isCountingDown={isCountingDown}
+            onStart={startCountdown}
+            onPause={pauseTest}
+            onResume={resumeTest}
+            onStop={stopTest}
+          />
+
           {isActive && !isPaused && !isCompleted && (
             <>
               <button
                 onClick={pauseTest}
-                className="btn-secondary flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-500 transition-all duration-200 flex items-center gap-2"
               >
                 <PauseCircle className="w-5 h-5" />
                 일시정지
               </button>
               <button
                 onClick={stopTest}
-                className="btn-ghost flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-transparent text-slate-400 border border-slate-400 rounded-lg font-medium hover:bg-slate-600 hover:text-white transition-all duration-200 flex items-center gap-2"
               >
                 <StopCircle className="w-5 h-5" />
                 중단
               </button>
             </>
           )}
-          
+
           {isPaused && (
             <>
               <button
                 onClick={resumeTest}
-                className="btn-primary flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-pink-500 text-slate-900 rounded-lg font-medium hover:bg-pink-400 transition-all duration-200 flex items-center gap-2"
               >
                 <PlayCircle className="w-5 h-5" />
                 계속
               </button>
               <button
                 onClick={stopTest}
-                className="btn-ghost flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-transparent text-slate-400 border border-slate-400 rounded-lg font-medium hover:bg-slate-600 hover:text-white transition-all duration-200 flex items-center gap-2"
               >
                 <StopCircle className="w-5 h-5" />
                 중단
@@ -655,35 +670,35 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         </div>
 
         {/* 안내문구 - 텍스트박스 아래 */}
-        <div
-          className="text-center"
-          style={{ marginTop: "var(--spacing-lg)" }}
-        >
+        <div className="text-center mt-8 space-y-3">
           {!isActive && !isCompleted && !isCountingDown && (
-            <p className="text-description text-text-secondary flex items-center justify-center gap-2">
-              <KeyCap variant="accent">클릭</KeyCap> 
-              또는
-              <KeyCap variant="accent">키</KeyCap> 
-              입력으로 시작
-            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#2f2f2f]/80 border border-[#363636] rounded-lg backdrop-blur-sm">
+              <span className="text-sm text-gray-400">시작하기:</span>
+              <div className="flex items-center gap-1">
+                <KeyCap variant="primary" size="sm">클릭</KeyCap>
+                <span className="text-xs text-gray-500">또는</span>
+                <KeyCap variant="primary" size="sm">아무키</KeyCap>
+              </div>
+            </div>
           )}
           {!isCompleted && (
-            <p
-              className="text-caption text-text-tertiary flex items-center justify-center gap-2"
-              style={{ marginTop: "var(--spacing-3)" }}
-            >
-              새로 시작 
-              <KeyCap size="sm">Shift</KeyCap>
-              +
-              <KeyCap size="sm">Enter</KeyCap>
-            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#2f2f2f]/80 border border-[#363636] rounded-lg backdrop-blur-sm">
+              <span className="text-sm text-gray-400">다시 시작:</span>
+              <div className="flex items-center gap-1">
+                <KeyCap variant="primary" size="sm">Shift</KeyCap>
+                <span className="text-xs text-gray-500">+</span>
+                <KeyCap variant="primary" size="sm">Enter</KeyCap>
+              </div>
+            </div>
           )}
         </div>
 
         {isPaused && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20 bg-background-primary bg-opacity-80 backdrop-blur-sm">
             <div className="text-center bg-background-secondary p-8 rounded-xl shadow-xl border border-interactive-primary border-opacity-20">
-              <h3 className="text-subtitle text-interactive-primary mb-3">일시정지됨</h3>
+              <h3 className="text-subtitle text-interactive-primary mb-3">
+                일시정지됨
+              </h3>
               <p className="text-description text-text-secondary">
                 계속하려면 아무 키나 누르세요
               </p>

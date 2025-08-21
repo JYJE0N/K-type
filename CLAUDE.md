@@ -4,7 +4,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Common Development Tasks
 
-### Development
 ```bash
 # Install dependencies (using Yarn)
 yarn install
@@ -25,6 +24,26 @@ yarn lint
 yarn type-check
 ```
 
+## Critical Development Conventions
+
+### Korean IME Handling
+- Always use `isKoreanJamo()` utility from `@/utils/koreanIME` before processing keystroke events
+- Korean jamo characters (자모) should be counted for CPM calculation but NOT for text progression
+- IME composition state must be tracked to prevent duplicate keystroke registration
+- Use `IMEHandler` class for cross-browser IME compatibility
+
+### State Management Architecture
+- All typing state flows through `typingStore.ts` - never bypass this store
+- Use `eventBus` from `@/utils/eventBus` for cross-store communication 
+- Statistics updates are batched via `eventBus.emit('stats:update')` to prevent performance issues
+- MongoDB operations go through `userProgressStore.ts`
+
+### Performance Requirements
+- Keystroke handling must complete within 16ms (60fps requirement)
+- Use `setTimeout` with minimal delays for test completion to ensure proper state settling
+- Statistics calculations are batched every 250ms during active typing
+- Memory cleanup is critical - always clear intervals and timeouts in useEffect cleanup
+
 ## Architecture Overview
 
 This is a Korean/English typing practice web application built with Next.js 15, React 19, and TypeScript. The application focuses on accurate Korean IME (Input Method Editor) handling and real-time typing statistics.
@@ -37,11 +56,13 @@ This is a Korean/English typing practice web application built with Next.js 15, 
    - `settingsStore.ts`: User preferences for language, theme, test mode, and test targets
 
 2. **Typing Engine (`src/components/core/`)**
-   - `TypingEngine.tsx`: Main orchestrator component managing test lifecycle, timers, and IME composition states
-   - `InputHandler.tsx`: Captures keyboard input and handles IME composition events
+   - `TypingEngine.tsx`: Main orchestrator component managing test lifecycle, timers, and IME composition states. Handles auto-navigation to `/stats` page on completion.
+   - `InputHandler.tsx`: Captures keyboard input and handles IME composition events using transparent overlay
    - `TextRenderer.tsx`: Visual rendering of text with current position, correct/incorrect highlighting
    - `StatsCalculator.tsx`: Real-time circular progress charts for typing statistics
    - `TestResult.tsx`: Post-test results display
+   - `TypingVisualizer.tsx`: Progress visualization during active typing
+   - `GhostIndicator.tsx`: Shows comparison with personal best performance
 
 3. **Korean IME Handling**
    - Special logic to filter Korean jamo characters (Unicode ranges 0x3131-0x314F, 0x1100-0x11FF)
@@ -53,13 +74,25 @@ This is a Korean/English typing practice web application built with Next.js 15, 
    - Word-based: Fixed word count tests (10/25/50/100 words)
    - Dynamic text generation based on language pack and text type
 
+5. **Additional Systems**
+   - `userProgressStore.ts`: MongoDB integration for user progress tracking and historical data
+   - `ghostMode.ts`: Personal best comparison system that overlays previous performance
+   - `typingEffects.ts`: Visual feedback effects during typing sessions
+   - `tierSystem.ts`: Gamification with promotion system based on performance metrics
+
 ### Path Aliases
 - `@/*` maps to `./src/*` for cleaner imports
 
 ### Styling
-- Tailwind CSS with custom theme variables for dark/light/high-contrast modes
-- CSS variables defined in `globals.css` for consistent theming
-- 이모지 사용을 자제하세요
+- Tailwind CSS 3.4 with extensive custom configuration in `tailwind.config.js`
+- CSS variables for theme system supporting dark/light/high-contrast modes
+- Custom Tailwind components for typing-specific UI (`.typing-text`, `.typing-char`, etc.)
+- Pretendard font for Korean text, JetBrains Mono for typing interface
+
+### Database Integration
+- MongoDB with Mongoose ODM for user progress and test results
+- Connection string should be provided via environment variables
+- API routes in `/api` handle database operations
 
 ---
 
@@ -236,12 +269,20 @@ K-types/
 
 ### 📝 코드 품질 기준
 
-- **TypeScript 엄격 모드** 사용
-- **ESLint** 규칙 준수
+- **TypeScript 엄격 모드** 사용 (strict: true in tsconfig.json)
+- **ESLint** 규칙 준수 - use `yarn lint` before commits
 - **함수형 프로그래밍** 원칙 적용
 - **관심사 분리** (SoC) 철저히 준수
 - **컴포넌트 재사용성** 고려
 - **성능 최적화** (메모이제이션, 지연 로딩)
+
+### Key File Locations
+- Main typing page: `src/app/page.tsx`
+- Statistics results: `src/app/stats/page.tsx`  
+- Theme initialization: `src/app/layout.tsx` (includes SSR-safe theme script)
+- Global styles with CSS variables: `src/app/globals.css`
+- Language packs: `src/modules/languages/` and `src/data/sentences/`
+- Type definitions: `src/types/index.ts`
 
 ### 🔧 개발 워크플로우
 

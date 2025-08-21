@@ -13,8 +13,7 @@ export function GlobalHeader({ className = '' }: GlobalHeaderProps) {
 
   return (
     <header className={`
-      w-full border-b border-text-tertiary border-opacity-10 
-      bg-background bg-opacity-95 backdrop-blur-sm
+      w-full bg-gray-900
       sticky top-0 z-40
       ${className}
     `}>
@@ -28,7 +27,7 @@ export function GlobalHeader({ className = '' }: GlobalHeaderProps) {
             {/* 통계 버튼 (아이콘만) */}
             <Link
               href="/stats"
-              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-background-secondary transition-colors"
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-colors"
               title="통계"
             >
               <BarChart3 className="w-4 h-4" />

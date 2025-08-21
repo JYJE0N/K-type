@@ -20,9 +20,9 @@ export function Layout({ children, className = '' }: LayoutProps) {
           <GlobalHeader />
           
           {/* 메인 컨텐츠 영역 - flex-1로 남은 공간 모두 차지 */}
-          <main className="flex-1 flex flex-col">
-            <div className="flex-1 flex justify-center" style={{ padding: 'var(--spacing-2xl) var(--spacing-xl)' }}>
-              <div className="w-full max-w-6xl">
+          <main className="flex-1 flex flex-col bg-gray-800">
+            <div className="flex-1 flex justify-center p-layout-main">
+              <div className="w-full max-w-4xl">
                 {children}
               </div>
             </div>

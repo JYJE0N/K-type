@@ -50,7 +50,7 @@ export const MobileTypingInterface = memo<MobileTypingInterfaceProps>(({
   } = useTypingStore();
   
   // 제스처 설정
-  const gestures = useGestures(containerRef, {
+  const gestures = useGestures(containerRef as React.RefObject<HTMLElement>, {
     swipeMinDistance: 100,
     longPressTimeout: 600,
   });
@@ -271,11 +271,7 @@ export const MobileTypingInterface = memo<MobileTypingInterfaceProps>(({
         {/* 통계 영역 (조건부 표시) */}
         {showStats && (
           <div className="stats-section p-4 bg-background-elevated border-b border-text-tertiary border-opacity-20">
-            <StatsCalculator
-              isActive={isActive}
-              isPaused={isPaused}
-              isCompleted={isCompleted}
-            />
+            <StatsCalculator />
           </div>
         )}
 

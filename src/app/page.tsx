@@ -7,6 +7,7 @@ import { ClientOnly } from '@/components/ClientOnly'
 import { ThemeInitializer } from '@/components/ThemeInitializer'
 import { ThemeSelector } from '@/components/settings/ThemeSelector'
 import { StatsButton } from '@/components/ui/StatsButton'
+import { LanguageToggle } from '@/design-system/ui'
 import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
@@ -49,6 +50,11 @@ export default function Home() {
         
         {/* 섹션 1: 메인 타이핑 영역 */}
         <section className="w-full">
+          {/* 언어 선택 토글 */}
+          <div className="flex justify-center mb-6">
+            <LanguageToggle />
+          </div>
+          
           <ClientOnly 
             fallback={
               <div className="animate-pulse">

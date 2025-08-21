@@ -145,8 +145,8 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
       {isOpen && (
         <div className={`
           absolute top-full left-0 mt-2 w-72 max-h-80
-          bg-background-elevated rounded-lg 
-          border border-text-tertiary/30
+          bg-gray-800 rounded-lg 
+          border border-gray-700
           shadow-xl shadow-black/40
           z-[9999]
           animate-in slide-in-from-top-2 duration-200
@@ -155,7 +155,7 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
           <div className="p-2">
             {Object.entries(groupedThemes).map(([category, themes]) => (
               <div key={category} className="mb-3 last:mb-0">
-                <h3 className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                <h3 className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   {categoryLabels[category as keyof typeof categoryLabels]}
                 </h3>
                 <div className="space-y-1">
@@ -166,11 +166,11 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
                       className={`
                         w-full flex items-center gap-3 px-3 py-2 rounded-md
                         text-left transition-all duration-150
-                        hover:bg-background-elevated
-                        focus:outline-none focus:bg-background-elevated
+                        hover:bg-gray-700
+                        focus:outline-none focus:bg-gray-700
                         ${theme === themeOption.id 
-                          ? 'bg-interactive-primary bg-opacity-10 text-interactive-primary' 
-                          : 'text-text-primary hover:text-interactive-primary'
+                          ? 'bg-pink-500 bg-opacity-20 text-pink-300' 
+                          : 'text-gray-200 hover:text-pink-300'
                         }
                       `}
                     >
@@ -181,12 +181,12 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm">{themeOption.name}</div>
-                        <div className="text-xs text-text-secondary truncate">
+                        <div className="text-xs text-gray-400 truncate">
                           {themeOption.description}
                         </div>
                       </div>
                       {theme === themeOption.id && (
-                        <Check className="w-4 h-4 text-interactive-primary flex-shrink-0" />
+                        <Check className="w-4 h-4 text-pink-300 flex-shrink-0" />
                       )}
                     </button>
                   ))}

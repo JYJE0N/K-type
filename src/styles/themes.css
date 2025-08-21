@@ -1,0 +1,46 @@
+/* ===============================
+   🎨 테마 CSS Variables (런타임 테마)
+   =============================== */
+
+:root {
+  /* 🎨 컬러 토큰 - 모던 다크 테마 (커스텀 보라색 & 민트 액센트) */
+  --color-background: #1a1a1a;
+  --color-background-secondary: #2f2f2f;
+  --color-background-elevated: #3f3f3f;
+  --color-surface: #2f2f2f;
+  --color-elevated: #3f3f3f;
+  --color-border: #363636;
+  --color-border-light: #5d5d5d;
+  --color-text-primary: #f7fafc;
+  --color-text-secondary: #cbd5e0;
+  --color-text-tertiary: #a0aec0;
+  --color-text-inverse: #1a1a1a;
+  --color-text-muted: #5d5d5d;
+  --color-interactive-primary: #c395fd;
+  --color-interactive-primary-hover: #d4b0ff;
+  --color-interactive-secondary: #1adfcc;
+  --color-interactive-secondary-hover: #4de8d9;
+  --color-interactive-disabled: #3f3f3f;
+  --color-feedback-success: #1adfcc;
+  --color-feedback-warning: #ed8936;
+  --color-feedback-error: #f56565;
+  --color-feedback-info: #4299e1;
+  --color-typing-correct: #1adfcc;
+  --color-typing-incorrect: #fc8181;
+  --color-typing-current: #c395fd;
+  --color-typing-cursor: #c395fd;
+}
+
+/* ===============================
+   🎭 은밀모드 전용 스타일
+   =============================== */
+
+[data-stealth="true"] {
+  /* 은밀모드에서 특별한 스타일링 */
+  --color-typing-cursor: var(--color-interactive-primary);
+}
+
+[data-stealth="true"] .typing-area {
+  font-family: 'Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', sans-serif;
+  /* 업무용 폰트로 변경 */
+}

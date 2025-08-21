@@ -41,11 +41,7 @@ export {
 
 // 타입 정의들
 export type {
-  DeviceInfo,
-  AdaptiveUIInfo,
-  GestureEvent,
-  TouchPoint,
-  ViewportSize
+  DeviceInfo
 } from '@/utils/mobileDetection';
 
 export type {

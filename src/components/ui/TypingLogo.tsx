@@ -47,13 +47,13 @@ export function TypingLogo({ className = '' }: TypingLogoProps) {
 
   return (
     <Link href="/" className={`flex items-center hover:opacity-80 transition-opacity cursor-pointer ${className}`}>
-      <h1 className="text-title font-bold text-text-primary">
-        {displayedText}
+      <h1 className="text-2xl font-bold text-text-primary flex items-baseline">
+        <span>{displayedText}</span>
         <span 
-          className={`inline-block w-0.5 ml-1 bg-interactive-primary transition-opacity duration-150 ${
+          className={`inline-block w-0.5 ml-1 bg-interactive-primary transition-opacity duration-150 translate-y-0.5 ${
             showCursor ? 'opacity-100' : 'opacity-0'
           }`}
-          style={{ height: '1.2em' }}
+          style={{ height: '0.9em' }}
           aria-hidden="true"
         />
       </h1>

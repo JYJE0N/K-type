@@ -180,8 +180,9 @@ export const useUserProgressStore = create<UserProgressStore>()(
             })
           }
         } catch (error) {
-          console.error('Failed to fetch progress:', error)
-          set({ error: 'Failed to load progress data' })
+          // API 에러 시 조용히 실패 - 로컬 스토리지 데이터만 사용
+          console.log('Using local storage only - API not available')
+          set({ error: null })  // 에러 메시지 표시 안함
         } finally {
           set({ isLoading: false })
         }

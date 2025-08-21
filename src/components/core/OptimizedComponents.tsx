@@ -23,14 +23,8 @@ export const MemoizedTextRenderer = memo(TextRenderer, (prevProps, nextProps) =>
   );
 });
 
-// StatsCalculator 최적화 - 통계가 변경될 때만 리렌더링
-export const MemoizedStatsCalculator = memo(StatsCalculator, (prevProps, nextProps) => {
-  return (
-    prevProps.isActive === nextProps.isActive &&
-    prevProps.isPaused === nextProps.isPaused &&
-    prevProps.isCompleted === nextProps.isCompleted
-  );
-});
+// StatsCalculator 최적화 - props가 변경될 때만 리렌더링
+export const MemoizedStatsCalculator = memo(StatsCalculator);
 
 // InputHandler 최적화 - 핸들러 함수가 변경될 때만 리렌더링
 export const MemoizedInputHandler = memo(InputHandler, (prevProps, nextProps) => {
@@ -57,13 +51,7 @@ export const MemoizedGhostIndicator = memo(GhostIndicator, (prevProps, nextProps
 });
 
 // VirtualKeyboard 최적화
-export const MemoizedVirtualKeyboard = memo(VirtualKeyboard, (prevProps, nextProps) => {
-  return (
-    prevProps.currentChar === nextProps.currentChar &&
-    prevProps.language === nextProps.language &&
-    prevProps.isActive === nextProps.isActive
-  );
-});
+export const MemoizedVirtualKeyboard = memo(VirtualKeyboard);
 
 // 재사용 가능한 버튼 컴포넌트
 interface ButtonProps {
