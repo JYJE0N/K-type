@@ -47,6 +47,13 @@ const themeConfigs = {
     description: '팀 협업 툴 스타일',
     preview: '#f8f8f8',
     category: 'stealth'
+  },
+  'stealth-notion': {
+    id: 'stealth-notion' as const,
+    name: '은밀 (노션)',
+    description: '노션 문서 스타일',
+    preview: '#ffffff',
+    category: 'stealth'
   }
 } as const;
 
@@ -66,6 +73,11 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
   const { theme, setTheme } = useSettingsStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // 디버깅 정보
+  console.log('Current theme:', theme);
+  console.log('data-theme attribute:', document.documentElement.getAttribute('data-theme'));
+  console.log('Computed background:', getComputedStyle(document.documentElement).getPropertyValue('--color-background'));
 
   // 외부 클릭시 드롭다운 닫기
   useEffect(() => {
@@ -115,15 +127,28 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-lg
-          bg-background-secondary hover:bg-background-elevated
-          border border-text-tertiary border-opacity-20
-          text-text-primary text-sm font-medium
+          flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium
           transition-all duration-200
-          hover:shadow-md hover:border-opacity-40
-          focus:outline-none focus:ring-2 focus:ring-interactive-primary focus:ring-opacity-50
-          ${isOpen ? 'bg-background-elevated border-opacity-40 shadow-md' : ''}
+          focus:outline-none
         `}
+        style={{
+          backgroundColor: isOpen 
+            ? 'var(--color-background-elevated)' 
+            : 'transparent',
+          color: 'var(--color-text-primary)',
+          border: `1px solid var(--color-border)`,
+          boxShadow: isOpen ? '0 4px 8px rgba(0, 0, 0, 0.1)' : 'none'
+        }}
+        onMouseEnter={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -143,19 +168,28 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
 
       {/* 드롭다운 메뉴 */}
       {isOpen && (
-        <div className={`
-          absolute top-full left-0 mt-2 w-72 max-h-80
-          bg-gray-800 rounded-lg 
-          border border-gray-700
-          shadow-xl shadow-black/40
-          z-[9999]
-          animate-in slide-in-from-top-2 duration-200
-          overflow-y-auto scrollbar-hide
-        `}>
+        <div 
+          className={`
+            absolute top-full left-0 mt-2 w-72 max-h-80
+            rounded-lg shadow-xl
+            z-[9999]
+            animate-in slide-in-from-top-2 duration-200
+            overflow-y-auto scrollbar-hide
+          `}
+          style={{
+            backgroundColor: 'var(--color-background-elevated)',
+            borderColor: 'var(--color-border)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}
+        >
           <div className="p-2">
             {Object.entries(groupedThemes).map(([category, themes]) => (
               <div key={category} className="mb-3 last:mb-0">
-                <h3 className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <h3 
+                  className="px-3 py-2 text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
                   {categoryLabels[category as keyof typeof categoryLabels]}
                 </h3>
                 <div className="space-y-1">
@@ -166,13 +200,30 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
                       className={`
                         w-full flex items-center gap-3 px-3 py-2 rounded-md
                         text-left transition-all duration-150
-                        hover:bg-gray-700
-                        focus:outline-none focus:bg-gray-700
-                        ${theme === themeOption.id 
-                          ? 'bg-pink-500 bg-opacity-20 text-pink-300' 
-                          : 'text-gray-200 hover:text-pink-300'
-                        }
+                        focus:outline-none
                       `}
+                      style={{
+                        backgroundColor: theme === themeOption.id 
+                          ? 'var(--color-interactive-primary)' 
+                          : 'transparent',
+                        color: theme === themeOption.id 
+                          ? 'var(--color-text-inverse)' 
+                          : 'var(--color-text-primary)',
+                        '--hover-bg': 'var(--color-background-elevated)',
+                        '--hover-color': 'var(--color-interactive-primary)'
+                      } as React.CSSProperties & { '--hover-bg': string; '--hover-color': string }}
+                      onMouseEnter={(e) => {
+                        if (theme !== themeOption.id) {
+                          e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                          e.currentTarget.style.color = 'var(--color-interactive-primary)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (theme !== themeOption.id) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = 'var(--color-text-primary)';
+                        }
+                      }}
                     >
                       <div 
                         className="w-4 h-4 rounded-full border-2 border-white shadow-sm flex-shrink-0"
@@ -181,12 +232,18 @@ export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm">{themeOption.name}</div>
-                        <div className="text-xs text-gray-400 truncate">
+                        <div 
+                          className="text-xs truncate"
+                          style={{ color: 'var(--color-text-tertiary)' }}
+                        >
                           {themeOption.description}
                         </div>
                       </div>
                       {theme === themeOption.id && (
-                        <Check className="w-4 h-4 text-pink-300 flex-shrink-0" />
+                        <Check 
+                          className="w-4 h-4 flex-shrink-0"
+                          style={{ color: 'var(--color-text-inverse)' }}
+                        />
                       )}
                     </button>
                   ))}

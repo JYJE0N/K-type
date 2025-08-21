@@ -665,6 +665,38 @@ export const themeTokenMap = {
   stealth: stealthTokens.kanban,
   'stealth-docs': stealthTokens.docs,
   'stealth-slack': stealthTokens.slack,
+  'stealth-notion': {
+    background: {
+      primary: '#ffffff',
+      secondary: '#f7f6f3',
+      elevated: '#f1f1ef'
+    },
+    text: {
+      primary: '#37352f',
+      secondary: '#6f6e69',
+      tertiary: '#9b9a97',
+      inverse: '#ffffff'
+    },
+    interactive: {
+      primary: '#2383e2',
+      primaryHover: '#1a6bb8',
+      secondary: '#6f6e69',
+      secondaryHover: '#57564f',
+      disabled: '#e9e9e7'
+    },
+    feedback: {
+      success: '#0f7b6c',
+      warning: '#f79009',
+      error: '#d83b01',
+      info: '#2383e2'
+    },
+    typing: {
+      correct: '#0f7b6c',
+      incorrect: '#d83b01',
+      current: '#37352f',
+      cursor: '#2383e2'
+    }
+  },
   // 새로운 프리셋 테마들 (나중에 추가될 예정)
   // sakura: sakuraTheme,
   // ocean: oceanTheme, 

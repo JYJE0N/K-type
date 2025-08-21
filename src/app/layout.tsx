@@ -45,23 +45,31 @@ export default function RootLayout({
               // 테마 초기화 - 페이지 로드 전에 실행
               (function() {
                 try {
+                  // localStorage에서 저장된 설정 불러오기
                   const stored = localStorage.getItem('typing-settings');
-                  const settings = stored ? JSON.parse(stored) : null;
-                  const theme = settings?.state?.theme || 'dark';
+                  let theme = 'light'; // 기본값
                   
-                  // 다크 테마가 아닌 경우에만 속성 설정
-                  if (theme !== 'dark') {
-                    document.documentElement.setAttribute('data-theme', theme);
+                  if (stored) {
+                    const parsed = JSON.parse(stored);
+                    theme = parsed.state?.theme || 'light';
                   }
+                  
+                  document.documentElement.setAttribute('data-theme', theme);
+                  document.documentElement.setAttribute('data-theme-loaded', 'true');
+                  
+                  console.log('Theme initialized:', theme);
                 } catch (e) {
-                  // 기본 다크 테마 사용
+                  // 기본 라이트 테마 사용
+                  document.documentElement.setAttribute('data-theme', 'light');
+                  document.documentElement.setAttribute('data-theme-loaded', 'true');
+                  console.log('Fallback theme set: light');
                 }
               })();
             `,
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-text-primary antialiased">
+      <body className="min-h-screen text-text-primary antialiased" style={{ backgroundColor: 'var(--color-background)' }}>
         {children}
       </body>
     </html>

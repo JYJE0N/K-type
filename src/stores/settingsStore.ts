@@ -36,7 +36,7 @@ interface SettingsStore extends Settings {
 
 const defaultSettings: Settings = {
   language: 'korean',
-  theme: 'dark',
+  theme: 'light',
   testMode: 'time',
   testTarget: 60,          // 60초 기본
   textType: 'words',
@@ -63,13 +63,11 @@ export const useSettingsStore = create<SettingsStore>()(
 
       // 테마 설정 (새로운 디자인 토큰 시스템)
       setTheme: (theme: string) => {
-        console.log('🎨 Setting theme:', theme)
         set({ theme })
         // 새로운 CSS Variables 기반 테마 적용
         if (typeof document !== 'undefined') {
           applyThemeVariables(theme as ThemeId)
           document.documentElement.setAttribute('data-theme-loaded', 'true')
-          console.log('🎨 Theme applied successfully:', theme)
         }
       },
 
@@ -126,7 +124,7 @@ export const useSettingsStore = create<SettingsStore>()(
       }
     }),
     {
-      name: 'key-types-settings', // localStorage 키
+      name: 'typing-settings', // localStorage 키
     }
   )
 )

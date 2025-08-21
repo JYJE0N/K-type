@@ -18,26 +18,68 @@ export const TestModeSelector: React.FC<TestModeSelectorProps> = ({
   const { testMode, setTestMode } = useSettingsStore();
   
   return (
-    <ButtonGroup className={className} spacing={1}>
-      <Button
-        variant={testMode === "time" ? "primary" : "outline"}
-        size="lg"
+    <div className={`flex gap-1 ${className}`}>
+      <button
+        className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-all font-medium"
+        style={{
+          backgroundColor: testMode === "time" 
+            ? 'var(--color-interactive-primary)' 
+            : 'transparent',
+          color: testMode === "time" 
+            ? 'var(--color-text-inverse)' 
+            : 'var(--color-text-secondary)',
+          border: `1px solid ${testMode === "time" 
+            ? 'var(--color-interactive-primary)' 
+            : 'var(--color-border)'}`
+        }}
+        onMouseEnter={(e) => {
+          if (testMode !== "time") {
+            e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+            e.currentTarget.style.color = 'var(--color-text-primary)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (testMode !== "time") {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--color-text-secondary)';
+          }
+        }}
         onClick={() => setTestMode("time")}
-        className="flex items-center gap-2"
       >
-        <Clock className="w-5 h-5" />
+        <Clock className="w-4 h-4" />
         시간
-      </Button>
+      </button>
       
-      <Button
-        variant={testMode === "words" ? "primary" : "outline"}
-        size="lg" 
+      <button
+        className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-all font-medium"
+        style={{
+          backgroundColor: testMode === "words" 
+            ? 'var(--color-interactive-primary)' 
+            : 'transparent',
+          color: testMode === "words" 
+            ? 'var(--color-text-inverse)' 
+            : 'var(--color-text-secondary)',
+          border: `1px solid ${testMode === "words" 
+            ? 'var(--color-interactive-primary)' 
+            : 'var(--color-border)'}`
+        }}
+        onMouseEnter={(e) => {
+          if (testMode !== "words") {
+            e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+            e.currentTarget.style.color = 'var(--color-text-primary)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (testMode !== "words") {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--color-text-secondary)';
+          }
+        }}
         onClick={() => setTestMode("words")}
-        className="flex items-center gap-2"
       >
-        <Hash className="w-5 h-5" />
+        <Hash className="w-4 h-4" />
         단어
-      </Button>
-    </ButtonGroup>
+      </button>
+    </div>
   );
 };

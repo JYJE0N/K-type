@@ -22,17 +22,43 @@ export const TestTargetSelector: React.FC<TestTargetSelectorProps> = ({
   const unit = testMode === "time" ? "초" : "단어";
   
   return (
-    <ButtonGroup className={className} spacing={1}>
-      {targets.map((target) => (
-        <Button
-          key={target}
-          variant={testTarget === target ? "accent" : "outline"}
-          size="base"
-          onClick={() => setTestTarget(target)}
-        >
-          {target}{unit}
-        </Button>
-      ))}
-    </ButtonGroup>
+    <div className={`flex flex-wrap gap-1 ${className}`}>
+      {targets.map((target) => {
+        const isActive = testTarget === target;
+        
+        return (
+          <button
+            key={target}
+            className="px-3 py-2 text-sm rounded-md transition-all font-medium"
+            style={{
+              backgroundColor: isActive 
+                ? 'var(--color-interactive-secondary)' 
+                : 'transparent',
+              color: isActive 
+                ? 'var(--color-text-inverse)' 
+                : 'var(--color-text-secondary)',
+              border: `1px solid ${isActive 
+                ? 'var(--color-interactive-secondary)' 
+                : 'var(--color-border)'}`
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                e.currentTarget.style.color = 'var(--color-text-primary)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--color-text-secondary)';
+              }
+            }}
+            onClick={() => setTestTarget(target)}
+          >
+            {target}{unit}
+          </button>
+        );
+      })}
+    </div>
   );
 };

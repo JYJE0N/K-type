@@ -14,10 +14,7 @@ export const createButtonStyles = (
   variant: ButtonVariant = 'primary',
   size: ButtonSize = 'base',
   isActive: boolean = false
-): string => {
-  const variantStyles = componentTokens.button.variants[variant];
-  const sizeStyles = componentTokens.button.padding[size];
-  
+): { className: string; style: React.CSSProperties } => {
   // 기본 클래스들
   const baseClasses = [
     'inline-flex items-center justify-center',
@@ -36,49 +33,59 @@ export const createButtonStyles = (
     xl: ['px-8 py-4 text-xl']
   }[size] || [];
   
-  // 변형별 클래스
-  const variantClasses = {
-    primary: [
-      'bg-pink-500 text-white',
-      'hover:bg-pink-600',
-      'focus:ring-pink-500'
-    ],
-    secondary: [
-      'bg-gray-100 text-gray-900',
-      'hover:bg-gray-200',
-      'focus:ring-gray-500'
-    ],
-    accent: [
-      'bg-purple-500 text-white', 
-      'hover:bg-purple-600',
-      'focus:ring-purple-500'
-    ],
-    ghost: [
-      'bg-secondary text-secondary-foreground',
-      'hover:bg-accent hover:text-accent-foreground',
-      'focus:ring-ring'
-    ],
-    outline: [
-      'bg-transparent text-primary border border-primary',
-      'hover:bg-primary hover:text-primary-foreground',
-      'focus:ring-ring'
-    ],
-    default: [
-      'bg-pink-500 text-white',
-      'hover:bg-pink-600',
-      'focus:ring-pink-500'
-    ]
-  }[variant] || [];
+  // 변형별 스타일 (CSS 변수 사용)
+  const buttonVariantStyles = {
+    primary: {
+      backgroundColor: 'var(--color-interactive-primary)',
+      color: 'var(--color-text-inverse)',
+      border: 'none'
+    },
+    secondary: {
+      backgroundColor: 'var(--color-background-secondary)',
+      color: 'var(--color-text-primary)',
+      border: 'none'
+    },
+    accent: {
+      backgroundColor: 'var(--color-interactive-secondary)',
+      color: 'var(--color-text-inverse)',
+      border: 'none'
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+      color: 'var(--color-text-secondary)',
+      border: 'none'
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      color: 'var(--color-text-primary)',
+      border: '1px solid var(--color-border)'
+    },
+    default: {
+      backgroundColor: 'var(--color-interactive-primary)',
+      color: 'var(--color-text-inverse)',
+      border: 'none'
+    }
+  }[variant] || {};
   
   // 액티브 상태 오버라이드
-  const activeClasses = isActive ? [
-    variant === 'ghost' ? 'bg-gray-100 text-gray-900' : '',
-    variant === 'outline' ? 'bg-pink-500 text-white' : ''
-  ].filter(Boolean) : [];
+  const activeStyles = isActive ? (
+    variant === 'ghost' ? {
+      backgroundColor: 'var(--color-background-elevated)',
+      color: 'var(--color-text-primary)'
+    } : variant === 'outline' ? {
+      backgroundColor: 'var(--color-interactive-primary)',
+      color: 'var(--color-text-inverse)'
+    } : {}
+  ) : {};
   
-  return [...baseClasses, ...sizeClasses, ...variantClasses, ...activeClasses]
+  const classNames = [...baseClasses, ...sizeClasses]
     .filter(Boolean)
     .join(' ');
+  
+  return {
+    className: classNames,
+    style: { ...buttonVariantStyles, ...activeStyles }
+  };
 };
 
 // 🃏 카드 스타일 생성기
@@ -191,21 +198,23 @@ export const createProgressStyles = (
     'w-full bg-gray-200 rounded-full h-2'
   ].join(' ');
   
-  const barColorClasses = {
-    primary: 'bg-pink-500',
-    success: 'bg-green-500', 
-    warning: 'bg-yellow-500'
+  const barColorStyles = {
+    primary: { backgroundColor: 'var(--color-interactive-primary)' },
+    success: { backgroundColor: 'var(--color-feedback-success)' }, 
+    warning: { backgroundColor: 'var(--color-feedback-warning)' }
   }[variant];
   
   const barClasses = [
-    barColorClasses,
     'h-2 rounded-full transition-all duration-300'
   ].join(' ');
   
   return {
     container: containerClasses,
     bar: barClasses,
-    barStyle: { width: `${Math.min(100, Math.max(0, progress))}%` }
+    barStyle: { 
+      width: `${Math.min(100, Math.max(0, progress))}%`,
+      ...barColorStyles
+    }
   };
 };
 

@@ -29,13 +29,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const buttonStyles = createButtonStyles(variant, size, isActive);
-    const combinedClassName = `${buttonStyles} ${className}`.trim();
-    
+    const combinedClassName = `${buttonStyles.className} ${className}`.trim();
     
     return (
       <button
         ref={ref}
         className={combinedClassName}
+        style={buttonStyles.style}
         disabled={disabled || isLoading}
         {...props}
       >

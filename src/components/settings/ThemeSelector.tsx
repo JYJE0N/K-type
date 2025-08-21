@@ -5,6 +5,10 @@ import { themes } from '@/modules/themes'
 
 export function ThemeSelector() {
   const { theme, setTheme } = useSettingsStore()
+  
+  // 긴급 디버깅 - 테마 목록 확인
+  console.log('🚨 URGENT DEBUG - Available themes:', Object.keys(themes))
+  console.log('🚨 URGENT DEBUG - Themes object:', themes)
 
   // 테마별 그라데이션 및 스타일 정의
   const getThemeStyle = (themeId: string) => {
@@ -45,6 +49,12 @@ export function ThemeSelector() {
           background: 'linear-gradient(135deg, #f8f8f8 0%, #1264a3 100%)',
           border: '#1264a3',
           shadow: '0 2px 8px rgba(18, 100, 163, 0.3)'
+        }
+      case 'stealth-notion':
+        return {
+          background: 'linear-gradient(135deg, #ffffff 0%, #2383e2 100%)',
+          border: '#2383e2',
+          shadow: '0 2px 8px rgba(35, 131, 226, 0.3)'
         }
       default: 
         return {

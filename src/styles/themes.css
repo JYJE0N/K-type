@@ -2,33 +2,208 @@
    🎨 테마 CSS Variables (런타임 테마)
    =============================== */
 
-:root {
-  /* 🎨 컬러 토큰 - 모던 다크 테마 (커스텀 보라색 & 민트 액센트) */
-  --color-background: #1a1a1a;
-  --color-background-secondary: #2f2f2f;
-  --color-background-elevated: #3f3f3f;
-  --color-surface: #2f2f2f;
-  --color-elevated: #3f3f3f;
-  --color-border: #363636;
-  --color-border-light: #5d5d5d;
-  --color-text-primary: #f7fafc;
-  --color-text-secondary: #cbd5e0;
-  --color-text-tertiary: #a0aec0;
-  --color-text-inverse: #1a1a1a;
-  --color-text-muted: #5d5d5d;
-  --color-interactive-primary: #c395fd;
-  --color-interactive-primary-hover: #d4b0ff;
-  --color-interactive-secondary: #1adfcc;
-  --color-interactive-secondary-hover: #4de8d9;
-  --color-interactive-disabled: #3f3f3f;
-  --color-feedback-success: #1adfcc;
-  --color-feedback-warning: #ed8936;
-  --color-feedback-error: #f56565;
-  --color-feedback-info: #4299e1;
-  --color-typing-correct: #1adfcc;
-  --color-typing-incorrect: #fc8181;
-  --color-typing-current: #c395fd;
-  --color-typing-cursor: #c395fd;
+/* 라이트 테마 (화이트-블루) */
+html:root,
+html[data-theme="light"] {
+  --color-background: #ffffff;
+  --color-background-secondary: #f8fafc;
+  --color-background-elevated: #f1f5f9;
+  --color-surface: #f8fafc;
+  --color-elevated: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #94a3b8;
+  --color-interactive-primary: #3b82f6;
+  --color-interactive-primary-hover: #2563eb;
+  --color-interactive-secondary: #6366f1;
+  --color-interactive-secondary-hover: #4f46e5;
+  --color-interactive-disabled: #cbd5e1;
+  --color-feedback-success: #10b981;
+  --color-feedback-warning: #f59e0b;
+  --color-feedback-error: #ef4444;
+  --color-feedback-info: #3b82f6;
+  --color-typing-correct: #10b981;
+  --color-typing-incorrect: #ef4444;
+  --color-typing-current: #1e293b;
+  --color-typing-cursor: #3b82f6;
+}
+
+/* 다크 테마 (퍼플-청록 드라큘라 스타일) */
+html[data-theme="dark"] {
+  --color-background: #282a36;
+  --color-background-secondary: #44475a;
+  --color-background-elevated: #6272a4;
+  --color-surface: #44475a;
+  --color-elevated: #6272a4;
+  --color-border: #44475a;
+  --color-border-light: #6272a4;
+  --color-text-primary: #f8f8f2;
+  --color-text-secondary: #bd93f9;
+  --color-text-tertiary: #8be9fd;
+  --color-text-inverse: #282a36;
+  --color-text-muted: #6272a4;
+  --color-interactive-primary: #bd93f9;
+  --color-interactive-primary-hover: #d4b5fd;
+  --color-interactive-secondary: #8be9fd;
+  --color-interactive-secondary-hover: #9df1ff;
+  --color-interactive-disabled: #6272a4;
+  --color-feedback-success: #50fa7b;
+  --color-feedback-warning: #ffb86c;
+  --color-feedback-error: #ff5555;
+  --color-feedback-info: #8be9fd;
+  --color-typing-correct: #50fa7b;
+  --color-typing-incorrect: #ff5555;
+  --color-typing-current: #8be9fd;
+  --color-typing-cursor: #bd93f9;
+}
+
+/* 고대비 테마 (네온 오렌지-블랙) */
+html[data-theme="high-contrast"] {
+  --color-background: #000000;
+  --color-background-secondary: #111111;
+  --color-background-elevated: #1a1a1a;
+  --color-surface: #111111;
+  --color-elevated: #1a1a1a;
+  --color-border: #333333;
+  --color-border-light: #444444;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #ff8c00;
+  --color-text-tertiary: #ffa500;
+  --color-text-inverse: #000000;
+  --color-text-muted: #666666;
+  --color-interactive-primary: #ff6600;
+  --color-interactive-primary-hover: #ff8833;
+  --color-interactive-secondary: #ff8c00;
+  --color-interactive-secondary-hover: #ffa500;
+  --color-interactive-disabled: #444444;
+  --color-feedback-success: #00ff88;
+  --color-feedback-warning: #ffaa00;
+  --color-feedback-error: #ff2244;
+  --color-feedback-info: #0088ff;
+  --color-typing-correct: #00ff88;
+  --color-typing-incorrect: #ff2244;
+  --color-typing-current: #ffffff;
+  --color-typing-cursor: #ff6600;
+}
+
+/* 은밀모드 - 칸반 스타일 (Trello) */
+html[data-theme="stealth"] {
+  --color-background: #026aa7;
+  --color-background-secondary: #0079bf;
+  --color-background-elevated: #ffffff;
+  --color-surface: #ffffff;
+  --color-elevated: #f4f5f7;
+  --color-border: #dfe1e6;
+  --color-border-light: #ebecf0;
+  --color-text-primary: #172b4d;
+  --color-text-secondary: #5e6c84;
+  --color-text-tertiary: #6b778c;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #8993a4;
+  --color-interactive-primary: #0079bf;
+  --color-interactive-primary-hover: #005a8b;
+  --color-interactive-secondary: #42526e;
+  --color-interactive-secondary-hover: #344563;
+  --color-interactive-disabled: #a5adba;
+  --color-feedback-success: #00875a;
+  --color-feedback-warning: #ff8b00;
+  --color-feedback-error: #de350b;
+  --color-feedback-info: #0079bf;
+  --color-typing-correct: #00875a;
+  --color-typing-incorrect: #de350b;
+  --color-typing-current: #0079bf;
+  --color-typing-cursor: #0079bf;
+}
+
+/* 은밀모드 - 에디터 스타일 (Google Docs) */
+html[data-theme="stealth-docs"] {
+  --color-background: #ffffff;
+  --color-background-secondary: #f9fbff;
+  --color-background-elevated: #f1f3f4;
+  --color-surface: #f9fbff;
+  --color-elevated: #f1f3f4;
+  --color-border: #dadce0;
+  --color-border-light: #e8eaed;
+  --color-text-primary: #202124;
+  --color-text-secondary: #5f6368;
+  --color-text-tertiary: #80868b;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #9aa0a6;
+  --color-interactive-primary: #1a73e8;
+  --color-interactive-primary-hover: #174ea6;
+  --color-interactive-secondary: #5f6368;
+  --color-interactive-secondary-hover: #3c4043;
+  --color-interactive-disabled: #dadce0;
+  --color-feedback-success: #137333;
+  --color-feedback-warning: #ea8600;
+  --color-feedback-error: #d93025;
+  --color-feedback-info: #1a73e8;
+  --color-typing-correct: #137333;
+  --color-typing-incorrect: #d93025;
+  --color-typing-current: #1a73e8;
+  --color-typing-cursor: #1a73e8;
+}
+
+/* 은밀모드 - 메신저 스타일 (Slack) */
+html[data-theme="stealth-slack"] {
+  --color-background: #1a1d29;
+  --color-background-secondary: #232937;
+  --color-background-elevated: #2c2d3a;
+  --color-surface: #232937;
+  --color-elevated: #2c2d3a;
+  --color-border: #444444;
+  --color-border-light: #555555;
+  --color-text-primary: #d1d2d3;
+  --color-text-secondary: #ababad;
+  --color-text-tertiary: #868686;
+  --color-text-inverse: #1a1d29;
+  --color-text-muted: #696969;
+  --color-interactive-primary: #007a5a;
+  --color-interactive-primary-hover: #005a42;
+  --color-interactive-secondary: #1264a3;
+  --color-interactive-secondary-hover: #0e4775;
+  --color-interactive-disabled: #444444;
+  --color-feedback-success: #2eb67d;
+  --color-feedback-warning: #ecb22e;
+  --color-feedback-error: #e01e5a;
+  --color-feedback-info: #1264a3;
+  --color-typing-correct: #2eb67d;
+  --color-typing-incorrect: #e01e5a;
+  --color-typing-current: #d1d2d3;
+  --color-typing-cursor: #007a5a;
+}
+
+/* 은밀모드 - 노션 스타일 */
+html[data-theme="stealth-notion"] {
+  --color-background: #ffffff;
+  --color-background-secondary: #f7f6f3;
+  --color-background-elevated: #f1f1ef;
+  --color-surface: #f7f6f3;
+  --color-elevated: #f1f1ef;
+  --color-border: #e9e9e7;
+  --color-border-light: #f1f1ef;
+  --color-text-primary: #37352f;
+  --color-text-secondary: #6f6e69;
+  --color-text-tertiary: #9b9a97;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #b8b7b4;
+  --color-interactive-primary: #2383e2;
+  --color-interactive-primary-hover: #1a6bb8;
+  --color-interactive-secondary: #6f6e69;
+  --color-interactive-secondary-hover: #57564f;
+  --color-interactive-disabled: #e9e9e7;
+  --color-feedback-success: #0f7b6c;
+  --color-feedback-warning: #f79009;
+  --color-feedback-error: #d83b01;
+  --color-feedback-info: #2383e2;
+  --color-typing-correct: #0f7b6c;
+  --color-typing-incorrect: #d83b01;
+  --color-typing-current: #37352f;
+  --color-typing-cursor: #2383e2;
 }
 
 /* ===============================

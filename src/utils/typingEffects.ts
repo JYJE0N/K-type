@@ -77,7 +77,7 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'spark',
         count: 5,
-        color: '#ffd700',
+        color: 'var(--color-interactive-secondary)',
         duration: 800,
         spread: 30,
         size: 'small'
@@ -96,13 +96,13 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'star',
         count: 8,
-        color: ['#ff6b35', '#f7931e'],
+        color: ['var(--color-interactive-primary)', 'var(--color-interactive-secondary)'],
         duration: 1000,
         spread: 50,
         size: 'medium'
       },
       glow: {
-        color: '#ff6b35',
+        color: 'var(--color-interactive-primary)',
         intensity: 'normal',
         duration: 1500,
         target: 'typing_area'
@@ -119,7 +119,7 @@ export const TYPING_EFFECTS: TypingEffect[] = [
     visual: {
       name: '화면 가장자리 글로우',
       glow: {
-        color: '#00ff88',
+        color: 'var(--color-feedback-success)',
         intensity: 'intense',
         duration: 2000,
         target: 'screen_edge'
@@ -127,7 +127,7 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'star',
         count: 15,
-        color: ['#00ff88', '#00cc66'],
+        color: ['var(--color-feedback-success)', 'var(--color-interactive-secondary)'],
         duration: 1500,
         spread: 80,
         size: 'large'
@@ -148,13 +148,13 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'spark',
         count: 12,
-        color: '#ffd700',
+        color: 'var(--color-interactive-secondary)',
         duration: 1200,
         spread: 60,
         size: 'medium'
       },
       glow: {
-        color: '#ffd700',
+        color: 'var(--color-interactive-secondary)',
         intensity: 'normal',
         duration: 3000,
         target: 'text'
@@ -173,13 +173,13 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'electric',
         count: 20,
-        color: ['#00bfff', '#87ceeb'],
+        color: ['var(--color-interactive-primary)', 'var(--color-interactive-secondary)'],
         duration: 1500,
         spread: 100,
         size: 'large'
       },
       glow: {
-        color: '#00bfff',
+        color: 'var(--color-interactive-primary)',
         intensity: 'intense',
         duration: 2500,
         target: 'screen_edge'
@@ -198,13 +198,13 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'flame',
         count: 25,
-        color: ['#ff4500', '#ff6347', '#ffa500'],
+        color: ['var(--color-feedback-warning)', 'var(--color-interactive-primary)', 'var(--color-interactive-secondary)'],
         duration: 2000,
         spread: 120,
         size: 'large'
       },
       glow: {
-        color: '#ff4500',
+        color: 'var(--color-feedback-warning)',
         intensity: 'intense',
         duration: 3000,
         target: 'typing_area'
@@ -223,13 +223,13 @@ export const TYPING_EFFECTS: TypingEffect[] = [
       particles: {
         type: 'aurora',
         count: 35,
-        color: ['#ff69b4', '#00ffff', '#9370db', '#32cd32'],
+        color: ['var(--color-interactive-primary)', 'var(--color-interactive-secondary)', 'var(--color-feedback-success)', 'var(--color-feedback-info)'],
         duration: 3000,
         spread: 150,
         size: 'large'
       },
       glow: {
-        color: '#ff69b4',
+        color: 'var(--color-interactive-primary)',
         intensity: 'intense',
         duration: 4000,
         target: 'screen_edge'

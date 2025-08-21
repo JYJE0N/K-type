@@ -634,14 +634,37 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             <>
               <button
                 onClick={pauseTest}
-                className="px-6 py-3 text-lg bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-500 transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-lg rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                style={{ 
+                  backgroundColor: 'var(--color-background-secondary)', 
+                  color: 'var(--color-text-inverse)' 
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-background-secondary)';
+                }}
               >
                 <PauseCircle className="w-5 h-5" />
                 일시정지
               </button>
               <button
                 onClick={stopTest}
-                className="px-6 py-3 text-lg bg-transparent text-slate-400 border border-slate-400 rounded-lg font-medium hover:bg-slate-600 hover:text-white transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-transparent rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                style={{ 
+                  color: 'var(--color-text-secondary)', 
+                  borderColor: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-text-secondary)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
               >
                 <StopCircle className="w-5 h-5" />
                 중단
@@ -653,14 +676,37 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             <>
               <button
                 onClick={resumeTest}
-                className="px-6 py-3 text-lg bg-pink-500 text-slate-900 rounded-lg font-medium hover:bg-pink-400 transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-lg rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                style={{ 
+                  backgroundColor: 'var(--color-interactive-primary)', 
+                  color: 'var(--color-text-inverse)' 
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)';
+                }}
               >
                 <PlayCircle className="w-5 h-5" />
                 계속
               </button>
               <button
                 onClick={stopTest}
-                className="px-6 py-3 text-lg bg-transparent text-slate-400 border border-slate-400 rounded-lg font-medium hover:bg-slate-600 hover:text-white transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-transparent rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                style={{ 
+                  color: 'var(--color-text-secondary)', 
+                  borderColor: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-text-secondary)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
               >
                 <StopCircle className="w-5 h-5" />
                 중단
@@ -672,21 +718,35 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         {/* 안내문구 - 텍스트박스 아래 */}
         <div className="text-center mt-8 space-y-3">
           {!isActive && !isCompleted && !isCountingDown && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#2f2f2f]/80 border border-[#363636] rounded-lg backdrop-blur-sm">
-              <span className="text-sm text-gray-400">시작하기:</span>
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-sm"
+              style={{ 
+                backgroundColor: 'var(--color-background-elevated)', 
+                borderColor: 'var(--color-border)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>시작하기:</span>
               <div className="flex items-center gap-1">
                 <KeyCap variant="primary" size="sm">클릭</KeyCap>
-                <span className="text-xs text-gray-500">또는</span>
+                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>또는</span>
                 <KeyCap variant="primary" size="sm">아무키</KeyCap>
               </div>
             </div>
           )}
           {!isCompleted && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#2f2f2f]/80 border border-[#363636] rounded-lg backdrop-blur-sm">
-              <span className="text-sm text-gray-400">다시 시작:</span>
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-sm"
+              style={{ 
+                backgroundColor: 'var(--color-background-elevated)', 
+                borderColor: 'var(--color-border)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>다시 시작:</span>
               <div className="flex items-center gap-1">
                 <KeyCap variant="primary" size="sm">Shift</KeyCap>
-                <span className="text-xs text-gray-500">+</span>
+                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>+</span>
                 <KeyCap variant="primary" size="sm">Enter</KeyCap>
               </div>
             </div>
