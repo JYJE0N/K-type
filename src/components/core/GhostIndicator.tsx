@@ -71,9 +71,9 @@ export function GhostIndicator({ className = "" }: GhostIndicatorProps) {
           comparison.userAhead ? 'text-green-400' : 'text-red-400'
         }`}>
           {comparison.userAhead ? (
-            <span>🚀 {Math.abs(comparison.positionDiff)}자 앞섬</span>
+            <span>{Math.abs(comparison.positionDiff)}자 앞섬</span>
           ) : (
-            <span>💪 {Math.abs(comparison.positionDiff)}자 뒤처짐</span>
+            <span>{Math.abs(comparison.positionDiff)}자 뒤처짐</span>
           )}
         </div>
       )}

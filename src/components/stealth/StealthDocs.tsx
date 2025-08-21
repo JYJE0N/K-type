@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTypingStore } from '@/stores/typingStore'
 import { useStatsStore } from '@/stores/statsStore'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -12,7 +13,9 @@ import {
   Edit3, 
   Eye,
   MessageCircle,
-  Clock
+  Clock,
+  BarChart3,
+  Settings
 } from 'lucide-react'
 
 interface StealthDocsProps {
@@ -20,7 +23,8 @@ interface StealthDocsProps {
 }
 
 export function StealthDocs({ className = "" }: StealthDocsProps) {
-  const { isActive, isCompleted, targetText, currentIndex } = useTypingStore()
+  const router = useRouter()
+  const { isActive, isCompleted, targetText, currentIndex, mistakes } = useTypingStore()
   const { liveStats } = useStatsStore()
   const { theme } = useSettingsStore()
   
@@ -52,9 +56,14 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
   // 진행률 계산
   const completionRate = targetText.length > 0 ? (currentIndex / targetText.length) * 100 : 0
   
+  // 홈으로 돌아가기 핸들러
+  const handleHomeNavigation = () => {
+    router.push('/')
+  }
+  
   // 가짜 문서 내용
   const documentTitle = isActive || isCompleted 
-    ? "2024년 3분기 프로젝트 진행 보고서" 
+    ? "2024년 4분기 사업계획서" 
     : "마케팅 전략 기획안"
     
   const fakeDocumentContent = `
@@ -88,7 +97,7 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
   const renderDocumentWithTyping = () => {
     if (!isActive && !isCompleted) {
       return fakeDocumentContent.split('\n').map((line, index) => (
-        <p key={index} className="mb-4 leading-relaxed text-gray-800">
+        <p key={index} className="mb-4 leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
           {line}
         </p>
       ))
@@ -102,25 +111,33 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
       if (index === typingInsertIndex) {
         return (
           <div key={index} className="mb-4">
-            <p className="leading-relaxed text-gray-800 mb-2">{line}</p>
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 my-4 rounded-r">
-              <p className="text-sm text-blue-800 font-medium mb-2">
+            <p className="leading-relaxed mb-2" style={{ color: 'var(--color-text-primary)' }}>{line}</p>
+            <div className="border-l-4 p-4 my-4 rounded-r" 
+              style={{ 
+                backgroundColor: 'color-mix(in srgb, var(--color-interactive-primary) 5%, transparent)',
+                borderColor: 'var(--color-interactive-primary)' 
+              }}>
+              <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-interactive-primary)' }}>
                 [실시간 입력 중인 내용]
               </p>
-              <div className="font-mono text-sm bg-white p-3 rounded border">
+              <div className="font-mono text-sm p-3 rounded leading-relaxed" 
+                style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
                 {targetText.split('').map((char, charIndex) => {
                   const isCurrentChar = charIndex === currentIndex
                   const isTyped = charIndex < currentIndex
+                  const isIncorrect = mistakes.some(m => m.position === charIndex)
                   
                   return (
                     <span
                       key={charIndex}
                       className={
                         isTyped
-                          ? 'text-gray-900'
+                          ? isIncorrect 
+                            ? 'text-red-600 bg-red-50 border-b border-red-300'
+                            : 'text-gray-900'
                           : isCurrentChar
-                          ? `bg-blue-500 text-white ${cursorBlink ? 'opacity-100' : 'opacity-50'}`
-                          : 'text-gray-300'
+                          ? `bg-blue-500 text-white ${cursorBlink ? 'opacity-100' : 'opacity-70'} px-0.5 rounded`
+                          : 'text-gray-400'
                       }
                     >
                       {char === ' ' ? '\u00A0' : char}
@@ -128,7 +145,7 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
                   )
                 })}
                 {currentIndex >= targetText.length && (
-                  <span className={`inline-block w-0.5 h-5 bg-blue-500 ml-1 ${cursorBlink ? 'opacity-100' : 'opacity-0'}`} />
+                  <span className={`inline-block w-0.5 h-5 bg-blue-500 ml-1 ${cursorBlink ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
                 )}
               </div>
             </div>
@@ -137,7 +154,7 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
       }
       
       return (
-        <p key={index} className="mb-4 leading-relaxed text-gray-800">
+        <p key={index} className="mb-4 leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
           {line}
         </p>
       )
@@ -145,16 +162,32 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
   }
 
   return (
-    <div className={`min-h-screen bg-white ${className}`}>
+    <div className={`min-h-screen ${className}`} style={{ backgroundColor: 'var(--color-background)' }}>
       {/* Google Docs 스타일 헤더 */}
-      <div className="bg-white border-b border-gray-200">
+      <div style={{ backgroundColor: 'var(--color-background-secondary)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <FileText className="w-8 h-8 text-blue-500" />
+              <div 
+                className="cursor-pointer transition-opacity hover:opacity-80" 
+                onClick={handleHomeNavigation}
+                title="홈으로 돌아가기"
+              >
+                <FileText 
+                  className="w-8 h-8" 
+                  style={{ color: 'var(--color-interactive-primary)' }}
+                />
+              </div>
               <div>
-                <h1 className="text-lg font-normal text-gray-800">{documentTitle}</h1>
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
+                <h1 
+                  className="text-lg font-normal cursor-pointer transition-opacity hover:opacity-80" 
+                  style={{ color: 'var(--color-text-primary)' }}
+                  onClick={handleHomeNavigation}
+                  title="홈으로 돌아가기"
+                >
+                  {documentTitle}
+                </h1>
+                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                   <Clock size={12} />
                   <span>마지막 수정: 방금 전</span>
                 </div>
@@ -163,15 +196,47 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
           </div>
           
           <div className="flex items-center space-x-2">
-            <button className="flex items-center space-x-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+            <button className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded transition-colors" 
+              style={{ backgroundColor: 'var(--color-interactive-primary)', color: 'var(--color-text-inverse)' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary-hover)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)'}>
               <Share size={14} />
               <span>공유</span>
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded">
-              <Download size={16} className="text-gray-600" />
+            {/* 숨겨진 통계 버튼 */}
+            <button 
+              className="p-2 rounded transition-colors" 
+              style={{ color: 'var(--color-text-secondary)' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => router.push('/stats')}
+              title="통계 보기"
+            >
+              <BarChart3 size={16} />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded">
-              <MoreVertical size={16} className="text-gray-600" />
+            
+            <button className="p-2 rounded transition-colors" 
+              style={{ color: 'var(--color-text-secondary)' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              <Download size={16} />
+            </button>
+            
+            {/* 숨겨진 설정 버튼 */}
+            <button className="p-2 rounded transition-colors" 
+              style={{ color: 'var(--color-text-secondary)' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="설정"
+            >
+              <Settings size={16} />
+            </button>
+            
+            <button className="p-2 rounded transition-colors" 
+              style={{ color: 'var(--color-text-secondary)' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              <MoreVertical size={16} />
             </button>
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
               김
@@ -180,16 +245,26 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
         </div>
         
         {/* 툴바 */}
-        <div className="flex items-center space-x-1 px-4 py-2 border-t border-gray-100 bg-gray-50">
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm hover:bg-gray-200 rounded">
+        <div className="flex items-center space-x-1 px-4 py-2" 
+          style={{ borderTop: '1px solid var(--color-border-light)', backgroundColor: 'var(--color-surface)' }}>
+          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
+            style={{ color: 'var(--color-text-secondary)' }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
             <Edit3 size={14} />
             <span>편집</span>
           </button>
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm hover:bg-gray-200 rounded">
+          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
+            style={{ color: 'var(--color-text-secondary)' }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
             <Eye size={14} />
             <span>보기</span>
           </button>
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm hover:bg-gray-200 rounded">
+          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
+            style={{ color: 'var(--color-text-secondary)' }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
             <MessageCircle size={14} />
             <span>댓글</span>
           </button>
@@ -207,41 +282,44 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
       </div>
 
       {/* 문서 본문 */}
-      <div className="max-w-4xl mx-auto py-8 px-8 bg-white min-h-screen">
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-12 min-h-[800px]">
+      <div className="max-w-4xl mx-auto py-8 px-8 min-h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
+        <div className="shadow-sm rounded-lg p-12 min-h-[800px]" 
+          style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
           {renderDocumentWithTyping()}
           
           {/* 페이지 번호 */}
-          <div className="text-center text-sm text-gray-400 mt-8 pt-4 border-t border-gray-100">
+          <div className="text-center text-sm mt-8 pt-4" 
+            style={{ color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border-light)' }}>
             페이지 1
           </div>
         </div>
         
         {/* 사이드바 - 통계 (숨김) */}
         {(isActive || isCompleted) && (
-          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">문서 작성 통계</h3>
+          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-64 rounded-lg shadow-lg p-4" 
+            style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>문서 작성 통계</h3>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">작성 속도</span>
-                <span className="font-medium text-blue-600">{liveStats.cpm} CPM</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>작성 속도</span>
+                <span className="font-medium" style={{ color: 'var(--color-interactive-primary)' }}>{liveStats.cpm} CPM</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">정확도</span>
-                <span className="font-medium text-green-600">{liveStats.accuracy}%</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>정확도</span>
+                <span className="font-medium" style={{ color: 'var(--color-feedback-success)' }}>{liveStats.accuracy}%</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">경과 시간</span>
-                <span className="font-medium">{Math.round(liveStats.timeElapsed)}초</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>경과 시간</span>
+                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{Math.round(liveStats.timeElapsed)}초</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">진행률</span>
-                <span className="font-medium text-purple-600">{Math.round(completionRate)}%</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>진행률</span>
+                <span className="font-medium" style={{ color: 'var(--color-interactive-secondary)' }}>{Math.round(completionRate)}%</span>
               </div>
             </div>
             
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <div className="text-xs text-gray-500">
+            <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border-light)' }}>
+              <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                 실시간 문서 협업 중
               </div>
             </div>

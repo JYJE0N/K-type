@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTypingStore } from '@/stores/typingStore'
 import { useStatsStore } from '@/stores/statsStore'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -14,7 +15,9 @@ import {
   Paperclip,
   Send,
   Star,
-  Circle
+  Circle,
+  BarChart3,
+  Settings
 } from 'lucide-react'
 
 interface MessageProps {
@@ -73,9 +76,15 @@ interface StealthSlackProps {
 }
 
 export function StealthSlack({ className = "" }: StealthSlackProps) {
+  const router = useRouter()
   const { isActive, isCompleted, targetText, currentIndex } = useTypingStore()
   const { liveStats } = useStatsStore()
   const { theme } = useSettingsStore()
+  
+  // 홈으로 돌아가기 핸들러
+  const handleHomeNavigation = () => {
+    router.push('/')
+  }
   
   const [currentTime, setCurrentTime] = useState('')
   
@@ -192,16 +201,53 @@ export function StealthSlack({ className = "" }: StealthSlackProps) {
         <div className="bg-white border-b border-gray-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Hash size={20} className="text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">프로젝트-알파</h2>
+              <div 
+                className="cursor-pointer transition-opacity hover:opacity-80" 
+                onClick={handleHomeNavigation}
+                title="홈으로 돌아가기"
+              >
+                <Hash size={20} className="text-gray-600" />
+              </div>
+              <h2 
+                className="text-lg font-semibold text-gray-900 cursor-pointer transition-opacity hover:opacity-80" 
+                onClick={handleHomeNavigation}
+                title="홈으로 돌아가기"
+              >
+                마케팅-전략회의
+              </h2>
               <Star size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-500">5명</span>
+              <span className="text-sm text-gray-500">8명</span>
             </div>
             
             <div className="flex items-center space-x-3">
               <Phone size={18} className="text-gray-600 hover:text-gray-900 cursor-pointer" />
               <Video size={18} className="text-gray-600 hover:text-gray-900 cursor-pointer" />
+              
+              {/* 숨겨진 통계 버튼 */}
+              <div 
+                className="cursor-pointer transition-colors" 
+                onClick={() => router.push('/stats')}
+                title="통계 보기"
+              >
+                <BarChart3 
+                  size={18} 
+                  className="text-gray-600 hover:text-gray-900 transition-colors" 
+                />
+              </div>
+              
               <Search size={18} className="text-gray-600 hover:text-gray-900 cursor-pointer" />
+              
+              {/* 숨겨진 설정 버튼 */}
+              <div 
+                className="cursor-pointer transition-colors" 
+                title="설정"
+              >
+                <Settings 
+                  size={18} 
+                  className="text-gray-600 hover:text-gray-900 transition-colors" 
+                />
+              </div>
+              
               <MoreVertical size={18} className="text-gray-600 hover:text-gray-900 cursor-pointer" />
             </div>
           </div>
@@ -215,8 +261,8 @@ export function StealthSlack({ className = "" }: StealthSlackProps) {
               <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xl font-bold mx-auto mb-3">
                 #
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">프로젝트-알파 채널에 오신 것을 환영합니다!</h3>
-              <p className="text-gray-600">이 채널은 알파 프로젝트 관련 논의를 위한 공간입니다.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">마케팅-전략회의 채널에 오신 것을 환영합니다!</h3>
+              <p className="text-gray-600">이 채널은 2024년 4분기 마케팅 전략 수립을 위한 업무 공간입니다.</p>
             </div>
             
             {/* 메시지 목록 */}

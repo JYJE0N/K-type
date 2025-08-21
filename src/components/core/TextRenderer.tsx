@@ -74,20 +74,18 @@ export function TextRenderer({
 
     switch (status) {
       case "correct":
-        // 올바르게 타이핑한 글자: 파란색 + 페이드 인 효과
-        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-gray-400 opacity-50' : 'text-blue-400 transition-all duration-300 transform scale-105 typing-success'}`;
+        // 올바르게 타이핑한 글자: 테마의 정답 색상 사용
+        return `${baseClass} ${specialKeyClass} ${isSpace ? 'opacity-50' : 'transition-all duration-300 transform scale-105 typing-success'} typing-correct-text`;
       case "incorrect":
-        // 오타: 빨간색 + 샤키 효과
-        return `${baseClass} ${specialKeyClass} text-red-400 font-bold bg-red-500 bg-opacity-10 rounded px-1 border border-red-400 border-opacity-30 shake-animation`;
+        // 오타: 테마의 오답 색상 사용
+        return `${baseClass} ${specialKeyClass} font-bold rounded px-1 shake-animation typing-incorrect-text typing-incorrect-bg`;
       case "current":
-        // 현재 글자: 보라색 + 글로우 효과 + 언더라인 맥동
-        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-purple-400' : 'text-purple-400 font-semibold'} ${
-          specialKey ? "font-bold" : ""
-        } current-char-glow pulse-glow`;
+        // 현재 글자: 깔끔한 언더라인 커서
+        return `${baseClass} ${specialKeyClass} typing-current-text`;
       case "pending":
       default:
-        // 아직 타이핑하지 않은 글자: 부드러운 회색
-        return `${baseClass} ${specialKeyClass} ${isSpace ? 'text-gray-500 opacity-20' : 'text-gray-400 opacity-70 hover:opacity-90 transition-opacity'}`;
+        // 아직 타이핑하지 않은 글자: 테마의 보조 텍스트 색상 사용
+        return `${baseClass} ${specialKeyClass} ${isSpace ? 'opacity-20' : 'opacity-70 hover:opacity-90 transition-opacity'} typing-pending-text`;
     }
   };
 
@@ -177,27 +175,15 @@ export function TextRenderer({
               {state?.specialKey
                 ? renderSpecialKey(char, state.specialKey, state.status)
                 : char}
-              {/* 현재 문자 아래 다이내믹 언더바 + 글로우 */}
+              {/* 현재 문자 아래 깔끔한 언더라인 커서 */}
               {state?.status === "current" && (
-                <>
-                  <span
-                    className="absolute left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-400 opacity-90 rounded-full shadow-lg"
-                    style={{
-                      bottom: "-3px",
-                      animation: "rainbow-pulse 2s ease-in-out infinite, glow-intense 1.5s ease-in-out infinite",
-                      filter: "blur(0.5px)",
-                      boxShadow: "0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3)"
-                    }}
-                  />
-                  {/* 글로우 효과 */}
-                  <span
-                    className="absolute inset-0 rounded transition-all duration-200"
-                    style={{
-                      background: "radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%)",
-                      animation: "char-glow 2s ease-in-out infinite"
-                    }}
-                  />
-                </>
+                <span
+                  className="absolute left-0 w-full h-0.5 rounded-sm transition-all duration-150"
+                  style={{
+                    bottom: "-2px",
+                    backgroundColor: 'var(--color-typing-cursor)'
+                  }}
+                />
               )}
             </span>
           </span>

@@ -11,7 +11,7 @@ yarn install
 # Run development server
 yarn dev
 
-# Build for production
+# Build for production  
 yarn build
 
 # Start production server
@@ -23,6 +23,14 @@ yarn lint
 # Type check
 yarn type-check
 ```
+
+### Cross-Platform Development
+
+This project uses `cross-env` to ensure environment variables work consistently across Windows, macOS, and Linux:
+
+- **cross-env**: Sets NODE_ENV for both Windows (set) and Unix-like systems (export)
+- All build scripts use cross-env to maintain compatibility between development environments
+- Essential for teams using mixed operating systems (Windows/macOS)
 
 ## Critical Development Conventions
 
@@ -71,9 +79,10 @@ This is a Korean/English typing practice web application built with Next.js 15, 
 
 3. **Korean IME Handling**
 
-   - Special logic to filter Korean jamo characters (Unicode ranges 0x3131-0x314F, 0x1100-0x11FF)
-   - Composition state tracking to prevent duplicate keystroke registration during Hangul assembly
-   - Accurate character comparison considering IME intermediate states
+   - Special logic to filter Korean jamo characters (4 Unicode ranges: 0x3131-0x314F, 0x1100-0x11FF, 0x3130-0x318F, 0xA960-0xA97F)
+   - IMEHandler class for cross-browser compatibility (Chrome/Firefox/Safari detection)
+   - Duplicate input prevention with timing thresholds (3ms for general keys, 1ms for spaces)
+   - Korean stroke-based CPM/WPM calculation separate from character progression
 
 4. **Test Modes**
 
@@ -102,7 +111,8 @@ This is a Korean/English typing practice web application built with Next.js 15, 
 
 - MongoDB with Mongoose ODM for user progress and test results
 - Connection string should be provided via environment variables
-- API routes in `/api` handle database operations
+- API routes: `/api/progress`, `/api/db-connection-test`
+- Fallback to localStorage when MongoDB is unavailable
 
 ---
 
@@ -229,7 +239,7 @@ K-types/
 - **Next.js 15** - React 프레임워크
 - **React 19** - UI 라이브러리
 - **TypeScript** - 타입 안전성
-- **Tailwind CSS 4** - 스타일링
+- **Tailwind CSS 3.4** - 스타일링
 - **Zustand** - 상태 관리
 - **Lucide React** - 아이콘
 - **Recharts** - 차트/그래프
@@ -315,12 +325,168 @@ K-types/
 
 ### 🔧 개발 워크플로우
 
-1. **타입 정의** 먼저 작성
+1. **타입 정의** 먼저 작성 (`src/types/index.ts`)
 2. **컴포넌트** 단위별 개발
-3. **상태 관리** 중앙 집중화
-4. **테스트** 실행 및 검증
-5. **성능** 측정 및 최적화
-6. **배포** 준비 및 빌드
+3. **상태 관리** 중앙 집중화 (Zustand stores)
+4. **린팅 및 타입 체크** (`yarn lint`, `yarn type-check`)
+5. **성능** 측정 및 최적화 (16ms 키 응답 목표)  
+6. **빌드** 준비 (`yarn build`)
+
+### 🎨 UI/UX 가이드라인 (UI/UX Guidelines)
+
+#### 테마 컬러 시스템
+
+모든 컬러는 반드시 CSS 변수를 사용해야 합니다. 하드코딩된 색상값은 절대 사용하지 않습니다.
+
+```css
+/* 올바른 사용 예시 */
+backgroundColor: 'var(--color-interactive-primary)'
+color: 'var(--color-text-primary)'
+borderColor: 'var(--color-border-primary)'
+
+/* 잘못된 사용 예시 - 절대 금지 */
+backgroundColor: '#3b82f6'
+color: 'rgb(59, 130, 246)'
+borderColor: '#212230'
+```
+
+주요 CSS 변수:
+- `--color-interactive-primary`: 주요 인터랙티브 요소 (버튼, 링크)
+- `--color-interactive-secondary`: 보조 인터랙티브 요소
+- `--color-feedback-success`: 성공/정답 피드백 (초록색)
+- `--color-feedback-error`: 오류/오타 피드백 (빨간색)
+- `--color-feedback-warning`: 경고 피드백 (노란색)
+- `--color-feedback-info`: 정보 피드백 (파란색)
+- `--color-text-primary`: 주요 텍스트
+- `--color-text-secondary`: 보조 텍스트
+- `--color-surface`: 카드/패널 배경
+- `--color-border-primary`: 주요 테두리
+
+#### 버튼 스타일링 패턴
+
+```typescript
+// 기본 버튼 (filled)
+<button style={{
+  backgroundColor: 'var(--color-interactive-primary)',
+  color: 'var(--color-text-on-primary)',
+  border: 'none'
+}}>
+
+// 아웃라인 버튼 (outline)
+<button style={{
+  backgroundColor: 'transparent',
+  color: 'var(--color-interactive-primary)',
+  border: '1px solid var(--color-interactive-primary)'
+}}>
+
+// 특수 버튼 색상
+// 일시정지: 청록색 아웃라인
+style={{
+  backgroundColor: 'transparent',
+  color: 'var(--color-feedback-info)',
+  border: '1px solid var(--color-feedback-info)'
+}}
+
+// 중단: 보라색 아웃라인  
+style={{
+  backgroundColor: 'transparent',
+  color: 'var(--color-interactive-secondary)',
+  border: '1px solid var(--color-interactive-secondary)'
+}}
+```
+
+#### 아이콘 사용 규칙
+
+프로젝트에서 사용하는 아이콘 라이브러리:
+- `react-icons/io5`: IoPlay, IoPauseSharp, IoStop
+- `react-icons/lu`: LuAlarmClockCheck, LuCircleArrowRight
+- `react-icons/tb`: TbSettings
+- `react-icons/fa6`: FaChartColumn
+- `lucide-react`: 기타 일반 아이콘
+
+주요 아이콘 매핑:
+- 시작: `<IoPlay />`
+- 일시정지: `<IoPauseSharp />`
+- 중단: `<IoStop />`
+- 시간: `<LuAlarmClockCheck />`
+- 통계: `<FaChartColumn />`
+- 설정: `<TbSettings />`
+
+#### 이모지 사용 금지
+
+코드 내에서 이모지 사용은 금지됩니다. 대신 텍스트나 아이콘을 사용합니다.
+
+```typescript
+// 잘못된 예시
+<span>✨ 콤보 {count}</span>
+<span>🚀 {speed} CPM</span>
+
+// 올바른 예시
+<span>COMBO {count}</span>
+<span>{speed} CPM</span>
+```
+
+#### 인터랙션 처리
+
+##### 타이핑 테스트 시작
+테스트는 다음 방법으로 시작할 수 있어야 합니다:
+1. 텍스트 필드 클릭
+2. 아무 키나 누르기
+3. 시작 버튼 클릭
+
+```typescript
+// 컨테이너 클릭 핸들러
+<div onClick={(e) => {
+  if (!isActive && !isCompleted && !isCountingDown) {
+    startCountdown();
+  }
+}}>
+
+// InputHandler에서 키 입력 처리
+if (!testStarted && !isCountingDown && !isActive) {
+  handleTestStart();
+  return;
+}
+```
+
+##### 일시정지/재개
+일시정지 상태에서는:
+1. 아무 키나 누르면 재개
+2. 텍스트 필드 클릭하면 재개
+3. 재개 버튼 클릭하면 재개
+
+```typescript
+// 키보드 입력으로 재개
+if (isPaused && onResume) {
+  onResume();
+  return;
+}
+
+// 클릭으로 재개
+if (isPaused && onResume) {
+  onResume();
+  return;
+}
+```
+
+#### Z-index 및 포인터 이벤트
+
+입력 처리를 위한 레이어링:
+```css
+/* 투명 입력 필드 */
+input {
+  position: absolute;
+  opacity: 0;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+/* 컨테이너 */
+.input-handler {
+  position: relative;
+  pointer-events: auto;
+}
+```
 
 ### 📈 성능 지표
 
@@ -328,3 +494,36 @@ K-types/
 - **키 입력 응답 시간**: < 16ms (60fps)
 - **메모리 사용량**: 최적화됨
 - **번들 크기**: 압축 최적화
+
+### 🔄 최근 업데이트 (Recent Updates)
+
+#### 2025-08-21 UI/UX 개선
+
+1. **테마 일관성 개선**
+   - 모든 하드코딩된 색상을 CSS 변수로 교체
+   - 타이핑 텍스트 색상 테마 연동 (정답/오답/현재 위치)
+   - 버튼 색상 테마 변수 적용
+
+2. **버튼 스타일 통일**
+   - 일시정지 버튼: 청록색 아웃라인 스타일
+   - 중단 버튼: 보라색 아웃라인 스타일
+   - 시작 버튼: 주요 인터랙티브 색상
+
+3. **아이콘 업데이트**
+   - 직관적인 아이콘으로 전면 교체
+   - React Icons 라이브러리 통일
+   - 시간 표시 아이콘 추가
+
+4. **이모지 제거**
+   - 모든 이모지를 텍스트/아이콘으로 교체
+   - COMBO 표시 등 깔끔한 텍스트 처리
+
+5. **인터랙션 개선**
+   - 텍스트 필드 클릭으로 테스트 시작 가능
+   - 키보드 입력으로 테스트 시작 가능
+   - 일시정지 상태에서 아무 키나 눌러 재개 가능
+   - Z-index 및 pointer-events 최적화
+
+6. **코드베이스 정리**
+   - 20개 이상의 중복/미사용 파일 삭제
+   - 컴포넌트 구조 단순화

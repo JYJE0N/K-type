@@ -235,7 +235,7 @@ export function TypingVisualizer({
                 중앙 조합 <span className="font-mono bg-white/[0.10] px-3 py-1 rounded-full ml-2 text-xs font-medium">{composingText}</span>
                 {comboCount > 8 && (
                   <span className="ml-3 px-2 py-1 rounded-full text-xs bg-white/[0.08] text-white/70">
-                    ✨ {comboCount}
+                    COMBO {comboCount}
                   </span>
                 )}
               </span>
@@ -244,7 +244,7 @@ export function TypingVisualizer({
                 시그니처 한글 조합 모드
                 {comboCount > 0 && (
                   <span className="ml-3 text-white/40 text-xs">
-                    {comboCount} 연속
+                    COMBO {comboCount}
                   </span>
                 )}
               </span>

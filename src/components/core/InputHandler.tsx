@@ -8,6 +8,7 @@ interface InputHandlerProps {
   onKeyPress: (key: string) => void
   onBackspace: () => void
   onTestStart: () => void
+  onResume?: () => void
   onCompositionChange?: (isComposing: boolean) => void
   disabled?: boolean
   className?: string
@@ -17,6 +18,7 @@ export function InputHandler({
   onKeyPress,
   onBackspace,
   onTestStart,
+  onResume,
   onCompositionChange,
   disabled = false,
   className = ''
@@ -30,12 +32,15 @@ export function InputHandler({
   const [testStarted, setTestStarted] = useState(false)
   const [showStartHint, setShowStartHint] = useState(true)
   
-  const { isCompleted, isActive, setCompositionState } = useTypingStore()
+  const { isCompleted, isActive, isCountingDown, isPaused, setCompositionState } = useTypingStore()
 
   // Focus management
   const maintainFocus = useCallback(() => {
     if (inputRef.current && !disabled && !isCompleted) {
       inputRef.current.focus()
+      console.log('🎯 Focus maintained')
+    } else {
+      console.log('❌ Cannot maintain focus:', { hasInput: !!inputRef.current, disabled, isCompleted })
     }
   }, [disabled, isCompleted])
 
@@ -66,13 +71,18 @@ export function InputHandler({
     }
 
     // Auto-start test on first character
-    if (!testStarted) {
+    if (!testStarted && !isCountingDown && !isActive) {
       handleTestStart()
+      return // 카운트다운 시작 후에는 이 키 입력은 처리하지 않음
     }
 
-    // Process the character
-    console.log(`✅ Processing character: "${char}" (${char.charCodeAt(0)})`)
-    onKeyPress(char)
+    // 테스트가 활성화된 상태에서만 키 입력 처리
+    if (isActive && !isCountingDown) {
+      console.log(`✅ Processing character: "${char}" (${char.charCodeAt(0)})`)
+      onKeyPress(char)
+    } else {
+      console.log(`⏸️ Skipping key input during countdown or inactive state`)
+    }
     
     // Mark as processed (clear after 200ms to prevent memory leak)
     processedInputRef.current.add(charId)
@@ -110,7 +120,18 @@ export function InputHandler({
 
   // Handle keyboard events
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (disabled || isCompleted) return
+    console.log('⌨️ Key pressed:', event.key, { disabled, isCompleted, testStarted, isActive, isPaused })
+    if (disabled || isCompleted) {
+      console.log('❌ Key blocked by disabled/completed check')
+      return
+    }
+
+    // 일시정지 상태에서 아무 키나 누르면 해제
+    if (isPaused && onResume) {
+      console.log('▶️ Resuming from pause')
+      onResume()
+      return
+    }
 
     const key = event.key
     
@@ -132,13 +153,16 @@ export function InputHandler({
       event.preventDefault()
       
       // Auto-start if needed
-      if (!testStarted) {
+      if (!testStarted && !isCountingDown && !isActive) {
         handleTestStart()
+        return
       }
       
-      // Convert to actual character
-      const specialChar = key === 'Enter' ? '\n' : '\t'
-      processCharacter(specialChar)
+      // Process only if test is active
+      if (isActive && !isCountingDown) {
+        const specialChar = key === 'Enter' ? '\n' : '\t'
+        processCharacter(specialChar)
+      }
       return
     }
     
@@ -147,17 +171,21 @@ export function InputHandler({
       event.preventDefault()
       
       // Auto-start if needed
-      if (!testStarted) {
+      if (!testStarted && !isCountingDown && !isActive) {
         handleTestStart()
-      }
-      
-      // Skip if IME is composing (let composition handle it)
-      if (imeHandler.current.isComposing()) {
-        console.log('🎭 Skipping space during IME composition')
         return
       }
       
-      processCharacter(' ')
+      // Process only if test is active
+      if (isActive && !isCountingDown) {
+        // Skip if IME is composing (let composition handle it)
+        if (imeHandler.current.isComposing()) {
+          console.log('🎭 Skipping space during IME composition')
+          return
+        }
+        
+        processCharacter(' ')
+      }
       return
     }
     
@@ -170,14 +198,18 @@ export function InputHandler({
         event.preventDefault()
         
         // Auto-start if needed
-        if (!testStarted) {
+        if (!testStarted && !isCountingDown && !isActive) {
           handleTestStart()
+          return
         }
         
-        processCharacter(key)
+        // Process only if test is active
+        if (isActive && !isCountingDown) {
+          processCharacter(key)
+        }
       }
     }
-  }, [disabled, isCompleted, testStarted, handleTestStart, onBackspace, processCharacter])
+  }, [disabled, isCompleted, testStarted, isCountingDown, isActive, isPaused, handleTestStart, onBackspace, onResume, processCharacter])
 
   // Composition event handlers (for IME)
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
@@ -224,20 +256,34 @@ export function InputHandler({
 
   // Handle click to focus and start test
   const handleContainerClick = useCallback(() => {
-    console.log('🖱️ Container clicked!')
+    console.log('🖱️ Container clicked!', { testStarted, isActive, disabled, isCompleted, isPaused })
+    if (disabled || isCompleted) {
+      console.log('❌ Click blocked by disabled/completed check')
+      return
+    }
+    
+    // 일시정지 상태에서 클릭하면 해제
+    if (isPaused && onResume) {
+      console.log('▶️ Resuming from pause via click')
+      onResume()
+      return
+    }
+    
     maintainFocus()
     
     // Start test if not started
     if (!testStarted && !isActive) {
       console.log('🚀 Starting test from click')
       handleTestStart()
+    } else {
+      console.log('❌ Cannot start test:', { testStarted, isActive })
     }
     
     // Hide hint when clicked
     if (showStartHint) {
       setShowStartHint(false)
     }
-  }, [maintainFocus, showStartHint, testStarted, isActive, handleTestStart])
+  }, [maintainFocus, showStartHint, testStarted, isActive, isPaused, handleTestStart, onResume])
 
   // Reset when test state changes
   useEffect(() => {
@@ -256,11 +302,27 @@ export function InputHandler({
     }
   }, [disabled, isCompleted, isActive])
 
-  // Initial focus
+  // Initial focus and maintain focus
   useEffect(() => {
-    const timer = setTimeout(() => maintainFocus(), 100)
-    return () => clearTimeout(timer)
-  }, [maintainFocus])
+    const timer = setTimeout(() => {
+      maintainFocus()
+      console.log('🎯 Initial focus set')
+    }, 100)
+    
+    // 페이지 클릭 시에도 포커스 유지
+    const handlePageClick = () => {
+      if (!disabled && !isCompleted) {
+        setTimeout(() => maintainFocus(), 10)
+      }
+    }
+    
+    document.addEventListener('click', handlePageClick)
+    
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('click', handlePageClick)
+    }
+  }, [maintainFocus, disabled, isCompleted])
 
   // Browser-specific adjustments
   useEffect(() => {
@@ -279,7 +341,8 @@ export function InputHandler({
   return (
     <div 
       className={`input-handler ${className} relative`} 
-      style={{ pointerEvents: 'none' }}
+      style={{ pointerEvents: 'auto' }}
+      onClick={handleContainerClick}
     >
       {/* Hidden input for IME */}
       <input
@@ -290,7 +353,7 @@ export function InputHandler({
           caretColor: 'transparent',
           outline: 'none',
           fontSize: '1px',
-          zIndex: 10,
+          zIndex: 50,
           cursor: 'text',
           pointerEvents: 'auto'
         }}

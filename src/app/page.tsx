@@ -5,16 +5,14 @@ import { Layout } from '@/components/ui/Layout'
 import { TypingEngine } from '@/components/core/TypingEngine'
 import { ClientOnly } from '@/components/ClientOnly'
 import { ThemeInitializer } from '@/components/ThemeInitializer'
-import { ThemeSelector } from '@/components/settings/ThemeSelector'
-import { StatsButton } from '@/components/ui/StatsButton'
-import { LanguageToggle } from '@/design-system/ui'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
 
 export default function Home() {
-  const { language, textType, testTarget, testMode } = useSettingsStore()
+  const { language, textType, testTarget, testMode, theme } = useSettingsStore()
   const { setTargetText, resetTest } = useTypingStore()
 
   // 테마 초기화
@@ -36,10 +34,25 @@ export default function Home() {
       wordCount = Math.max(50, Math.floor((testTarget / 60) * 40))
     }
 
-    const newText = textGenerator.generateText(textType, { wordCount })
+    // 은밀모드 감지 및 적절한 텍스트 타입 매핑
+    let stealthMode = null;
+    if (theme.startsWith('stealth')) {
+      const stealthMap = {
+        'stealth': 'kanban',
+        'stealth-docs': 'docs', 
+        'stealth-slack': 'slack',
+        'stealth-notion': 'notion'
+      };
+      stealthMode = stealthMap[theme as keyof typeof stealthMap] || 'common';
+    }
+
+    const newText = textGenerator.generateText(textType, { 
+      wordCount, 
+      stealthMode: stealthMode as any 
+    })
     setTargetText(newText)
     resetTest()
-  }, [language, textType, testTarget, testMode, setTargetText, resetTest])
+  }, [language, textType, testTarget, testMode, theme, setTargetText, resetTest])
 
   return (
     <>

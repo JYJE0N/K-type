@@ -10,22 +10,17 @@ import { InputHandler } from "./InputHandler";
 import { TypingVisualizer } from "./TypingVisualizer";
 import { GhostIndicator } from "./GhostIndicator";
 import { PromotionModal } from "@/components/gamification/PromotionModal";
-import { KeyCap } from "@/components/ui/KeyCap";
+import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
 import { getLanguagePack } from "@/modules/languages";
 import { TextGenerator } from "@/utils/textGenerator";
 import { useRouter } from "next/navigation";
-import { PlayCircle, PauseCircle, StopCircle, Globe } from "lucide-react";
+import { PlayCircle } from "lucide-react";
+import { IoStop, IoPauseSharp, IoPlay } from "react-icons/io5";
+import { LuAlarmClockCheck } from "react-icons/lu";
 import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
 import { ghostModeManager } from "@/utils/ghostMode";
 import { typingEffectsManager } from "@/utils/typingEffects";
 import type { DeviceType } from "@/types";
-import { TypingControls } from "@/design-system/typing";
-import {
-  createFlexClasses,
-  createCardClasses,
-  typingLayoutStyles,
-} from "@/styles/layout-system";
-import { typingButtonStyles } from "@/styles/button-system";
 
 interface TypingEngineProps {
   className?: string;
@@ -71,6 +66,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   const { calculateStats, resetStats } = useStatsStore();
   const {
     language,
+    theme,
     textType,
     testMode,
     testTarget,
@@ -104,7 +100,22 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       wordCount = Math.max(50, Math.floor((testTarget / 60) * 40));
     }
 
-    const newText = textGenerator.generateText(textType, { wordCount });
+    // 은밀모드 감지 및 적절한 텍스트 타입 매핑
+    let stealthMode = null;
+    if (theme.startsWith('stealth')) {
+      const stealthMap = {
+        'stealth': 'kanban',
+        'stealth-docs': 'docs', 
+        'stealth-slack': 'slack',
+        'stealth-notion': 'notion'
+      };
+      stealthMode = stealthMap[theme as keyof typeof stealthMap] || 'common';
+    }
+
+    const newText = textGenerator.generateText(textType, { 
+      wordCount, 
+      stealthMode: stealthMode as any
+    });
     console.log("🔄 Generated new text via Shift+Enter:", {
       newText: newText.substring(0, 50) + "...",
       length: newText.length,
@@ -121,6 +132,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     textType,
     testMode,
     testTarget,
+    theme,
     setTargetText,
     resetTest,
     resetStats,
@@ -549,7 +561,8 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         {/* 시간 표시 (인풋 필드 위) */}
         {isActive && !isPaused && !isCompleted && (
           <div className="text-center mb-6">
-            <div className="inline-flex items-center bg-background-secondary rounded-lg px-4 py-2 cursor-default">
+            <div className="inline-flex items-center bg-background-secondary rounded-lg px-4 py-2 cursor-default gap-2">
+              <LuAlarmClockCheck className="w-5 h-5 text-interactive-primary" />
               <div className="text-lg font-mono text-interactive-primary">
                 {(() => {
                   const mins = Math.floor(currentTime / 60);
@@ -564,14 +577,30 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         )}
 
         {/* 텍스트 렌더러와 입력 핸들러를 감싸는 컨테이너 */}
-        <div className="relative mb-4">
+        <div 
+          className="relative mb-4 cursor-text bg-transparent min-h-[100px] border border-transparent hover:border-gray-200" 
+          onClick={(e) => {
+            console.log('📦 Container div clicked!', e);
+            e.stopPropagation();
+            if (!isActive && !isCompleted && !isCountingDown) {
+              console.log('🚀 Starting countdown from container click');
+              startCountdown();
+            } else if (isPaused) {
+              console.log('▶️ Resuming from container click');
+              resumeTest();
+            }
+          }}
+          onMouseDown={(e) => {
+            console.log('📦 Container mousedown!', e);
+          }}
+        >
           {/* 텍스트 렌더러 */}
           <TextRenderer
             text={targetText}
             currentIndex={currentIndex}
             userInput={userInput}
             mistakes={mistakes.map((m) => m.position)}
-            className={`transition-all duration-300 ${
+            className={`transition-all duration-300 pointer-events-none ${
               isCountingDown ? "blur-sm opacity-50" : ""
             }`}
           />
@@ -581,9 +610,10 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
             onKeyPress={useTypingStore.getState().handleKeyPress}
             onBackspace={useTypingStore.getState().handleBackspace}
             onTestStart={startCountdown} // 카운트다운으로 변경
+            onResume={resumeTest} // 일시정지 해제
             onCompositionChange={handleCompositionChange}
-            disabled={isCountingDown} // 카운트다운 중에는 비활성화
-            className="absolute inset-0 cursor-text z-5"
+            disabled={false} // 항상 활성화하여 클릭과 키 입력을 받을 수 있도록
+            className="absolute inset-0 cursor-text z-50"
           />
         </div>
 
@@ -619,54 +649,69 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
 
         {/* 컨트롤 버튼들 */}
         <div className="flex justify-center gap-4 mt-6 relative z-10">
-          <TypingControls
-            isActive={isActive}
-            isPaused={isPaused}
-            isCompleted={isCompleted}
-            isCountingDown={isCountingDown}
-            onStart={startCountdown}
-            onPause={pauseTest}
-            onResume={resumeTest}
-            onStop={stopTest}
-          />
+          {!isActive && !isCompleted && !isCountingDown && (
+            <button
+              onClick={() => {
+                console.log('🖱️ 시작하기 버튼 클릭됨');
+                startCountdown();
+              }}
+              className="px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
+              style={{ 
+                backgroundColor: 'var(--color-interactive-primary)', 
+                color: 'var(--color-text-inverse)' 
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)';
+              }}
+            >
+              <IoPlay className="w-5 h-5" />
+              시작하기
+            </button>
+          )}
 
           {isActive && !isPaused && !isCompleted && (
             <>
               <button
                 onClick={pauseTest}
-                className="px-6 py-3 text-lg rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-lg bg-transparent rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
                 style={{ 
-                  backgroundColor: 'var(--color-background-secondary)', 
-                  color: 'var(--color-text-inverse)' 
+                  color: 'var(--color-interactive-secondary)', 
+                  borderColor: 'var(--color-interactive-secondary)',
+                  border: '1px solid var(--color-interactive-secondary)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-interactive-secondary)';
+                  e.currentTarget.style.color = 'var(--color-text-inverse)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-background-secondary)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--color-interactive-secondary)';
                 }}
               >
-                <PauseCircle className="w-5 h-5" />
+                <IoPauseSharp className="w-5 h-5" />
                 일시정지
               </button>
               <button
                 onClick={stopTest}
                 className="px-6 py-3 text-lg bg-transparent rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
                 style={{ 
-                  color: 'var(--color-text-secondary)', 
-                  borderColor: 'var(--color-text-secondary)',
-                  border: '1px solid var(--color-text-secondary)'
+                  color: 'var(--color-interactive-primary)', 
+                  borderColor: 'var(--color-interactive-primary)',
+                  border: '1px solid var(--color-interactive-primary)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)';
+                  e.currentTarget.style.color = 'var(--color-text-inverse)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.color = 'var(--color-interactive-primary)';
                 }}
               >
-                <StopCircle className="w-5 h-5" />
+                <IoStop className="w-5 h-5" />
                 중단
               </button>
             </>
@@ -695,20 +740,20 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
                 onClick={stopTest}
                 className="px-6 py-3 text-lg bg-transparent rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
                 style={{ 
-                  color: 'var(--color-text-secondary)', 
-                  borderColor: 'var(--color-text-secondary)',
-                  border: '1px solid var(--color-text-secondary)'
+                  color: 'var(--color-interactive-primary)', 
+                  borderColor: 'var(--color-interactive-primary)',
+                  border: '1px solid var(--color-interactive-primary)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)';
+                  e.currentTarget.style.color = 'var(--color-text-inverse)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.color = 'var(--color-interactive-primary)';
                 }}
               >
-                <StopCircle className="w-5 h-5" />
+                <IoStop className="w-5 h-5" />
                 중단
               </button>
             </>
@@ -716,42 +761,11 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
         </div>
 
         {/* 안내문구 - 텍스트박스 아래 */}
-        <div className="text-center mt-8 space-y-3">
-          {!isActive && !isCompleted && !isCountingDown && (
-            <div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-sm"
-              style={{ 
-                backgroundColor: 'var(--color-background-elevated)', 
-                borderColor: 'var(--color-border)',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>시작하기:</span>
-              <div className="flex items-center gap-1">
-                <KeyCap variant="primary" size="sm">클릭</KeyCap>
-                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>또는</span>
-                <KeyCap variant="primary" size="sm">아무키</KeyCap>
-              </div>
-            </div>
-          )}
-          {!isCompleted && (
-            <div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-sm"
-              style={{ 
-                backgroundColor: 'var(--color-background-elevated)', 
-                borderColor: 'var(--color-border)',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>다시 시작:</span>
-              <div className="flex items-center gap-1">
-                <KeyCap variant="primary" size="sm">Shift</KeyCap>
-                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>+</span>
-                <KeyCap variant="primary" size="sm">Enter</KeyCap>
-              </div>
-            </div>
-          )}
-        </div>
+        <KeyboardShortcuts
+          showStart={!isActive && !isCompleted && !isCountingDown}
+          showRestart={!isCompleted}
+          className="mt-8"
+        />
 
         {isPaused && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg z-20 bg-background-primary bg-opacity-80 backdrop-blur-sm">

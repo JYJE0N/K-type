@@ -1,10 +1,12 @@
 import { LanguagePack, TextType } from '@/types'
+import { stealthSentences, type StealthTextType } from '@/data/sentences/stealth'
 
 interface TextGenerationOptions {
   wordCount?: number
   includeCapitalization?: boolean
   includePunctuation?: boolean
   includeNumbers?: boolean
+  stealthMode?: StealthTextType | null
 }
 
 export class TextGenerator {
@@ -16,9 +18,14 @@ export class TextGenerator {
 
   // 메인 텍스트 생성 함수
   generateText(type: TextType, options: TextGenerationOptions = {}): string {
-    const { wordCount = 50 } = options
+    const { wordCount = 50, stealthMode = null } = options
 
-    console.log(`📝 텍스트 생성 - 타입: ${type}, 목표: ${wordCount}`)
+    console.log(`📝 텍스트 생성 - 타입: ${type}, 목표: ${wordCount}, 은밀모드: ${stealthMode}`)
+
+    // 은밀모드인 경우 해당 업무 텍스트 사용
+    if (stealthMode) {
+      return this.generateStealthText(stealthMode, wordCount)
+    }
 
     switch (type) {
       case 'words':
@@ -325,5 +332,40 @@ export class TextGenerator {
     }
 
     return { difficulty, factors }
+  }
+
+  // 은밀모드용 업무 텍스트 생성
+  private generateStealthText(stealthMode: StealthTextType, targetLength: number): string {
+    const sentences = stealthSentences[stealthMode] || stealthSentences.common
+    
+    let result = ''
+    let currentLength = 0
+    const targetChars = targetLength * 8 // 단어 수를 대략적인 글자 수로 변환
+    
+    // 랜덤하게 문장들을 선택하여 목표 길이에 맞춰 생성
+    const shuffledSentences = [...sentences].sort(() => Math.random() - 0.5)
+    
+    for (const sentence of shuffledSentences) {
+      if (currentLength >= targetChars) break
+      
+      if (result) {
+        result += ' ' // 문장 사이 공백
+      }
+      
+      result += sentence
+      currentLength = result.length
+      
+      // 목표 길이에 도달하면 반복 종료
+      if (currentLength >= targetChars) break
+      
+      // 모든 문장을 다 썼는데 아직 목표에 못 미쳤으면 다시 섞어서 반복
+      if (shuffledSentences.indexOf(sentence) === shuffledSentences.length - 1 && currentLength < targetChars) {
+        shuffledSentences.sort(() => Math.random() - 0.5)
+      }
+    }
+    
+    console.log(`🔒 은밀모드 텍스트 생성됨 - 모드: ${stealthMode}, 길이: ${result.length}자`)
+    
+    return result.trim()
   }
 }

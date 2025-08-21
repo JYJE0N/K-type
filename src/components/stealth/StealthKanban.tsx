@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTypingStore } from '@/stores/typingStore'
 import { useStatsStore } from '@/stores/statsStore'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { CheckSquare, Circle, Clock, User } from 'lucide-react'
+import { CheckSquare, Circle, Clock, User, BarChart3, Settings, Trello } from 'lucide-react'
 
 interface KanbanCardProps {
   title: string
@@ -74,9 +75,15 @@ interface StealthKanbanProps {
 }
 
 export function StealthKanban({ className = "" }: StealthKanbanProps) {
+  const router = useRouter()
   const { isActive, isCompleted, targetText, currentIndex } = useTypingStore()
   const { liveStats } = useStatsStore()
   const { theme } = useSettingsStore()
+  
+  // 홈으로 돌아가기 핸들러
+  const handleHomeNavigation = () => {
+    router.push('/')
+  }
   
   const [currentTime, setCurrentTime] = useState('')
   
@@ -128,11 +135,48 @@ export function StealthKanban({ className = "" }: StealthKanbanProps) {
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold text-gray-800">프로젝트 관리 대시보드</h1>
-            <div className="text-sm text-gray-500">팀 워크스페이스</div>
+            <div 
+              className="cursor-pointer transition-opacity hover:opacity-80" 
+              onClick={handleHomeNavigation}
+              title="홈으로 돌아가기"
+            >
+              <Trello size={20} className="text-blue-600" />
+            </div>
+            <h1 
+              className="text-lg font-semibold text-gray-800 cursor-pointer transition-opacity hover:opacity-80" 
+              onClick={handleHomeNavigation}
+              title="홈으로 돌아가기"
+            >
+              마케팅 프로젝트 관리 보드
+            </h1>
+            <div className="text-sm text-gray-500">비즈니스 전략팀</div>
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">{currentTime}</div>
+            
+            {/* 숨겨진 통계 버튼 */}
+            <div 
+              className="cursor-pointer transition-colors" 
+              onClick={() => router.push('/stats')}
+              title="통계 보기"
+            >
+              <BarChart3 
+                size={20} 
+                className="text-gray-600 hover:text-blue-600 transition-colors" 
+              />
+            </div>
+            
+            {/* 숨겨진 설정 버튼 */}
+            <div 
+              className="cursor-pointer transition-colors" 
+              title="설정"
+            >
+              <Settings 
+                size={20} 
+                className="text-gray-600 hover:text-blue-600 transition-colors" 
+              />
+            </div>
+            
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
               김
             </div>

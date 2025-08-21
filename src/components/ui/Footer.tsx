@@ -2,7 +2,6 @@
 
 import React from "react";
 import { IoGitBranchOutline } from "react-icons/io5";
-import { Button } from "@/design-system/ui";
 
 interface FooterProps {
   className?: string;
@@ -20,21 +19,15 @@ export function Footer({ className = "" }: FooterProps) {
           <div className="flex items-center gap-4">
             <span className="text-sm text-text-muted">Made by Doomock</span>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-10 w-10 p-0"
+            <a
+              href="https://github.com/JYJE0N"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Profile"
+              className="h-10 w-10 p-2 rounded-md text-text-muted hover:text-white hover:bg-gray-800 transition-colors flex items-center justify-center"
             >
-              <a
-                href="https://github.com/JYJE0N"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub Profile"
-                className="text-text-muted hover:text-white transition-colors"
-              >
-                <IoGitBranchOutline className="w-6 h-6 text-text-muted" />
-              </a>
-            </Button>
+              <IoGitBranchOutline className="w-6 h-6" />
+            </a>
           </div>
         </div>
       </div>
