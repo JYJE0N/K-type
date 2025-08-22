@@ -1,18 +1,13 @@
 "use client"
 
 import { useStealthCommon, stealthStyles } from '@/hooks/useStealthCommon'
-import { useSettingsStore } from '@/stores/settingsStore'
+import { Header } from '@/components/ui/Header'
 import { 
-  FileText, 
-  Share, 
-  Download, 
-  MoreVertical, 
   Edit3, 
   Eye,
   MessageCircle,
   Clock,
-  BarChart3,
-  Settings
+  BarChart3
 } from 'lucide-react'
 
 interface StealthDocsProps {
@@ -37,13 +32,7 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
     accuracy,
   } = useStealthCommon()
   
-  const { theme } = useSettingsStore()
-  
   // 가짜 문서 내용
-  const documentTitle = isActive || isCompleted 
-    ? "2024년 4분기 사업계획서" 
-    : "마케팅 전략 기획안"
-    
   const fakeDocumentContent = `
 회의록: 팀 프로젝트 진행사항 논의
 
@@ -135,38 +124,10 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
 
   return (
     <div className={`${stealthStyles.container} ${className}`}>
-      {/* 헤더 */}
-      <header className={`${stealthStyles.header} px-4 py-3`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={handleHomeNavigation}
-              className="p-2 hover:bg-surface rounded-lg transition-colors"
-              title="홈으로 돌아가기"
-            >
-              <FileText className="w-5 h-5 text-interactive-primary" />
-            </button>
-            <div>
-              <h1 className="font-semibold text-text-primary">{documentTitle}</h1>
-              <p className="text-xs text-text-secondary">
-                마지막 수정: {formatTime(currentTime)}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
-              <Share className="w-4 h-4 text-text-secondary" />
-            </button>
-            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
-              <Download className="w-4 h-4 text-text-secondary" />
-            </button>
-            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
-              <MoreVertical className="w-4 h-4 text-text-secondary" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header 
+        mode="stealth-docs"
+        onHomeClick={handleHomeNavigation}
+      />
 
       <div className="flex h-[calc(100vh-60px)]">
         {/* 메인 콘텐츠 */}

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { Globe } from 'lucide-react';
+import { RiGlobalLine } from "react-icons/ri";
 
 interface LanguageToggleProps {
   className?: string;
@@ -23,43 +23,53 @@ export function LanguageToggle({ className = '' }: LanguageToggleProps) {
         onClick={toggleLanguage}
         className="relative flex items-center px-1 py-1 rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         style={{
-          width: '120px',
-          height: '40px',
+          width: '140px',
+          height: '44px',
           backgroundColor: isKorean ? 'var(--color-interactive-primary)' : 'var(--color-interactive-secondary)',
           boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)'
         }}
         aria-label={`언어 변경: 현재 ${isKorean ? '한국어' : 'English'}`}
       >
         {/* 배경 라벨들 */}
-        <div className="absolute inset-0 flex items-center justify-between px-4 text-sm font-bold pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-between px-5 text-sm font-bold pointer-events-none">
           <span 
-            className={`transition-all duration-300 ${isKorean ? 'opacity-30' : 'opacity-100'}`}
-            style={{ color: 'white' }}
+            className={`transition-all duration-300 ${isKorean ? 'text-white opacity-100' : 'text-white/40'}`}
           >
             한글
           </span>
           <span 
-            className={`transition-all duration-300 ${!isKorean ? 'opacity-30' : 'opacity-100'}`}
-            style={{ color: 'white' }}
+            className={`transition-all duration-300 ${!isKorean ? 'text-white opacity-100' : 'text-white/40'}`}
           >
             ENG
           </span>
         </div>
 
-        {/* 슬라이더 (완전한 원형) */}
+        {/* 슬라이더 - 선택된 언어 표시 */}
         <div
-          className="absolute w-8 h-8 bg-white rounded-full shadow-lg transition-all duration-300 ease-in-out flex items-center justify-center"
+          className="absolute bg-white rounded-full shadow-lg transition-all duration-300 ease-in-out flex items-center justify-center"
           style={{
-            transform: isKorean ? 'translateX(4px)' : 'translateX(76px)',
+            width: '55%',
+            height: '36px',
+            left: isKorean ? '4%' : '41%',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
           }}
         >
-          <Globe 
-            className="w-4 h-4 transition-colors duration-300" 
-            style={{ 
-              color: isKorean ? 'var(--color-interactive-primary)' : 'var(--color-interactive-secondary)'
-            }} 
-          />
+          <div className="flex items-center gap-1">
+            <RiGlobalLine 
+              className="w-3 h-3 transition-colors duration-300"
+              style={{ 
+                color: isKorean ? 'var(--color-interactive-primary)' : 'var(--color-interactive-secondary)'
+              }}
+            />
+            <span 
+              className="text-sm font-bold transition-colors duration-300"
+              style={{ 
+                color: isKorean ? 'var(--color-interactive-primary)' : 'var(--color-interactive-secondary)'
+              }}
+            >
+              {isKorean ? '한글' : 'ENG'}
+            </span>
+          </div>
         </div>
       </button>
     </div>

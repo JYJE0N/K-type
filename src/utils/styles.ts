@@ -24,6 +24,27 @@ export const buttonStyles = {
   success: "px-4 py-2 bg-feedback-success text-white rounded-lg hover:bg-feedback-success/90 transition-colors",
 }
 
+// 버튼 그룹 스타일
+export const buttonGroupStyles = {
+  container: "inline-flex rounded-lg overflow-hidden border border-border bg-background",
+  button: {
+    base: "relative font-medium whitespace-nowrap transition-all duration-150 ease-in-out focus:outline-none focus:z-10 cursor-pointer",
+    sizes: {
+      sm: "px-2 py-1 text-xs",     // 8px + 4px, text-xs (12px)
+      md: "px-3 py-1.5 text-sm",   // 12px + 6px, text-sm (14px)
+      lg: "px-4 py-2 text-base"     // 16px + 8px, text-base (16px)
+    },
+    states: {
+      default: "bg-button-group-default text-text-secondary hover:bg-elevated",
+      active: "bg-interactive-primary text-text-on-primary",
+      disabled: "opacity-50 cursor-not-allowed"
+    },
+    divider: "border-l border-border",
+    first: "", // 첫 번째 버튼용
+    notFirst: "-ml-px" // 첫 번째가 아닌 버튼용
+  }
+}
+
 // 텍스트 스타일
 export const textStyles = {
   heading: "text-2xl font-bold text-text-primary",

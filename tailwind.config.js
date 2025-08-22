@@ -88,7 +88,25 @@ module.exports = {
           incorrect: 'var(--color-typing-incorrect)',
           current: 'var(--color-typing-current)',
           cursor: 'var(--color-typing-cursor)'
-        }
+        },
+        'button-group-default': 'var(--color-button-group-default)',
+        border: 'var(--color-border)',
+        muted: 'var(--color-text-muted)',
+        'text-on-primary': 'var(--color-text-inverse)'
+      },
+      backgroundColor: {
+        'button-group-default': 'var(--color-button-group-default)',
+        'elevated': 'var(--color-elevated)',
+        'interactive-primary': 'var(--color-interactive-primary)',
+        'feedback-success': 'var(--color-feedback-success)',
+        'feedback-error': 'var(--color-feedback-error)',
+        'interactive-secondary': 'var(--color-interactive-secondary)'
+      },
+      textColor: {
+        'text-on-primary': 'var(--color-text-inverse)'
+      },
+      borderColor: {
+        'border': 'var(--color-border)'
       },
 
       // 🔤 타이포그래피

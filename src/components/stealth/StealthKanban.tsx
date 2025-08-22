@@ -1,11 +1,8 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTypingStore } from '@/stores/typingStore'
-import { useStatsStore } from '@/stores/statsStore'
-import { useSettingsStore } from '@/stores/settingsStore'
-import { CheckSquare, Circle, Clock, User, BarChart3, Settings, Trello } from 'lucide-react'
+import { useStealthCommon } from '@/hooks/useStealthCommon'
+import { Header } from '@/components/ui/Header'
+import { CheckSquare, Circle, Clock, User } from 'lucide-react'
 
 interface KanbanCardProps {
   title: string
@@ -75,34 +72,18 @@ interface StealthKanbanProps {
 }
 
 export function StealthKanban({ className = "" }: StealthKanbanProps) {
-  const router = useRouter()
-  const { isActive, isCompleted, targetText, currentIndex } = useTypingStore()
-  const { liveStats } = useStatsStore()
-  const { theme } = useSettingsStore()
-  
-  // 홈으로 돌아가기 핸들러
-  const handleHomeNavigation = () => {
-    router.push('/')
-  }
-  
-  const [currentTime, setCurrentTime] = useState('')
-  
-  // 실시간 시간 업데이트
-  useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }))
-    }
-    
-    updateTime()
-    const interval = setInterval(updateTime, 1000)
-    return () => clearInterval(interval)
-  }, [])
-  
-  // 진행률 계산
-  const completionRate = targetText.length > 0 ? (currentIndex / targetText.length) * 100 : 0
+  const {
+    handleHomeNavigation,
+    isActive,
+    isCompleted,
+    text: targetText,
+    currentIndex,
+    completionRate,
+    cpm,
+    wpm,
+    accuracy,
+    elapsedTime
+  } = useStealthCommon()
   
   // 가짜 업무 항목들
   const todoItems = [
@@ -131,58 +112,11 @@ export function StealthKanban({ className = "" }: StealthKanbanProps) {
 
   return (
     <div className={`min-h-screen bg-[#f7f8fc] ${className}`}>
-      {/* 가짜 헤더 - Trello/Notion 스타일 */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div 
-              className="cursor-pointer transition-opacity hover:opacity-80" 
-              onClick={handleHomeNavigation}
-              title="홈으로 돌아가기"
-            >
-              <Trello size={20} className="text-blue-600" />
-            </div>
-            <h1 
-              className="text-lg font-semibold text-gray-800 cursor-pointer transition-opacity hover:opacity-80" 
-              onClick={handleHomeNavigation}
-              title="홈으로 돌아가기"
-            >
-              마케팅 프로젝트 관리 보드
-            </h1>
-            <div className="text-sm text-gray-500">비즈니스 전략팀</div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">{currentTime}</div>
-            
-            {/* 숨겨진 통계 버튼 */}
-            <div 
-              className="cursor-pointer transition-colors" 
-              onClick={() => router.push('/stats')}
-              title="통계 보기"
-            >
-              <BarChart3 
-                size={20} 
-                className="text-gray-600 hover:text-blue-600 transition-colors" 
-              />
-            </div>
-            
-            {/* 숨겨진 설정 버튼 */}
-            <div 
-              className="cursor-pointer transition-colors" 
-              title="설정"
-            >
-              <Settings 
-                size={20} 
-                className="text-gray-600 hover:text-blue-600 transition-colors" 
-              />
-            </div>
-            
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              김
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header 
+        mode="stealth-kanban"
+        onHomeClick={handleHomeNavigation}
+        style={{ backgroundColor: '#ffffff', borderColor: '#e5e7eb' }}
+      />
 
       {/* 칸반보드 */}
       <div className="flex gap-6 p-6 overflow-x-auto">
@@ -267,15 +201,15 @@ export function StealthKanban({ className = "" }: StealthKanbanProps) {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600">작업 속도</span>
-                  <span className="font-medium">{liveStats.cpm} CPM</span>
+                  <span className="font-medium">{cpm} CPM</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600">정확도</span>
-                  <span className="font-medium">{liveStats.accuracy}%</span>
+                  <span className="font-medium">{accuracy}%</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600">소요시간</span>
-                  <span className="font-medium">{Math.round(liveStats.timeElapsed)}초</span>
+                  <span className="font-medium">{Math.round(elapsedTime)}초</span>
                 </div>
               </div>
             </div>

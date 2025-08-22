@@ -95,11 +95,8 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
       {/* 테스트 설정 */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-4 h-4" style={{ color: 'var(--color-interactive-primary)' }} />
-          <h3 
-            className="text-sm font-semibold"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
+          <Clock className="w-4 h-4 text-interactive-primary" />
+          <h3 className="text-sm font-semibold text-text-primary">
             기본 설정
           </h3>
         </div>
@@ -108,16 +105,10 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 테스트 모드 */}
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <label 
-                className="text-sm font-medium block mb-1"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
+              <label className="text-sm font-medium block mb-1 text-text-primary">
                 모드
               </label>
-              <p 
-                className="text-xs"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs text-text-tertiary">
                 시간 또는 단어 기준 선택
               </p>
             </div>
@@ -126,7 +117,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 options={testModeOptions}
                 value={testMode}
                 onChange={(value) => setTestMode(value as 'time' | 'words')}
-                size="md"
+                size="sm"
               />
             </div>
           </div>
@@ -134,16 +125,10 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 목표값 */}
           <div className="flex items-center justify-between">
             <div className="flex-1 mr-4">
-              <label 
-                className="text-sm font-medium block mb-1"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
+              <label className="text-sm font-medium block mb-1 text-text-primary">
                 목표
               </label>
-              <p 
-                className="text-xs"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs text-text-tertiary">
                 테스트 {testMode === 'time' ? '시간' : '단어 수'}
               </p>
             </div>
@@ -152,7 +137,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 options={getTestTargetOptions()}
                 value={testTarget.toString()}
                 onChange={(value) => setTestTarget(parseInt(value))}
-                size="md"
+                size="sm"
               />
             </div>
           </div>
@@ -160,16 +145,10 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 텍스트 타입 */}
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <label 
-                className="text-sm font-medium block mb-1"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
+              <label className="text-sm font-medium block mb-1 text-text-primary">
                 텍스트 타입
               </label>
-              <p 
-                className="text-xs"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs text-text-tertiary">
                 일반 · 구두점 · 숫자
               </p>
             </div>
@@ -178,7 +157,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 options={basicTextTypeOptions}
                 value={basicTextTypeOptions.some(option => option.value === textType) ? textType : ''}
                 onChange={(value) => setTextType(value as any)}
-                size="md"
+                size="sm"
               />
             </div>
           </div>
@@ -186,16 +165,10 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 문장 타입 */}
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <label 
-                className="text-sm font-medium block mb-1"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
+              <label className="text-sm font-medium block mb-1 text-text-primary">
                 문장 타입
               </label>
-              <p 
-                className="text-xs"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs text-text-tertiary">
                 단문 · 중문 · 장문
               </p>
             </div>
@@ -204,7 +177,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 options={sentenceTextTypeOptions}
                 value={sentenceTextTypeOptions.some(option => option.value === textType) ? textType : ''}
                 onChange={(value) => setTextType(value as any)}
-                size="md"
+                size="sm"
               />
             </div>
           </div>
@@ -220,11 +193,8 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
       {/* 고급 기능 */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4" style={{ color: 'var(--color-interactive-primary)' }} />
-          <h3 
-            className="text-sm font-semibold"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
+          <Sparkles className="w-4 h-4 text-interactive-primary" />
+          <h3 className="text-sm font-semibold text-text-primary">
             고급 설정
           </h3>
         </div>

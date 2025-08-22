@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { MoreVertical, Palette, Check } from "lucide-react";
+import { IoColorPalette } from "react-icons/io5";
+import { Palette, Check } from "lucide-react";
 
 // 테마 정보 정의
 const themeConfigs = {
@@ -70,7 +70,6 @@ interface ThemeMenuProps {
 }
 
 export function ThemeMenu({ className = '' }: ThemeMenuProps) {
-  const router = useRouter();
   const { theme, setTheme } = useSettingsStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -104,21 +103,6 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
   const handleThemeSelect = (themeId: ThemeId) => {
     setTheme(themeId);
     setIsOpen(false);
-    
-    // 은밀모드 테마 선택 시 해당 페이지로 이동
-    if (themeId.startsWith('stealth')) {
-      const routeMap = {
-        'stealth': '/stealth-kanban',
-        'stealth-docs': '/stealth-docs', 
-        'stealth-slack': '/stealth-slack',
-        'stealth-notion': '/stealth-notion'
-      };
-      
-      const route = routeMap[themeId as keyof typeof routeMap];
-      if (route) {
-        router.push(route);
-      }
-    }
   };
 
   // 카테고리별로 테마 그룹핑
@@ -132,7 +116,7 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      {/* 더보기 버튼 (점 세개) */}
+      {/* 테마 선택 버튼 (팔레트) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-lg transition-colors"
@@ -152,11 +136,11 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
             e.currentTarget.style.color = 'var(--color-text-secondary)';
           }
         }}
-        title="테마 및 더보기"
+        title="테마 선택"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <MoreVertical className="w-5 h-5" />
+        <IoColorPalette className="w-5 h-5" />
       </button>
 
       {/* 테마 선택 드롭다운 */}
