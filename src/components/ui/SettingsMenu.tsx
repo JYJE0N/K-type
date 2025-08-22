@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Ghost, Sparkles, Clock, Hash, Type } from 'lucide-react';
+import { Settings, Ghost, Sparkles, Clock, Hash, Type, Timer } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
 import { ButtonGroup } from '@/components/ui/ButtonGroup';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -25,14 +25,20 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
   const { 
     ghostModeEnabled,
     typingEffectsEnabled,
+    countdownEnabled,
     setGhostModeEnabled,
     setTypingEffectsEnabled,
+    setCountdownEnabled,
     testMode,
     setTestMode,
     testTarget,
     setTestTarget,
     textType,
-    setTextType
+    setTextType,
+    sentenceLength,
+    setSentenceLength,
+    sentenceStyle,
+    setSentenceStyle
   } = useSettingsStore();
 
   // 외부 클릭시 드롭다운 닫기
@@ -55,38 +61,43 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
 
   // 설정 옵션 정의
   const testModeOptions = [
-    { value: 'time', label: '시간' },
-    { value: 'words', label: '단어' }
+    { value: 'words', label: '단어' },
+    { value: 'sentences', label: '문장' }
   ];
 
   const getTestTargetOptions = () => {
-    if (testMode === 'time') {
+    if (testMode === 'words') {
       return [
-        { value: '15', label: '15초' },
-        { value: '30', label: '30초' },
-        { value: '60', label: '1분' },
-        { value: '120', label: '2분' }
+        { value: '10', label: '10개' },
+        { value: '25', label: '25개' },
+        { value: '50', label: '50개' },
+        { value: '100', label: '100개' }
       ];
     } else {
       return [
-        { value: '10', label: '10단어' },
-        { value: '25', label: '25단어' },
-        { value: '50', label: '50단어' },
-        { value: '100', label: '100단어' }
+        { value: '1', label: '1개' },
+        { value: '3', label: '3개' },
+        { value: '5', label: '5개' },
+        { value: '10', label: '10개' }
       ];
     }
   };
 
-  const basicTextTypeOptions = [
-    { value: 'words', label: '일반' },
-    { value: 'punctuation', label: '구두점' },
-    { value: 'numbers', label: '숫자' }
+  const wordStyleOptions = [
+    { value: 'plain', label: '일반' }
   ];
 
-  const sentenceTextTypeOptions = [
-    { value: 'short-sentences', label: '단문' },
-    { value: 'medium-sentences', label: '중문' },
-    { value: 'long-sentences', label: '장문' }
+  const sentenceLengthOptions = [
+    { value: 'short', label: '단문' },
+    { value: 'medium', label: '중문' },
+    { value: 'long', label: '장문' }
+  ];
+
+  const sentenceStyleOptions = [
+    { value: 'plain', label: '일반' },
+    { value: 'punctuation', label: '구두점' },
+    { value: 'numbers', label: '숫자' },
+    { value: 'mixed', label: '혼합' }
   ];
 
   // 설정 컨텐츠 렌더링 함수
@@ -109,14 +120,14 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 모드
               </label>
               <p className="text-xs text-text-tertiary">
-                시간 또는 단어 기준 선택
+                단어 또는 문장 기준 선택
               </p>
             </div>
             <div className="flex-shrink-0">
               <ButtonGroup
                 options={testModeOptions}
                 value={testMode}
-                onChange={(value) => setTestMode(value as 'time' | 'words')}
+                onChange={(value) => setTestMode(value as 'words' | 'sentences')}
                 size="sm"
               />
             </div>
@@ -129,7 +140,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
                 목표
               </label>
               <p className="text-xs text-text-tertiary">
-                테스트 {testMode === 'time' ? '시간' : '단어 수'}
+                {testMode === 'words' ? '단어 개수' : '문장 개수'}
               </p>
             </div>
             <div className="flex-shrink-0">
@@ -142,45 +153,48 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
             </div>
           </div>
 
-          {/* 텍스트 타입 */}
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <label className="text-sm font-medium block mb-1 text-text-primary">
-                텍스트 타입
-              </label>
-              <p className="text-xs text-text-tertiary">
-                일반 · 구두점 · 숫자
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <ButtonGroup
-                options={basicTextTypeOptions}
-                value={basicTextTypeOptions.some(option => option.value === textType) ? textType : ''}
-                onChange={(value) => setTextType(value as any)}
-                size="sm"
-              />
-            </div>
-          </div>
-
-          {/* 문장 타입 */}
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <label className="text-sm font-medium block mb-1 text-text-primary">
-                문장 타입
-              </label>
-              <p className="text-xs text-text-tertiary">
-                단문 · 중문 · 장문
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <ButtonGroup
-                options={sentenceTextTypeOptions}
-                value={sentenceTextTypeOptions.some(option => option.value === textType) ? textType : ''}
-                onChange={(value) => setTextType(value as any)}
-                size="sm"
-              />
-            </div>
-          </div>
+          {/* 문장 모드일 때 길이 선택 */}
+          {testMode === 'sentences' && (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <label className="text-sm font-medium block mb-1 text-text-primary">
+                    길이
+                  </label>
+                  <p className="text-xs text-text-tertiary">
+                    단문 · 중문 · 장문
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <ButtonGroup
+                    options={sentenceLengthOptions}
+                    value={sentenceLength}
+                    onChange={(value) => setSentenceLength(value as 'short' | 'medium' | 'long')}
+                    size="sm"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <label className="text-sm font-medium block mb-1 text-text-primary">
+                    스타일
+                  </label>
+                  <p className="text-xs text-text-tertiary">
+                    일반 · 구두점 · 숫자 · 혼합
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <ButtonGroup
+                    options={sentenceStyleOptions}
+                    value={sentenceStyle}
+                    onChange={(value) => setSentenceStyle(value as 'plain' | 'punctuation' | 'numbers' | 'mixed')}
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -243,6 +257,28 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
               size="md"
             />
           </div>
+          
+          {/* 카운트다운 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-background-elevated">
+                <Timer className="w-4 h-4 text-text-secondary" />
+              </div>
+              <div>
+                <span className="text-sm font-medium block text-text-primary">
+                  카운트다운
+                </span>
+                <p className="text-xs text-text-tertiary">
+                  3초 준비 시간
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={countdownEnabled}
+              onChange={setCountdownEnabled}
+              size="md"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -272,19 +308,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
       {/* 설정 버튼 */}
       <button
         onClick={() => setInternalIsOpen(!internalIsOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-        style={{
-          backgroundColor: internalIsOpen ? 'var(--color-background-elevated)' : 'transparent',
-          color: 'var(--color-text-secondary)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
-        }}
-        onMouseLeave={(e) => {
-          if (!internalIsOpen) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        className={`settings-menu-button flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${internalIsOpen ? 'active' : ''}`}
       >
         <Settings className="w-4 h-4" />
         설정
@@ -292,15 +316,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
 
       {/* 드롭다운 메뉴 */}
       {internalIsOpen && (
-        <div 
-          className="absolute right-0 top-full mt-2 p-6 min-w-96 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm"
-          style={{ 
-            backgroundColor: 'var(--color-background)', 
-            borderColor: 'var(--color-border)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}
-        >
+        <div className="settings-menu-dropdown absolute right-0 top-full mt-2 p-6 min-w-96 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm">
           {renderSettingsContent()}
         </div>
       )}

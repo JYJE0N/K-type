@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Settings, TestMode, TextType } from '@/types'
+import { Settings, TestMode, TextType, SentenceLength, SentenceStyle } from '@/types'
 import { applyThemeVariables } from '@/styles/theme-provider'
 import type { ThemeId } from '@/styles/design-tokens'
 
@@ -27,6 +27,16 @@ interface SettingsStore extends Settings {
   typingEffectsEnabled: boolean
   setTypingEffectsEnabled: (enabled: boolean) => void
   
+  // 카운트다운 설정
+  countdownEnabled: boolean
+  setCountdownEnabled: (enabled: boolean) => void
+  
+  // 문장 설정 (새로운 구조)
+  sentenceLength: SentenceLength
+  setSentenceLength: (length: SentenceLength) => void
+  sentenceStyle: SentenceStyle
+  setSentenceStyle: (style: SentenceStyle) => void
+  
   // 설정 리셋
   resetToDefaults: () => void
   
@@ -37,8 +47,8 @@ interface SettingsStore extends Settings {
 const defaultSettings: Settings = {
   language: 'korean',
   theme: 'light',
-  testMode: 'time',
-  testTarget: 60,          // 60초 기본
+  testMode: 'words',
+  testTarget: 50,          // 50개 단어 기본
   textType: 'words',
   soundEnabled: false,
   showKeyboard: true,
@@ -48,7 +58,10 @@ const defaultSettings: Settings = {
 const defaultUISettings = {
   showSentences: false,  // 기본적으로 문장 옵션 숨김
   ghostModeEnabled: true, // 고스트 모드 기본 활성화
-  typingEffectsEnabled: true // 타이핑 이펙트 기본 활성화
+  typingEffectsEnabled: true, // 타이핑 이펙트 기본 활성화
+  countdownEnabled: true, // 카운트다운 기본 활성화
+  sentenceLength: 'short' as SentenceLength, // 기본 단문
+  sentenceStyle: 'plain' as SentenceStyle // 기본 일반 스타일
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -76,7 +89,7 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ 
           testMode: mode,
           // 모드에 따른 기본 목표값 설정
-          testTarget: mode === 'time' ? 60 : 50
+          testTarget: mode === 'sentences' ? 5 : 50
         })
       },
 
@@ -106,6 +119,15 @@ export const useSettingsStore = create<SettingsStore>()(
 
       // 타이핑 이펙트 설정
       setTypingEffectsEnabled: (enabled: boolean) => set({ typingEffectsEnabled: enabled }),
+
+      // 카운트다운 설정
+      setCountdownEnabled: (enabled: boolean) => set({ countdownEnabled: enabled }),
+
+      // 문장 길이 설정
+      setSentenceLength: (length: SentenceLength) => set({ sentenceLength: length }),
+
+      // 문장 스타일 설정
+      setSentenceStyle: (style: SentenceStyle) => set({ sentenceStyle: style }),
 
       // 기본값으로 리셋
       resetToDefaults: () => {

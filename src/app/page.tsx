@@ -12,7 +12,7 @@ import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
 
 export default function Home() {
-  const { language, textType, testTarget, testMode, theme } = useSettingsStore()
+  const { language, testTarget, testMode, theme, sentenceLength, sentenceStyle } = useSettingsStore()
   const { setTargetText, resetTest } = useTypingStore()
 
   // 테마 초기화
@@ -27,32 +27,17 @@ export default function Home() {
 
     const textGenerator = new TextGenerator(languagePack)
     
-    // 단어 수 계산 (시간 모드의 경우 예상 WPM 기반)
-    let wordCount = testTarget
-    if (testMode === 'time') {
-      // 평균 WPM 40 기준으로 단어 수 계산
-      wordCount = Math.max(50, Math.floor((testTarget / 60) * 40))
-    }
-
-    // 은밀모드 감지 및 적절한 텍스트 타입 매핑
-    let stealthMode = null;
-    if (theme.startsWith('stealth')) {
-      const stealthMap = {
-        'stealth': 'kanban',
-        'stealth-docs': 'docs', 
-        'stealth-slack': 'slack',
-        'stealth-notion': 'notion'
-      };
-      stealthMode = stealthMap[theme as keyof typeof stealthMap] || 'common';
-    }
-
-    const newText = textGenerator.generateText(textType, { 
-      wordCount, 
-      stealthMode: stealthMode as any 
+    // 새로운 텍스트 생성 로직 사용
+    const newText = textGenerator.generateNewText({
+      mode: testMode,
+      count: testTarget,
+      sentenceLength,
+      sentenceStyle
     })
+    
     setTargetText(newText)
     resetTest()
-  }, [language, textType, testTarget, testMode, theme, setTargetText, resetTest])
+  }, [language, testTarget, testMode, theme, sentenceLength, sentenceStyle, setTargetText, resetTest])
 
   return (
     <>

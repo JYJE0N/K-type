@@ -202,6 +202,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       
       if (currentState.countdownValue <= 1) {
         clearInterval(countdownInterval)
+        // 바로 테스트 시작! 박진감 있게
         set({
           isCountingDown: false,
           isActive: true,
@@ -209,7 +210,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
           startTime: new Date(),
           endTime: null
         })
-        console.log('🚀 Test started after countdown!')
+        console.log('🚀 Test started immediately after countdown!')
       } else {
         set({ countdownValue: currentState.countdownValue - 1 })
         console.log(`⏰ Countdown: ${currentState.countdownValue - 1}`)
@@ -366,6 +367,12 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const expectedChar = state.targetText[state.currentIndex]
     if (!expectedChar) {
       console.log('⚠️ No more characters to type')
+      
+      // Check for completion - 텍스트 끝에서 엔터 키 또는 스페이스바로 완료
+      if (key === '\n' || key === ' ') {
+        console.log(`🏁 Text completed with ${key === '\n' ? 'Enter' : 'Space'} key at end`)
+        setTimeout(() => get().completeTest(), 50)
+      }
       return
     }
 
@@ -428,13 +435,6 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     })
     
     console.log(`📊 간단한 통계: CPM ${simpleCPM}, WPM ${simpleWPM}`)
-    
-    // Check for completion
-    const newIndex = updates.currentIndex || state.currentIndex
-    if (newIndex >= state.targetText.length) {
-      console.log('🏁 Text completed')
-      setTimeout(() => get().completeTest(), 50)
-    }
   },
 
   // Handle backspace

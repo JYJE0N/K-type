@@ -56,7 +56,7 @@ export class GhostModeManager {
     recentTests: any[],
     language: string,
     textType: string,
-    testMode: 'time' | 'words',
+    testMode: 'words' | 'sentences',
     testTarget: number
   ): GhostRecord | null {
     if (!recentTests || recentTests.length === 0) return null;

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { IoGitBranchOutline } from "react-icons/io5";
+import { IoLogoGithub } from "react-icons/io5";
 import { layoutStyles } from '@/utils/styles';
 
 interface FooterProps {
@@ -11,7 +11,7 @@ interface FooterProps {
 export function Footer({ className = "" }: FooterProps) {
   return (
     <footer className={`${layoutStyles.footer} ${className}`}>
-      <div className="w-full max-w-4xl mx-auto px-6 py-4">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="text-sm text-text-muted">
             © 2025 월루타자기. All rights reserved.
@@ -25,9 +25,9 @@ export function Footer({ className = "" }: FooterProps) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub Profile"
-              className="h-10 w-10 p-2 rounded-md text-text-muted hover:text-white hover:bg-gray-800 transition-colors flex items-center justify-center"
+              className="github-link h-10 w-10 p-2 rounded-md transition-all duration-200 flex items-center justify-center"
             >
-              <IoGitBranchOutline className="w-6 h-6" />
+              <IoLogoGithub className="w-6 h-6" />
             </a>
           </div>
         </div>

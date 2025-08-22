@@ -119,23 +119,7 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
       {/* 테마 선택 버튼 (팔레트) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg transition-colors"
-        style={{
-          backgroundColor: isOpen ? 'var(--color-background-elevated)' : 'transparent',
-          color: isOpen ? 'var(--color-interactive-primary)' : 'var(--color-text-secondary)'
-        }}
-        onMouseEnter={(e) => {
-          if (!isOpen) {
-            e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
-            e.currentTarget.style.color = 'var(--color-interactive-primary)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isOpen) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'var(--color-text-secondary)';
-          }
-        }}
+        className={`theme-menu-button p-2 rounded-lg transition-colors ${isOpen ? 'active' : ''}`}
         title="테마 선택"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -145,19 +129,12 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
 
       {/* 테마 선택 드롭다운 */}
       {isOpen && (
-        <div 
-          className="absolute right-0 top-full mt-2 w-72 rounded-lg shadow-xl z-[9999] max-h-80 overflow-y-auto"
-          style={{
-            backgroundColor: 'var(--color-background)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          }}
-        >
+        <div className="theme-menu-dropdown absolute right-0 top-full mt-2 w-72 rounded-lg shadow-xl z-[9999] max-h-80 overflow-y-auto">
           <div className="p-3">
             {/* 헤더 */}
             <div className="flex items-center gap-2 mb-3 px-2">
-              <Palette size={16} style={{ color: 'var(--color-interactive-primary)' }} />
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              <Palette size={16} className="theme-menu-icon" />
+              <h3 className="theme-menu-title text-sm font-semibold">
                 테마 선택
               </h3>
             </div>
@@ -165,10 +142,7 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
             {/* 테마 목록 */}
             {Object.entries(groupedThemes).map(([category, themes]) => (
               <div key={category} className="mb-4 last:mb-0">
-                <h4 
-                  className="px-2 py-1 text-xs font-medium uppercase tracking-wide mb-2"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
+                <h4 className="theme-menu-category-label px-2 py-1 text-xs font-medium uppercase tracking-wide mb-2">
                   {categoryLabels[category as keyof typeof categoryLabels]}
                 </h4>
                 <div className="space-y-1">
@@ -176,25 +150,7 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
                     <button
                       key={themeOption.id}
                       onClick={() => handleThemeSelect(themeOption.id)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left transition-all duration-150 focus:outline-none"
-                      style={{
-                        backgroundColor: theme === themeOption.id 
-                          ? 'var(--color-interactive-primary)' 
-                          : 'transparent',
-                        color: theme === themeOption.id 
-                          ? 'var(--color-text-inverse)' 
-                          : 'var(--color-text-primary)'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (theme !== themeOption.id) {
-                          e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (theme !== themeOption.id) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }
-                      }}
+                      className={`theme-option-button w-full flex items-center justify-between px-3 py-2 rounded-md text-left transition-all duration-150 focus:outline-none ${theme === themeOption.id ? 'active' : ''}`}
                     >
                       <div className="font-medium text-sm">{themeOption.name}</div>
                       {theme === themeOption.id && (

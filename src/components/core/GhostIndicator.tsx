@@ -84,22 +84,18 @@ export function GhostIndicator({ className = "" }: GhostIndicatorProps) {
           <div className="relative h-2 bg-background-secondary rounded-full overflow-hidden">
             {/* 고스트 진행률 (반투명) */}
             <div 
-              className="absolute top-0 left-0 h-full bg-purple-500/50 transition-all duration-300"
-              style={{ 
-                width: `${Math.min(100, (ghostProgress.position / currentGhost.completedText.length) * 100)}%` 
-              }}
+              className="ghost-progress-bar absolute top-0 left-0 h-full bg-purple-500/50"
+              style={{ width: `${Math.min(100, (ghostProgress.position / currentGhost.completedText.length) * 100)}%` }}
             />
             
             {/* 사용자 진행률 */}
             <div 
-              className={`absolute top-0 left-0 h-full transition-all duration-300 ${
+              className={`ghost-progress-bar absolute top-0 left-0 h-full ${
                 comparison?.userAhead 
                   ? 'bg-green-500' 
                   : 'bg-blue-500'
               }`}
-              style={{ 
-                width: `${Math.min(100, (currentIndex / currentGhost.completedText.length) * 100)}%` 
-              }}
+              style={{ width: `${Math.min(100, (currentIndex / currentGhost.completedText.length) * 100)}%` }}
             />
           </div>
         </div>

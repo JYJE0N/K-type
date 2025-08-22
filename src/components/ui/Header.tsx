@@ -38,19 +38,21 @@ export function Header({
 
   return (
     <header
-      className={`${layoutStyles.header} px-4 py-3 ${className}`}
+      className={`${layoutStyles.header} ${className}`}
       style={{
         backgroundColor: 'var(--color-background-secondary)',
         borderColor: 'var(--color-border)',
         ...style
       }}
     >
-      <div className="flex items-center justify-between">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between">
         {/* 좌측: 브랜드 로고 또는 은밀모드 타이틀 */}
         {renderLeftContent()}
         
-        {/* 우측: 공통 툴바 (통계 + 설정 + 테마) */}
-        <Toolbar />
+          {/* 우측: 공통 툴바 (통계 + 설정 + 테마) */}
+          <Toolbar />
+        </div>
       </div>
     </header>
   );

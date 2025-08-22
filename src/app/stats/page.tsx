@@ -363,9 +363,9 @@ export default function StatsPage() {
                             })}
                           </div>
                           <div className="text-secondary">
-                            {test.mode === "time" ? (
+                            {test.mode === "sentences" ? (
                               <span className="px-3 py-1 bg-surface rounded-full text-xs border border-interactive-secondary border-opacity-20 font-medium">
-                                {test.duration}초
+                                문장 {test.wordsTyped}개
                               </span>
                             ) : (
                               <span className="px-3 py-1 bg-surface rounded-full text-xs border border-interactive-secondary border-opacity-20 font-medium">

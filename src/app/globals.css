@@ -8,6 +8,21 @@
    📦 디자인 토큰 및 테마 (통합)
    =============================== */
 
+/* 🎬 카운트다운 애니메이션 - 빠른 한바퀴 */
+@keyframes spin-progress {
+  0% {
+    stroke-dashoffset: 314.16; /* 2 * PI * 50 (원 둘레) */
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 🌊 부드러운 전환 효과 */
+.countdown-smooth {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 /* 📏 디자인 토큰 (Design Tokens) */
 :root {
   /* 📏 스페이싱 토큰 */
@@ -107,6 +122,14 @@ html[data-theme="light"] {
   --color-feedback-warning: #f59e0b;
   --color-feedback-error: #ef4444;
   --color-feedback-info: #3b82f6;
+  
+  /* 키보드 숏컷 전용 변수 */
+  --color-shortcut-card-bg: #111827;
+  --color-shortcut-key-bg: #4b5563;
+  --color-shortcut-key-border: #6b7280;
+  --color-shortcut-key-text: #ffffff;
+  --color-shortcut-label-text: #d1d5db;
+  --color-shortcut-separator: #6b7280;
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
   --color-typing-current: var(--color-interactive-primary);
@@ -137,6 +160,15 @@ html[data-theme="dark"] {
   --color-feedback-warning: #f59e0b;
   --color-feedback-error: #ef4444;
   --color-feedback-info: #67e8f9;
+  
+  /* 키보드 숏컷 전용 변수 */
+  --color-shortcut-card-bg: #1f2937;
+  --color-shortcut-key-bg: #6b7280;
+  --color-shortcut-key-border: #9ca3af;
+  --color-shortcut-key-text: #ffffff;
+  --color-shortcut-label-text: #e5e7eb;
+  --color-shortcut-separator: #9ca3af;
+  
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
   --color-typing-current: var(--color-interactive-primary);
@@ -167,6 +199,15 @@ html[data-theme="high-contrast"] {
   --color-feedback-warning: #ffaa00;
   --color-feedback-error: #ff2244;
   --color-feedback-info: #0088ff;
+  
+  /* 키보드 숏컷 전용 변수 */
+  --color-shortcut-card-bg: #1a1a1a;
+  --color-shortcut-key-bg: #444444;
+  --color-shortcut-key-border: #666666;
+  --color-shortcut-key-text: #ffffff;
+  --color-shortcut-label-text: #cccccc;
+  --color-shortcut-separator: #666666;
+  
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
   --color-typing-current: var(--color-interactive-primary);
@@ -492,6 +533,270 @@ body {
   75% {
     transform: translateX(2px);
   }
+}
+
+/* ===============================
+   🎨 타이핑 텍스트 컨테이너 스타일
+   =============================== */
+
+.typing-text-container:hover {
+  border-color: var(--color-interactive-primary) !important;
+  background-color: var(--color-background-elevated);
+  box-shadow: 
+    0 0 0 1px var(--color-interactive-primary),
+    0 4px 20px -4px color-mix(in srgb, var(--color-interactive-primary) 25%, transparent),
+    0 0 40px -10px color-mix(in srgb, var(--color-interactive-primary) 12%, transparent);
+}
+
+.github-link {
+  color: var(--color-text-primary);
+}
+
+.github-link:hover {
+  color: var(--color-interactive-secondary);
+  background-color: var(--color-surface);
+}
+
+/* 테마 메뉴 스타일 */
+.theme-menu-button {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.theme-menu-button.active,
+.theme-menu-button:hover {
+  background-color: var(--color-background-elevated);
+  color: var(--color-interactive-primary);
+}
+
+.theme-menu-dropdown {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.theme-menu-icon {
+  color: var(--color-interactive-primary);
+}
+
+.theme-menu-title {
+  color: var(--color-text-primary);
+}
+
+.theme-menu-category-label {
+  color: var(--color-text-tertiary);
+}
+
+.theme-option-button {
+  background-color: transparent;
+  color: var(--color-text-primary);
+}
+
+.theme-option-button.active {
+  background-color: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+}
+
+.theme-option-button:not(.active):hover {
+  background-color: var(--color-background-elevated);
+}
+
+/* 설정 메뉴 스타일 */
+.settings-menu-button {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.settings-menu-button.active,
+.settings-menu-button:hover {
+  background-color: var(--color-background-elevated);
+}
+
+.settings-menu-dropdown {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 타이핑 엔진 버튼 스타일 */
+.typing-button-primary {
+  background-color: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+}
+
+.typing-button-primary:hover {
+  background-color: var(--color-interactive-primary-hover);
+}
+
+.typing-button-secondary {
+  background-color: transparent;
+  color: var(--color-interactive-secondary);
+  border: 1px solid var(--color-interactive-secondary);
+}
+
+.typing-button-secondary:hover {
+  background-color: var(--color-interactive-secondary);
+  color: var(--color-text-inverse);
+}
+
+.typing-button-restart {
+  background-color: transparent;
+  color: var(--color-interactive-primary);
+  border: 1px solid var(--color-interactive-primary);
+}
+
+.typing-button-restart:hover {
+  background-color: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+}
+
+/* 텍스트 렌더러 스타일 */
+.typing-text-container {
+  font-size: var(--font-size, 26px);
+  line-height: 1.8;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.end-cursor {
+  height: 1.1em;
+  animation: blink 1s infinite;
+  vertical-align: text-bottom;
+  position: relative;
+  top: 0.15em;
+}
+
+/* 커서와 언더라인 스타일 */
+.typing-cursor {
+  bottom: -2px;
+  background-color: var(--color-typing-cursor);
+}
+
+.space-underline {
+  bottom: -3px;
+  animation: rainbow-pulse 2s ease-in-out infinite, glow-intense 1.5s ease-in-out infinite;
+  filter: blur(0.5px);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.space-glow {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  animation: char-glow 2s ease-in-out infinite;
+}
+
+/* 고스트 인디케이터 스타일 */
+.ghost-progress-bar {
+  transition: width 0.3s ease-out;
+}
+
+/* 타이핑 시각화 스타일 */
+.typing-visualizer-char {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.visualizer-animation {
+  animation: typing-char-pulse 0.3s ease-in-out;
+}
+
+/* 타이핑 시각화 애니메이션 */
+.ethereal-glow {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 80%);
+  animation: ethereal-breathe 3s ease-in-out infinite;
+}
+
+.gentle-pulse {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%, rgba(168, 85, 247, 0.03) 100%);
+  animation: gentle-pulse 4s ease-in-out infinite;
+}
+
+.subtle-shimmer {
+  animation: subtle-shimmer 6s ease-in-out infinite;
+}
+
+.serene-glow {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 80%);
+  animation: serene-glow 5s ease-in-out infinite;
+}
+
+.whisper-glow {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.04) 0%, transparent 70%);
+  animation: whisper-glow 3s ease-in-out infinite;
+}
+
+@keyframes typing-char-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes ethereal-breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes subtle-shimmer {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes serene-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes whisper-glow {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
+}
+
+/* 진행율 슬라이더 스타일 */
+.progress-slider {
+  user-select: none;
+}
+
+.slider-track {
+  position: relative;
+}
+
+.slider-fill {
+  position: relative;
+  z-index: 1;
+}
+
+.slider-thumb {
+  position: absolute;
+  z-index: 2;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.slider-thumb:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.progress-label {
+  position: absolute;
+  z-index: 3;
+  white-space: nowrap;
+  font-feature-settings: "tnum";
+  pointer-events: none;
+}
+
+/* 슬라이더 애니메이션 */
+.slider-fill,
+.slider-thumb,
+.progress-label {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 슬라이더 포커스 상태 */
+.progress-slider:focus-within .slider-thumb {
+  box-shadow: 0 0 0 3px rgba(var(--color-interactive-primary-rgb, 59, 130, 246), 0.2);
 }
 
 /* ===============================

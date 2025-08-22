@@ -4,14 +4,32 @@ export interface LanguagePack {
   name: string;
   font: string;
   wordLists: {
-    common: string[];        // 기본 단어 리스트
-    punctuation: string[];   // 구두점 포함
-    numbers: string[];       // 숫자 포함
+    plain: string[];         // 순수 단어 리스트 (구두점, 숫자 제외)
   };
-  sentences?: string[];      // 문장 연습용 (레거시)
-  shortSentences?: string[]; // 단문: 속담, 격언 등 (10-25자)
-  mediumSentences?: string[]; // 중문: 노래 가사, 시 등 (50-100자)  
-  longSentences?: string[];  // 장문: 책 글귀, 신문 사설 등 (150자+)
+  sentences: {
+    short: {
+      plain: string[];       // 단문 - 일반
+      punctuation: string[]; // 단문 - 구두점
+      numbers: string[];     // 단문 - 숫자
+      mixed: string[];       // 단문 - 혼합
+    };
+    medium: {
+      plain: string[];       // 중문 - 일반
+      punctuation: string[]; // 중문 - 구두점
+      numbers: string[];     // 중문 - 숫자
+      mixed: string[];       // 중문 - 혼합
+    };
+    long: {
+      plain: string[];       // 장문 - 일반
+      punctuation: string[]; // 장문 - 구두점
+      numbers: string[];     // 장문 - 숫자
+      mixed: string[];       // 장문 - 혼합
+    };
+  };
+  // 레거시 호환용 (제거 예정)
+  shortSentences?: string[];
+  mediumSentences?: string[];
+  longSentences?: string[];
 }
 
 // 테마 인터페이스
@@ -47,9 +65,18 @@ export interface Mistake {
 }
 
 // 테스트 모드
-export type TestMode = 'time' | 'words';
+export type TestMode = 'words' | 'sentences';
 
-// 텍스트 타입
+// 단어 모드용 스타일 (순수 단어만)
+export type WordStyle = 'plain';
+
+// 문장 모드용 스타일
+export type SentenceStyle = 'plain' | 'punctuation' | 'numbers' | 'mixed';
+
+// 문장 길이
+export type SentenceLength = 'short' | 'medium' | 'long';
+
+// 레거시 텍스트 타입 (호환성 유지)
 export type TextType = 'words' | 'punctuation' | 'numbers' | 'sentences' | 'short-sentences' | 'medium-sentences' | 'long-sentences';
 
 // 디바이스 타입

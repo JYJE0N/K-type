@@ -1,4 +1,4 @@
-import { LanguagePack, TextType } from '@/types'
+import { LanguagePack, TextType, TestMode, SentenceLength, SentenceStyle } from '@/types'
 import { stealthSentences, type StealthTextType } from '@/data/sentences/stealth'
 
 interface TextGenerationOptions {
@@ -9,6 +9,13 @@ interface TextGenerationOptions {
   stealthMode?: StealthTextType | null
 }
 
+interface NewTextGenerationOptions {
+  mode: TestMode
+  count: number  // 단어 개수 또는 문장 개수
+  sentenceLength?: SentenceLength
+  sentenceStyle?: SentenceStyle
+}
+
 export class TextGenerator {
   private languagePack: LanguagePack
 
@@ -16,11 +23,71 @@ export class TextGenerator {
     this.languagePack = languagePack
   }
 
-  // 메인 텍스트 생성 함수
+  // 새로운 메인 텍스트 생성 함수 (개선된 로직)
+  generateNewText(options: NewTextGenerationOptions): string {
+    const { mode, count, sentenceLength = 'short', sentenceStyle = 'plain' } = options
+
+    console.log(`📝 새로운 텍스트 생성 - 모드: ${mode}, 개수: ${count}, 길이: ${sentenceLength}, 스타일: ${sentenceStyle}`)
+
+    if (mode === 'words') {
+      // 단어 모드: 순수 단어만 생성
+      return this.generatePlainWords(count)
+    } else if (mode === 'sentences') {
+      // 문장 모드: 길이와 스타일에 따라 문장 생성
+      return this.generateSentencesByLengthAndStyle(sentenceLength, sentenceStyle, count)
+    }
+
+    return this.generatePlainWords(count) // 기본값
+  }
+
+  // 순수 단어 생성 (구두점, 숫자 제외)
+  private generatePlainWords(count: number): string {
+    const words = this.languagePack.wordLists.plain
+    const selectedWords: string[] = []
+
+    console.log(`📝 순수 단어 생성 - 개수: ${count}`)
+    console.log(`📝 사용 가능한 단어 수: ${words.length}`)
+
+    for (let i = 0; i < count; i++) {
+      const randomWord = words[Math.floor(Math.random() * words.length)]
+      selectedWords.push(randomWord)
+    }
+
+    const result = selectedWords.join(' ')
+    console.log(`📝 생성된 단어 텍스트: ${result.substring(0, 100)}...`)
+    return result
+  }
+
+  // 길이와 스타일에 따른 문장 생성
+  private generateSentencesByLengthAndStyle(
+    length: SentenceLength, 
+    style: SentenceStyle, 
+    count: number = 1
+  ): string {
+    const sentences = this.languagePack.sentences[length][style]
+    
+    if (!sentences || sentences.length === 0) {
+      console.warn(`⚠️ 문장을 찾을 수 없음: ${length} ${style}`)
+      return this.generatePlainWords(10) // 대체 텍스트
+    }
+
+    const selectedSentences: string[] = []
+    
+    for (let i = 0; i < count; i++) {
+      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
+      selectedSentences.push(randomSentence)
+    }
+
+    const result = selectedSentences.join(' ')
+    console.log(`📝 생성된 문장 텍스트 (${length} ${style}): ${result.substring(0, 100)}...`)
+    return result
+  }
+
+  // 레거시 메인 텍스트 생성 함수 (호환성 유지)
   generateText(type: TextType, options: TextGenerationOptions = {}): string {
     const { wordCount = 50, stealthMode = null } = options
 
-    console.log(`📝 텍스트 생성 - 타입: ${type}, 목표: ${wordCount}, 은밀모드: ${stealthMode}`)
+    console.log(`📝 레거시 텍스트 생성 - 타입: ${type}, 목표: ${wordCount}, 은밀모드: ${stealthMode}`)
 
     // 은밀모드인 경우 해당 업무 텍스트 사용
     if (stealthMode) {
@@ -47,9 +114,16 @@ export class TextGenerator {
     }
   }
 
-  // 순수 단어만 생성 (구두점, 숫자 제외)
+  // 순수 단어만 생성 (구두점, 숫자 제외) - 레거시 호환성
   private generateWords(count: number): string {
-    const words = this.languagePack.wordLists.common
+    // 새로운 구조 우선 시도
+    const words = this.languagePack.wordLists.plain || []
+    
+    if (words.length === 0) {
+      console.warn('⚠️ 단어 데이터를 찾을 수 없습니다.')
+      return '단어 데이터 없음'
+    }
+
     const selectedWords: string[] = []
 
     console.log(`📝 순수 단어 생성 - 개수: ${count}`)
@@ -66,46 +140,68 @@ export class TextGenerator {
     return result
   }
 
-  // 구두점 포함 텍스트 생성 (단어 + 구두점 조합)
+  // 구두점 포함 텍스트 생성 (단어 + 구두점 조합) - 레거시 호환성
   private generateWithPunctuation(count: number): string {
-    const punctuationWords = this.languagePack.wordLists.punctuation
-    const regularWords = this.languagePack.wordLists.common
-    const selectedWords: string[] = []
+    // 새 구조에서는 구두점 포함 문장을 사용
+    try {
+      return this.generateSentencesByLengthAndStyle('short', 'punctuation', Math.ceil(count / 5))
+    } catch (error) {
+      // 폴백: 기본 단어 사용
+      const words = this.languagePack.wordLists.plain || []
+      
+      if (words.length === 0) {
+        return '구두점 데이터 없음'
+      }
 
-    console.log(`📝 구두점 포함 텍스트 생성 - 개수: ${count}`)
+      const selectedWords: string[] = []
+      console.log(`📝 구두점 포함 텍스트 생성 - 개수: ${count} (폴백 모드)`)
 
-    for (let i = 0; i < count; i++) {
-      // 50% 확률로 구두점 포함 단어 선택 (더 높은 확률)
-      const usePunctuation = Math.random() < 0.5
-      const sourceList = usePunctuation ? punctuationWords : regularWords
-      const randomWord = sourceList[Math.floor(Math.random() * sourceList.length)]
-      selectedWords.push(randomWord)
+      for (let i = 0; i < count; i++) {
+        let word = words[Math.floor(Math.random() * words.length)]
+        // 50% 확률로 구두점 추가
+        if (Math.random() < 0.5) {
+          const punctuation = [',', '.', '!', '?'][Math.floor(Math.random() * 4)]
+          word += punctuation
+        }
+        selectedWords.push(word)
+      }
+
+      const result = selectedWords.join(' ')
+      console.log(`📝 구두점 포함 텍스트 (폴백): ${result.substring(0, 100)}...`)
+      return result
     }
-
-    const result = selectedWords.join(' ')
-    console.log(`📝 구두점 포함 텍스트: ${result.substring(0, 100)}...`)
-    return result
   }
 
-  // 숫자 포함 텍스트 생성 (단어 + 숫자 조합)
+  // 숫자 포함 텍스트 생성 (단어 + 숫자 조합) - 레거시 호환성
   private generateWithNumbers(count: number): string {
-    const numberWords = this.languagePack.wordLists.numbers
-    const regularWords = this.languagePack.wordLists.common
-    const selectedWords: string[] = []
+    // 새 구조에서는 숫자 포함 문장을 사용
+    try {
+      return this.generateSentencesByLengthAndStyle('short', 'numbers', Math.ceil(count / 5))
+    } catch (error) {
+      // 폴백: 기본 단어 사용
+      const words = this.languagePack.wordLists.plain || []
+      
+      if (words.length === 0) {
+        return '숫자 데이터 없음'
+      }
 
-    console.log(`📝 숫자 포함 텍스트 생성 - 개수: ${count}`)
+      const selectedWords: string[] = []
+      console.log(`📝 숫자 포함 텍스트 생성 - 개수: ${count} (폴백 모드)`)
 
-    for (let i = 0; i < count; i++) {
-      // 40% 확률로 숫자 포함 단어 선택 (더 높은 확률)
-      const useNumbers = Math.random() < 0.4
-      const sourceList = useNumbers ? numberWords : regularWords
-      const randomWord = sourceList[Math.floor(Math.random() * sourceList.length)]
-      selectedWords.push(randomWord)
+      for (let i = 0; i < count; i++) {
+        let word = words[Math.floor(Math.random() * words.length)]
+        // 40% 확률로 숫자 추가
+        if (Math.random() < 0.4) {
+          const number = Math.floor(Math.random() * 100)
+          word += number.toString()
+        }
+        selectedWords.push(word)
+      }
+
+      const result = selectedWords.join(' ')
+      console.log(`📝 숫자 포함 텍스트 (폴백): ${result.substring(0, 100)}...`)
+      return result
     }
-
-    const result = selectedWords.join(' ')
-    console.log(`📝 숫자 포함 텍스트: ${result.substring(0, 100)}...`)
-    return result
   }
 
   // 문장 생성 (실제 문장 단위로 생성)
@@ -131,8 +227,17 @@ export class TextGenerator {
       console.log('새 문장 시스템을 사용할 수 없습니다. 레거시 방식을 사용합니다.')
     }
 
-    // 레거시 문장 시스템 폴백
-    const sentences = this.languagePack.sentences || []
+    // 레거시 문장 시스템 폴백 - 새 구조 시도
+    let sentences: string[] = []
+    
+    // 새 구조에서 기본 단문 사용
+    if (this.languagePack.sentences?.short?.plain) {
+      sentences = this.languagePack.sentences.short.plain
+    } else if (this.languagePack.sentences) {
+      // 레거시 구조 사용
+      sentences = this.languagePack.sentences as unknown as string[]
+    }
+    
     if (sentences.length === 0) {
       console.log('문장 데이터가 없어 기본 단어로 대체합니다.')
       // 문장이 없으면 기본 단어로 대체 (단어 개수는 문장 수 * 10)
@@ -162,19 +267,23 @@ export class TextGenerator {
     
     switch (sentenceType) {
       case 'short':
-        sentences = this.languagePack.shortSentences || []
+        sentences = this.languagePack.sentences?.short?.plain || 
+                   this.languagePack.shortSentences || []
         typeName = '단문 (속담)'
         break
       case 'medium':
-        sentences = this.languagePack.mediumSentences || []
+        sentences = this.languagePack.sentences?.medium?.plain || 
+                   this.languagePack.mediumSentences || []
         typeName = '중문 (가사/시)'
         break
       case 'long':
-        sentences = this.languagePack.longSentences || []
+        sentences = this.languagePack.sentences?.long?.plain || 
+                   this.languagePack.longSentences || []
         typeName = '장문 (책/사설)'
         break
       default:
-        sentences = this.languagePack.sentences || []
+        sentences = this.languagePack.sentences?.short?.plain || 
+                   (this.languagePack.sentences as unknown as string[]) || []
         typeName = '일반 문장'
         break
     }
