@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { Footer } from './Footer'
 import { StealthManager } from '../stealth/StealthManager'
 import { GlobalHeader } from './GlobalHeader'
+import { layoutStyles } from '@/utils/styles'
 
 interface LayoutProps {
   children: ReactNode
@@ -20,7 +21,7 @@ export function Layout({ children, className = '' }: LayoutProps) {
           <GlobalHeader />
           
           {/* 메인 컨텐츠 영역 - flex-1로 남은 공간 모두 차지 */}
-          <main className="flex-1 flex flex-col" style={{ backgroundColor: 'var(--color-background)' }}>
+          <main className={layoutStyles.main}>
             <div className="flex-1 flex justify-center p-layout-main">
               <div className="w-full max-w-4xl">
                 {children}

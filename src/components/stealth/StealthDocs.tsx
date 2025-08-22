@@ -1,9 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTypingStore } from '@/stores/typingStore'
-import { useStatsStore } from '@/stores/statsStore'
+import { useStealthCommon, stealthStyles } from '@/hooks/useStealthCommon'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { 
   FileText, 
@@ -23,43 +20,24 @@ interface StealthDocsProps {
 }
 
 export function StealthDocs({ className = "" }: StealthDocsProps) {
-  const router = useRouter()
-  const { isActive, isCompleted, targetText, currentIndex, mistakes } = useTypingStore()
-  const { liveStats } = useStatsStore()
+  const {
+    handleHomeNavigation,
+    currentTime,
+    formatTime,
+    isBlinking,
+    text,
+    currentIndex,
+    userInput,
+    mistakes,
+    isActive,
+    isCompleted,
+    completionRate,
+    cpm,
+    wpm,
+    accuracy,
+  } = useStealthCommon()
+  
   const { theme } = useSettingsStore()
-  
-  const [currentTime, setCurrentTime] = useState('')
-  const [cursorBlink, setCursorBlink] = useState(true)
-  
-  // 실시간 시간 업데이트
-  useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }))
-    }
-    
-    updateTime()
-    const interval = setInterval(updateTime, 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // 커서 깜박임 효과
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCursorBlink(prev => !prev)
-    }, 530)
-    return () => clearInterval(interval)
-  }, [])
-  
-  // 진행률 계산
-  const completionRate = targetText.length > 0 ? (currentIndex / targetText.length) * 100 : 0
-  
-  // 홈으로 돌아가기 핸들러
-  const handleHomeNavigation = () => {
-    router.push('/')
-  }
   
   // 가짜 문서 내용
   const documentTitle = isActive || isCompleted 
@@ -69,7 +47,7 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
   const fakeDocumentContent = `
 회의록: 팀 프로젝트 진행사항 논의
 
-일시: 2024년 8월 20일 ${currentTime}
+일시: 2024년 8월 20일 ${formatTime(currentTime)}
 참석자: 김철수, 박영희, 이민수, 정수진
 
 1. 주요 안건
@@ -81,9 +59,9 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
    현재 진행 중인 프로젝트의 완료율은 ${Math.round(completionRate)}%입니다.
    
    팀원들의 작업 효율성이 크게 향상되었으며, 특히 문서 작성 속도가 
-   분당 ${liveStats.cpm}자로 측정되어 목표치를 상회하고 있습니다.
+   분당 ${cpm}자로 측정되어 목표치를 상회하고 있습니다.
    
-   정확도 또한 ${liveStats.accuracy}%로 매우 우수한 수준을 유지하고 있어,
+   정확도 또한 ${accuracy}%로 매우 우수한 수준을 유지하고 있어,
    품질 관리 측면에서도 긍정적인 결과를 보이고 있습니다.
 
 3. 다음 액션 아이템
@@ -97,233 +75,180 @@ export function StealthDocs({ className = "" }: StealthDocsProps) {
   const renderDocumentWithTyping = () => {
     if (!isActive && !isCompleted) {
       return fakeDocumentContent.split('\n').map((line, index) => (
-        <p key={index} className="mb-4 leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
-          {line}
+        <p key={index} className="mb-4 leading-relaxed text-text-primary">
+          {line || '\u00A0'}
         </p>
       ))
     }
 
     // 타이핑 중이거나 완료된 경우
     const lines = fakeDocumentContent.split('\n')
-    const typingInsertIndex = 12 // "팀원들의 작업 효율성..." 라인 다음
-
-    return lines.map((line, index) => {
-      if (index === typingInsertIndex) {
+    const insertPosition = 7 // "2. 논의 내용" 다음 줄에 삽입
+    
+    return lines.map((line, lineIndex) => {
+      if (lineIndex === insertPosition) {
+        // 실제 타이핑 텍스트 삽입
         return (
-          <div key={index} className="mb-4">
-            <p className="leading-relaxed mb-2" style={{ color: 'var(--color-text-primary)' }}>{line}</p>
-            <div className="border-l-4 p-4 my-4 rounded-r" 
-              style={{ 
-                backgroundColor: 'color-mix(in srgb, var(--color-interactive-primary) 5%, transparent)',
-                borderColor: 'var(--color-interactive-primary)' 
-              }}>
-              <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-interactive-primary)' }}>
-                [실시간 입력 중인 내용]
-              </p>
-              <div className="font-mono text-sm p-3 rounded leading-relaxed" 
-                style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
-                {targetText.split('').map((char, charIndex) => {
-                  const isCurrentChar = charIndex === currentIndex
-                  const isTyped = charIndex < currentIndex
-                  const isIncorrect = mistakes.some(m => m.position === charIndex)
+          <div key={lineIndex}>
+            <p className="mb-4 leading-relaxed text-text-primary">
+              {line || '\u00A0'}
+            </p>
+            <div className="mb-4 p-4 bg-interactive-primary/5 rounded-lg border border-interactive-primary/20">
+              <p className="text-sm text-text-secondary mb-2">실시간 입력 중...</p>
+              <p className="leading-relaxed font-mono text-sm">
+                {text.split('').map((char: string, index: number) => {
+                  const isTyped = index < currentIndex
+                  const isCorrect = isTyped && userInput[index] === char
+                  const isCurrent = index === currentIndex
+                  const isMistake = mistakes.some(m => m.position === index)
+                  
+                  let charClass = 'text-text-secondary/50'
+                  if (isCurrent) {
+                    charClass = isBlinking 
+                      ? 'bg-interactive-primary text-text-on-primary' 
+                      : 'text-interactive-primary'
+                  } else if (isTyped) {
+                    charClass = isCorrect && !isMistake
+                      ? 'text-feedback-success' 
+                      : 'text-feedback-error bg-feedback-error/10'
+                  }
                   
                   return (
-                    <span
-                      key={charIndex}
-                      className={
-                        isTyped
-                          ? isIncorrect 
-                            ? 'text-red-600 bg-red-50 border-b border-red-300'
-                            : 'text-gray-900'
-                          : isCurrentChar
-                          ? `bg-blue-500 text-white ${cursorBlink ? 'opacity-100' : 'opacity-70'} px-0.5 rounded`
-                          : 'text-gray-400'
-                      }
-                    >
+                    <span key={index} className={charClass}>
                       {char === ' ' ? '\u00A0' : char}
                     </span>
                   )
                 })}
-                {currentIndex >= targetText.length && (
-                  <span className={`inline-block w-0.5 h-5 bg-blue-500 ml-1 ${cursorBlink ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
-                )}
-              </div>
+              </p>
             </div>
           </div>
         )
       }
       
       return (
-        <p key={index} className="mb-4 leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
-          {line}
+        <p key={lineIndex} className="mb-4 leading-relaxed text-text-primary">
+          {line || '\u00A0'}
         </p>
       )
     })
   }
 
   return (
-    <div className={`min-h-screen ${className}`} style={{ backgroundColor: 'var(--color-background)' }}>
-      {/* Google Docs 스타일 헤더 */}
-      <div style={{ backgroundColor: 'var(--color-background-secondary)', borderBottom: '1px solid var(--color-border)' }}>
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div 
-                className="cursor-pointer transition-opacity hover:opacity-80" 
-                onClick={handleHomeNavigation}
-                title="홈으로 돌아가기"
-              >
-                <FileText 
-                  className="w-8 h-8" 
-                  style={{ color: 'var(--color-interactive-primary)' }}
-                />
+    <div className={`${stealthStyles.container} ${className}`}>
+      {/* 헤더 */}
+      <header className={`${stealthStyles.header} px-4 py-3`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleHomeNavigation}
+              className="p-2 hover:bg-surface rounded-lg transition-colors"
+              title="홈으로 돌아가기"
+            >
+              <FileText className="w-5 h-5 text-interactive-primary" />
+            </button>
+            <div>
+              <h1 className="font-semibold text-text-primary">{documentTitle}</h1>
+              <p className="text-xs text-text-secondary">
+                마지막 수정: {formatTime(currentTime)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
+              <Share className="w-4 h-4 text-text-secondary" />
+            </button>
+            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
+              <Download className="w-4 h-4 text-text-secondary" />
+            </button>
+            <button className="p-2 hover:bg-surface rounded-lg transition-colors">
+              <MoreVertical className="w-4 h-4 text-text-secondary" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-60px)]">
+        {/* 메인 콘텐츠 */}
+        <main className={`${stealthStyles.content} p-8`}>
+          <div className="max-w-4xl mx-auto">
+            {/* 도구 모음 */}
+            <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
+              <button className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-surface rounded transition-colors">
+                <Edit3 className="w-4 h-4" />
+                <span className="text-text-primary">편집</span>
+              </button>
+              <button className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-surface rounded transition-colors">
+                <Eye className="w-4 h-4" />
+                <span className="text-text-primary">미리보기</span>
+              </button>
+              <button className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-surface rounded transition-colors">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-text-primary">댓글</span>
+              </button>
+            </div>
+
+            {/* 문서 내용 */}
+            <article className="prose prose-gray max-w-none">
+              {renderDocumentWithTyping()}
+            </article>
+          </div>
+        </main>
+
+        {/* 사이드바 - 통계 표시 */}
+        {(isActive || isCompleted) && (
+          <aside className={`${stealthStyles.sidebar} w-80 p-6`}>
+            <h3 className="font-semibold mb-4 flex items-center gap-2 text-text-primary">
+              <BarChart3 className="w-4 h-4" />
+              문서 작성 통계
+            </h3>
+            
+            <div className="space-y-4">
+              <div className={stealthStyles.statsCard}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">작성 속도</span>
+                  <Clock className="w-4 h-4 text-text-secondary" />
+                </div>
+                <p className={stealthStyles.statValue}>{cpm} CPM</p>
+                <p className="text-xs text-text-secondary mt-1">{wpm} WPM</p>
               </div>
-              <div>
-                <h1 
-                  className="text-lg font-normal cursor-pointer transition-opacity hover:opacity-80" 
-                  style={{ color: 'var(--color-text-primary)' }}
-                  onClick={handleHomeNavigation}
-                  title="홈으로 돌아가기"
-                >
-                  {documentTitle}
-                </h1>
-                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  <Clock size={12} />
-                  <span>마지막 수정: 방금 전</span>
+              
+              <div className={stealthStyles.statsCard}>
+                <p className="text-sm text-text-secondary mb-2">정확도</p>
+                <p className={stealthStyles.statValue}>{accuracy}%</p>
+                <div className={stealthStyles.progressBar}>
+                  <div 
+                    className={`${stealthStyles.progressFill} bg-feedback-success`}
+                    style={{ width: `${accuracy}%` }}
+                  />
                 </div>
               </div>
+              
+              <div className={stealthStyles.statsCard}>
+                <p className="text-sm text-text-secondary mb-2">진행률</p>
+                <p className={stealthStyles.statValue}>{Math.round(completionRate)}%</p>
+                <div className={stealthStyles.progressBar}>
+                  <div 
+                    className={`${stealthStyles.progressFill} bg-interactive-primary`}
+                    style={{ width: `${completionRate}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div className={stealthStyles.statsCard}>
+                <p className="text-sm text-text-secondary mb-2">오타</p>
+                <p className="text-2xl font-bold text-feedback-error">{mistakes.length}</p>
+                <p className={stealthStyles.statLabel}>총 {mistakes.length}개 발견</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded transition-colors" 
-              style={{ backgroundColor: 'var(--color-interactive-primary)', color: 'var(--color-text-inverse)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary-hover)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-interactive-primary)'}>
-              <Share size={14} />
-              <span>공유</span>
-            </button>
-            {/* 숨겨진 통계 버튼 */}
+            
             <button 
-              className="p-2 rounded transition-colors" 
-              style={{ color: 'var(--color-text-secondary)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              onClick={() => router.push('/stats')}
-              title="통계 보기"
+              onClick={handleHomeNavigation}
+              className="w-full mt-6 px-4 py-2 bg-interactive-primary text-text-on-primary rounded-lg hover:bg-interactive-primary/90 transition-colors"
             >
-              <BarChart3 size={16} />
+              타이핑 화면으로
             </button>
-            
-            <button className="p-2 rounded transition-colors" 
-              style={{ color: 'var(--color-text-secondary)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-              <Download size={16} />
-            </button>
-            
-            {/* 숨겨진 설정 버튼 */}
-            <button className="p-2 rounded transition-colors" 
-              style={{ color: 'var(--color-text-secondary)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              title="설정"
-            >
-              <Settings size={16} />
-            </button>
-            
-            <button className="p-2 rounded transition-colors" 
-              style={{ color: 'var(--color-text-secondary)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-              <MoreVertical size={16} />
-            </button>
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              김
-            </div>
-          </div>
-        </div>
-        
-        {/* 툴바 */}
-        <div className="flex items-center space-x-1 px-4 py-2" 
-          style={{ borderTop: '1px solid var(--color-border-light)', backgroundColor: 'var(--color-surface)' }}>
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
-            style={{ color: 'var(--color-text-secondary)' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-            <Edit3 size={14} />
-            <span>편집</span>
-          </button>
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
-            style={{ color: 'var(--color-text-secondary)' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-            <Eye size={14} />
-            <span>보기</span>
-          </button>
-          <button className="flex items-center space-x-1 px-2 py-1 text-sm rounded transition-colors"
-            style={{ color: 'var(--color-text-secondary)' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-            <MessageCircle size={14} />
-            <span>댓글</span>
-          </button>
-          
-          <div className="flex-1" />
-          
-          {/* 실시간 상태 */}
-          {isActive && (
-            <div className="flex items-center space-x-2 text-xs text-green-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span>편집 중...</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 문서 본문 */}
-      <div className="max-w-4xl mx-auto py-8 px-8 min-h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
-        <div className="shadow-sm rounded-lg p-12 min-h-[800px]" 
-          style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
-          {renderDocumentWithTyping()}
-          
-          {/* 페이지 번호 */}
-          <div className="text-center text-sm mt-8 pt-4" 
-            style={{ color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border-light)' }}>
-            페이지 1
-          </div>
-        </div>
-        
-        {/* 사이드바 - 통계 (숨김) */}
-        {(isActive || isCompleted) && (
-          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-64 rounded-lg shadow-lg p-4" 
-            style={{ backgroundColor: 'var(--color-background-elevated)', border: '1px solid var(--color-border)' }}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>문서 작성 통계</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span style={{ color: 'var(--color-text-secondary)' }}>작성 속도</span>
-                <span className="font-medium" style={{ color: 'var(--color-interactive-primary)' }}>{liveStats.cpm} CPM</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span style={{ color: 'var(--color-text-secondary)' }}>정확도</span>
-                <span className="font-medium" style={{ color: 'var(--color-feedback-success)' }}>{liveStats.accuracy}%</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span style={{ color: 'var(--color-text-secondary)' }}>경과 시간</span>
-                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{Math.round(liveStats.timeElapsed)}초</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span style={{ color: 'var(--color-text-secondary)' }}>진행률</span>
-                <span className="font-medium" style={{ color: 'var(--color-interactive-secondary)' }}>{Math.round(completionRate)}%</span>
-              </div>
-            </div>
-            
-            <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border-light)' }}>
-              <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                실시간 문서 협업 중
-              </div>
-            </div>
-          </div>
+          </aside>
         )}
       </div>
     </div>

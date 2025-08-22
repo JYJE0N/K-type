@@ -169,24 +169,15 @@ export function HistoryGraph() {
       <div className="bg-surface rounded-lg p-4 border border-opacity-20 border-interactive-primary">
         <div className="flex justify-center items-center gap-6">
           <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full shadow-sm"
-              style={{ backgroundColor: "var(--color-interactive-primary)" }}
-            ></div>
+            <div className="w-4 h-4 rounded-full shadow-sm bg-interactive-primary"></div>
             <span className="text-sm text-primary font-medium">CPM</span>
           </div>
           <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full shadow-sm"
-              style={{ backgroundColor: "var(--color-interactive-secondary)" }}
-            ></div>
+            <div className="w-4 h-4 rounded-full shadow-sm bg-interactive-secondary"></div>
             <span className="text-sm text-primary font-medium">WPM</span>
           </div>
           <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full shadow-sm"
-              style={{ backgroundColor: "var(--color-feedback-success)" }}
-            ></div>
+            <div className="w-4 h-4 rounded-full shadow-sm bg-feedback-success"></div>
             <span className="text-sm text-primary font-medium">정확도 (%)</span>
           </div>
         </div>

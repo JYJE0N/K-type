@@ -5,6 +5,7 @@ import { Settings, Ghost, Sparkles, Clock, Hash, Type } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
 import { ButtonGroup } from '@/components/ui/ButtonGroup';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { overlayStyles, textStyles, cn } from '@/utils/styles';
 
 
 interface SettingsMenuProps {
@@ -232,23 +233,14 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 고스트 모드 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: 'var(--color-background-elevated)' }}
-              >
-                <Ghost className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-background-elevated">
+                <Ghost className="w-4 h-4 text-text-secondary" />
               </div>
               <div>
-                <span 
-                  className="text-sm font-medium block"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
+                <span className="text-sm font-medium block text-text-primary">
                   고스트 모드
                 </span>
-                <p 
-                  className="text-xs"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
+                <p className="text-xs text-text-tertiary">
                   이전 기록과 비교
                 </p>
               </div>
@@ -263,23 +255,14 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
           {/* 타이핑 이펙트 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: 'var(--color-background-elevated)' }}
-              >
-                <Type className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-background-elevated">
+                <Type className="w-4 h-4 text-text-secondary" />
               </div>
               <div>
-                <span 
-                  className="text-sm font-medium block"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
+                <span className="text-sm font-medium block text-text-primary">
                   타이핑 이펙트
                 </span>
-                <p 
-                  className="text-xs"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
+                <p className="text-xs text-text-tertiary">
                   시각적 효과 활성화
                 </p>
               </div>
