@@ -63,6 +63,12 @@ interface UserProgress {
   currentStreak: number
   longestStreak: number
   lastStreakDate: Date | null
+  
+  // 추가 통계
+  improvementRate: number // 향상도 퍼센트
+  totalPracticeTime: number // 총 연습 시간 (초)
+  averageSpeed: number // 평균 속도 (CPM)
+  ranking: number // 상위 몇 퍼센트
 }
 
 interface UserProgressStore extends UserProgress {
@@ -106,6 +112,10 @@ const initialState: UserProgress = {
   currentStreak: 0,
   longestStreak: 0,
   lastStreakDate: null,
+  improvementRate: 0,
+  totalPracticeTime: 0,
+  averageSpeed: 0,
+  ranking: 0,
 }
 
 const API_BASE = '/api/progress'

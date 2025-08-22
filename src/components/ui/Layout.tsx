@@ -4,7 +4,6 @@ import { ReactNode } from 'react'
 import { Footer } from './Footer'
 import { StealthManager } from '../stealth/StealthManager'
 import { GlobalHeader } from './GlobalHeader'
-import { layoutStyles } from '@/utils/styles'
 
 interface LayoutProps {
   children: ReactNode
@@ -13,25 +12,13 @@ interface LayoutProps {
 
 export function Layout({ children, className = '' }: LayoutProps) {
   return (
-    <div className={`layout min-h-screen bg-background text-text-primary ${className}`}>
+    <div className={`app-layout ${className}`}>
       <StealthManager>
-        {/* 전체 레이아웃을 flexbox로 구성 */}
-        <div className="min-h-screen flex flex-col">
-          {/* 글로벌 헤더 */}
-          <GlobalHeader />
-          
-          {/* 메인 컨텐츠 영역 - flex-1로 남은 공간 모두 차지 */}
-          <main className={layoutStyles.main}>
-            <div className="flex-1 flex justify-center p-layout-main">
-              <div className="w-full max-w-4xl">
-                {children}
-              </div>
-            </div>
-          </main>
-          
-          {/* 푸터 - 항상 하단에 고정 */}
-          <Footer />
-        </div>
+        <GlobalHeader />
+        <main className="app-main">
+          {children}
+        </main>
+        <Footer />
       </StealthManager>
     </div>
   )

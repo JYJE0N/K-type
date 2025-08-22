@@ -105,7 +105,7 @@ html[data-theme="light"] {
   --color-background-elevated: #f1f5f9;
   --color-button-group-default: #f1f5f9;
   --color-surface: #f8fafc;
-  --color-elevated: #f1f5f9;
+  --color-elevated: #ffffff;
   --color-border: #e2e8f0;
   --color-border-light: #f1f5f9;
   --color-text-primary: #1e293b;
@@ -124,12 +124,31 @@ html[data-theme="light"] {
   --color-feedback-info: #3b82f6;
   
   /* 키보드 숏컷 전용 변수 */
-  --color-shortcut-card-bg: #111827;
-  --color-shortcut-key-bg: #4b5563;
-  --color-shortcut-key-border: #6b7280;
-  --color-shortcut-key-text: #ffffff;
-  --color-shortcut-label-text: #d1d5db;
-  --color-shortcut-separator: #6b7280;
+  --color-shortcut-card-bg: #f8fafc;
+  --color-shortcut-key-bg: #ffffff;
+  --color-shortcut-key-border: #e2e8f0;
+  --color-shortcut-key-text: #475569;
+  --color-shortcut-label-text: #64748b;
+  --color-shortcut-separator: #94a3b8;
+  
+  /* 타이핑 비주얼라이저 전용 변수 */
+  --color-visualizer-status-bg: #f1f5f9;
+  --color-visualizer-status-border: #e2e8f0;
+  --color-visualizer-status-text: #64748b;
+  --color-visualizer-status-text-active: #1e293b;
+  --color-visualizer-composing-bg: #3b82f6;
+  --color-visualizer-composing-text: #ffffff;
+  --color-visualizer-composing-shadow: rgba(59, 130, 246, 0.2);
+  --color-visualizer-completed-bg: #10b981;
+  --color-visualizer-completed-text: #ffffff;
+  --color-visualizer-completed-shadow: rgba(16, 185, 129, 0.15);
+  --color-visualizer-current-bg: #06b6d4;
+  --color-visualizer-current-text: #ffffff;
+  --color-visualizer-current-shadow: rgba(6, 182, 212, 0.15);
+  --color-visualizer-upcoming-bg: #f8fafc;
+  --color-visualizer-upcoming-text: #94a3b8;
+  --color-visualizer-upcoming-border: #e2e8f0;
+  
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
   --color-typing-current: var(--color-interactive-primary);
@@ -143,7 +162,7 @@ html[data-theme="dark"] {
   --color-background-elevated: #565761;
   --color-button-group-default: #44475a;
   --color-surface: #44475a;
-  --color-elevated: #565761;
+  --color-elevated: #353a4a;
   --color-border: #44475a;
   --color-border-light: #6272a4;
   --color-text-primary: #f8f8f2;
@@ -169,6 +188,24 @@ html[data-theme="dark"] {
   --color-shortcut-label-text: #e5e7eb;
   --color-shortcut-separator: #9ca3af;
   
+  /* 타이핑 비주얼라이저 전용 변수 */
+  --color-visualizer-status-bg: rgba(255, 255, 255, 0.03);
+  --color-visualizer-status-border: rgba(255, 255, 255, 0.08);
+  --color-visualizer-status-text: rgba(255, 255, 255, 0.5);
+  --color-visualizer-status-text-active: rgba(255, 255, 255, 0.9);
+  --color-visualizer-composing-bg: rgba(255, 255, 255, 0.12);
+  --color-visualizer-composing-text: #ffffff;
+  --color-visualizer-composing-shadow: rgba(168, 85, 247, 0.3);
+  --color-visualizer-completed-bg: rgba(59, 130, 246, 0.08);
+  --color-visualizer-completed-text: #bfdbfe;
+  --color-visualizer-completed-shadow: rgba(59, 130, 246, 0.15);
+  --color-visualizer-current-bg: rgba(52, 211, 153, 0.06);
+  --color-visualizer-current-text: #a7f3d0;
+  --color-visualizer-current-shadow: rgba(52, 211, 153, 0.12);
+  --color-visualizer-upcoming-bg: rgba(255, 255, 255, 0.03);
+  --color-visualizer-upcoming-text: #9ca3af;
+  --color-visualizer-upcoming-border: rgba(255, 255, 255, 0.08);
+  
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
   --color-typing-current: var(--color-interactive-primary);
@@ -182,7 +219,7 @@ html[data-theme="high-contrast"] {
   --color-background-elevated: #1a1a1a;
   --color-button-group-default: #1a1a1a;
   --color-surface: #111111;
-  --color-elevated: #1a1a1a;
+  --color-elevated: #333333;
   --color-border: #333333;
   --color-border-light: #444444;
   --color-text-primary: #ffffff;
@@ -207,6 +244,24 @@ html[data-theme="high-contrast"] {
   --color-shortcut-key-text: #ffffff;
   --color-shortcut-label-text: #cccccc;
   --color-shortcut-separator: #666666;
+  
+  /* 타이핑 비주얼라이저 전용 변수 */
+  --color-visualizer-status-bg: #1a1a1a;
+  --color-visualizer-status-border: #444444;
+  --color-visualizer-status-text: #888888;
+  --color-visualizer-status-text-active: #ffffff;
+  --color-visualizer-composing-bg: #ff6600;
+  --color-visualizer-composing-text: #ffffff;
+  --color-visualizer-composing-shadow: rgba(255, 102, 0, 0.4);
+  --color-visualizer-completed-bg: #00ff00;
+  --color-visualizer-completed-text: #000000;
+  --color-visualizer-completed-shadow: rgba(0, 255, 0, 0.3);
+  --color-visualizer-current-bg: #ffff00;
+  --color-visualizer-current-text: #000000;
+  --color-visualizer-current-shadow: rgba(255, 255, 0, 0.3);
+  --color-visualizer-upcoming-bg: #333333;
+  --color-visualizer-upcoming-text: #888888;
+  --color-visualizer-upcoming-border: #555555;
   
   --color-typing-correct: var(--color-feedback-success);
   --color-typing-incorrect: var(--color-feedback-error);
@@ -375,6 +430,35 @@ body {
   color: var(--color-text-primary);
   line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* 📦 레이아웃 시스템 */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.app-main {
+  flex: 1;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  backdrop-filter: blur(8px);
+}
+
+.app-footer {
+  background-color: var(--color-background-secondary);
+  margin-top: auto;
 }
 
 /* ===============================
@@ -813,4 +897,260 @@ body {
   body {
     font-size: 13px;
   }
+}
+
+/* ===============================
+   📦 통합 디자인 시스템 (Design System)
+   =============================== */
+
+/* 🎨 카드 컴포넌트 시스템 */
+.stats-card {
+  padding: var(--spacing-8);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background-color: var(--color-elevated);
+  transition: all 0.2s ease-in-out;
+}
+
+.stats-card-highlight {
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-8);
+  transition: all 0.2s ease-in-out;
+  border: 2px solid var(--color-interactive-primary);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background-elevated) 100%);
+}
+
+.stats-card-compact {
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+}
+
+/* 라이트모드 그림자 절제 */
+html[data-theme="light"] .stats-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .stats-card-highlight {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .stats-card-compact {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* 다크 모드 */
+html[data-theme="dark"] .stats-card {
+  background-color: var(--color-elevated);
+  border-color: var(--color-text-tertiary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 고대비 모드 */
+html[data-theme="high-contrast"] .stats-card {
+  background-color: var(--color-elevated);
+  border-color: var(--color-text-tertiary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .stats-card-highlight,
+html[data-theme="high-contrast"] .stats-card-highlight {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .stats-card-compact,
+html[data-theme="high-contrast"] .stats-card-compact {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 📝 타이포그래피 시스템 */
+.stats-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.stats-subtitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-3);
+}
+
+.stats-body {
+  font-size: var(--font-size-base);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.stats-description {
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.stats-caption {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--color-text-tertiary);
+}
+
+.stats-metric-large {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-interactive-primary);
+}
+
+.stats-metric-medium {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-interactive-primary);
+}
+
+.stats-metric-small {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-interactive-primary);
+}
+
+/* 🏆 성취 컬러 시스템 */
+.stats-tier-bronze { color: #cd7f32; }
+.stats-tier-silver { color: #c0c0c0; }
+.stats-tier-gold { color: #ffd700; }
+.stats-tier-platinum { color: #e5e4e2; }
+.stats-tier-diamond { color: #b9f2ff; }
+
+/* 📊 성과 컬러 시스템 */
+.stats-improvement-positive { color: var(--color-feedback-success); }
+.stats-improvement-negative { color: var(--color-feedback-error); }
+.stats-improvement-neutral { color: var(--color-text-secondary); }
+
+/* 🔗 액션 버튼 시스템 */
+.stats-action-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease-in-out;
+  background-color: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  cursor: pointer;
+}
+
+.stats-action-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.stats-action-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease-in-out;
+  background-color: transparent;
+  color: var(--color-interactive-secondary);
+  border: 1px solid var(--color-interactive-secondary);
+  cursor: pointer;
+}
+
+.stats-action-secondary:hover {
+  background-color: var(--color-interactive-secondary);
+  color: var(--color-text-inverse);
+}
+
+/* 📋 모달 컨테이너 시스템 */
+.stats-modal-container {
+  padding: var(--spacing-8);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background-color: var(--color-elevated);
+}
+
+/* 라이트 모드 */
+html[data-theme="light"] .stats-modal-container {
+  background-color: var(--color-elevated);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 다크 모드 */
+html[data-theme="dark"] .stats-modal-container {
+  background-color: var(--color-elevated);
+  border-color: var(--color-text-tertiary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 고대비 모드 */
+html[data-theme="high-contrast"] .stats-modal-container {
+  background-color: var(--color-elevated);
+  border-color: var(--color-text-tertiary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* 📊 차트 컴포넌트 시스템 */
+:root {
+  /* 차트 컨테이너 크기 */
+  --chart-container-height: clamp(280px, 35vh, 400px);
+  
+  /* 메트릭 토글 크기 */
+  --chart-toggle-width: 140px;
+  --chart-toggle-height: 44px;
+  --chart-toggle-slider-width: 50%;
+  --chart-toggle-slider-height: 36px;
+  
+  /* 범례 라인 크기 */
+  --chart-legend-line-width: 18px;
+  --chart-legend-line-height: 2px;
+  
+  /* 공통 그림자 값 */
+  --chart-shadow-light: 0 1px 4px rgba(0,0,0,0.08);
+  --chart-shadow-medium: 0 2px 8px rgba(0,0,0,0.1);
+  --chart-shadow-heavy: 0 4px 12px rgba(0,0,0,0.15);
+  --chart-inset-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* 공통 테두리 반지름 */
+  --chart-border-radius-sm: 8px;
+  --chart-border-radius-md: 12px;
+  
+  /* 공통 폰트 크기 */
+  --chart-font-size-sm: 12px;
+  --chart-font-size-md: 14px;
+}
+
+/* 🏷️ 컨텍스트 칩 시스템 */
+.context-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border: 1px solid var(--color-interactive-secondary);
+  color: var(--color-interactive-secondary);
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.context-chip:hover {
+  background-color: var(--color-interactive-secondary);
+  color: var(--color-text-inverse);
 }

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { IoLogoGithub } from "react-icons/io5";
-import { layoutStyles } from '@/utils/styles';
 
 interface FooterProps {
   className?: string;
@@ -10,7 +9,7 @@ interface FooterProps {
 
 export function Footer({ className = "" }: FooterProps) {
   return (
-    <footer className={`${layoutStyles.footer} ${className}`}>
+    <footer className={`app-footer ${className}`}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="text-sm text-text-muted">

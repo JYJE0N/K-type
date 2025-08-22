@@ -326,6 +326,8 @@ export function TypingTestUI({
         <div className="shortcuts-container">
           <KeyboardShortcuts 
             showStart={!isActive && !isCompleted && !isCountingDown} 
+            showPause={isActive && !isPaused}
+            showResume={isPaused}
             showRestart={isActive || isPaused || isCompleted}
           />
         </div>

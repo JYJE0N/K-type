@@ -20,7 +20,11 @@ interface HistoryDataPoint {
   testNumber: number;
 }
 
-export function HistoryGraph() {
+interface HistoryGraphProps {
+  primaryMetric?: 'cpm' | 'wpm';
+}
+
+export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
   const { recentTests } = useUserProgressStore();
   const [data, setData] = useState<HistoryDataPoint[]>([]);
 

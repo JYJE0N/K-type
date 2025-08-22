@@ -97,14 +97,6 @@ export function TypingVisualizer({
 
   return (
     <div className={`typing-visualizer ${className} relative`}>
-      {/* 우아한 배경 글로우 */}
-      <div className={`absolute inset-0 rounded-3xl transition-all duration-500 ${
-        keyPressAnimation && comboCount > 3
-          ? 'bg-gradient-to-r from-purple-500/10 via-blue-500/8 to-cyan-500/10' 
-          : 'bg-gradient-to-br from-white/[0.02] via-transparent to-white/[0.01]'
-      }`} />
-      
-      
       <div className="relative flex items-center justify-center gap-4 py-8 px-6">
         {displayChars.map((char, index) => {
           // 중앙(currentPos=2)을 기준으로 상태 결정
@@ -122,30 +114,58 @@ export function TypingVisualizer({
           return (
             <div
               key={`${index}-${char}-${currentIndex}-${isComposing}-${Date.now()}`}
-              className={`
-                relative flex items-center justify-center
-                w-16 h-16 rounded-3xl text-2xl font-korean font-medium
-                backdrop-blur-xl border transition-all duration-700 ease-out
-                ${isComposingChar
-                  ? `bg-white/[0.12] text-white shadow-2xl shadow-purple-500/30
-                     border-white/30 ring-2 ring-white/20 font-semibold` 
+              className="relative flex items-center justify-center w-16 h-16 rounded-3xl text-2xl font-korean font-medium backdrop-blur-xl border transition-all duration-700 ease-out"
+              style={{
+                backgroundColor: isComposingChar
+                  ? 'var(--color-visualizer-composing-bg)'
                   : isCompletedChar && char
                     ? isCorrect 
-                      ? `bg-blue-500/[0.08] text-blue-100 shadow-lg shadow-blue-500/15
-                         border-blue-400/20 font-medium`
-                      : `bg-red-500/[0.10] text-red-200 shadow-lg shadow-red-500/20
-                         border-red-400/25 font-medium`
+                      ? 'var(--color-visualizer-completed-bg)'
+                      : 'var(--color-feedback-error)'
                     : isCurrentChar && char
-                      ? `bg-cyan-400/[0.06] text-cyan-100 shadow-md shadow-cyan-400/12
-                         border-cyan-400/15 ring-1 ring-cyan-300/10 font-medium`
+                      ? 'var(--color-visualizer-current-bg)'
                     : isUpcomingChar && char
-                      ? 'bg-white/[0.03] text-gray-300 border-white/8 opacity-50 font-light'
+                      ? 'var(--color-visualizer-upcoming-bg)'
                     : isEmpty
-                      ? 'bg-transparent opacity-10 border-transparent'
-                      : 'bg-white/[0.02] text-gray-400 border-white/5 opacity-30'
-                }
-              `}
-              style={{
+                      ? 'transparent'
+                      : 'var(--color-visualizer-upcoming-bg)',
+                color: isComposingChar
+                  ? 'var(--color-visualizer-composing-text)'
+                  : isCompletedChar && char
+                    ? isCorrect 
+                      ? 'var(--color-visualizer-completed-text)'
+                      : 'var(--color-text-inverse)'
+                    : isCurrentChar && char
+                      ? 'var(--color-visualizer-current-text)'
+                    : isUpcomingChar && char
+                      ? 'var(--color-visualizer-upcoming-text)'
+                    : isEmpty
+                      ? 'transparent'
+                      : 'var(--color-visualizer-upcoming-text)',
+                borderColor: isComposingChar
+                  ? 'var(--color-visualizer-composing-bg)'
+                  : isCompletedChar && char
+                    ? isCorrect 
+                      ? 'var(--color-visualizer-completed-bg)'
+                      : 'var(--color-feedback-error)'
+                    : isCurrentChar && char
+                      ? 'var(--color-visualizer-current-bg)'
+                    : isUpcomingChar && char
+                      ? 'var(--color-visualizer-upcoming-border)'
+                    : isEmpty
+                      ? 'transparent'
+                      : 'var(--color-visualizer-upcoming-border)',
+                boxShadow: isComposingChar
+                  ? '0 20px 25px -5px var(--color-visualizer-composing-shadow), 0 10px 10px -5px var(--color-visualizer-composing-shadow)'
+                  : isCompletedChar && char
+                    ? isCorrect 
+                      ? '0 10px 15px -3px var(--color-visualizer-completed-shadow)'
+                      : '0 10px 15px -3px rgba(239, 68, 68, 0.2)'
+                    : isCurrentChar && char
+                      ? '0 4px 6px -1px var(--color-visualizer-current-shadow)'
+                    : 'none',
+                opacity: isUpcomingChar && char ? 0.5 : isEmpty ? 0.1 : 1,
+                fontWeight: isComposingChar ? '600' : isCompletedChar || isCurrentChar ? '500' : '300',
                 transform: `
                   translateY(${isComposingChar ? -8 : isCurrentChar ? -4 : isCompletedChar ? -1 : 0}px) 
                   scale(${isComposingChar ? 1.15 : isCurrentChar ? 1.05 : isCompletedChar ? 1.02 : isUpcomingChar ? 0.95 : 0.85})
@@ -165,60 +185,6 @@ export function TypingVisualizer({
                 )}
               </span>
               
-              {/* 현재 입력 중인 글자에 은은한 에테르 효과 */}
-              {isComposingChar && (
-                <>
-                  {/* 부드러운 온기 */}
-                  <div 
-                    className="absolute inset-0 rounded-3xl" 
-                    style={{ 
-                      background: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 80%)',
-                      animation: 'ethereal-breathe 3s ease-in-out infinite'
-                    }}
-                  />
-                  {/* 은은한 맥동 */}
-                  <div 
-                    className="absolute inset-0 rounded-3xl" 
-                    style={{ 
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%, rgba(168, 85, 247, 0.03) 100%)',
-                      animation: 'gentle-pulse 4s ease-in-out infinite'
-                    }}
-                  />
-                  {/* 미세한 루믜연 */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" 
-                       style={{ animation: 'subtle-shimmer 6s ease-in-out infinite' }} />
-                </>
-              )}
-              
-              {/* 성공적으로 완료된 글자에 아늴한 효과 */}
-              {isCompletedChar && char && (
-                <>
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-400/[0.06] to-transparent" />
-                  {/* 아주 미세한 성공 비지 */}
-                  <div 
-                    className="absolute inset-0 rounded-3xl" 
-                    style={{
-                      background: 'radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 80%)',
-                      animation: 'serene-glow 5s ease-in-out infinite'
-                    }}
-                  />
-                </>
-              )}
-              
-              {/* 현재 글자 (조합 중이 아닌 상태) 효과 */}
-              {isCurrentChar && char && (
-                <>
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400/[0.06] to-transparent" />
-                  {/* 다음 글자 예상 빛 */}
-                  <div 
-                    className="absolute inset-0 rounded-3xl" 
-                    style={{
-                      background: 'radial-gradient(circle, rgba(34, 211, 238, 0.04) 0%, transparent 70%)',
-                      animation: 'whisper-glow 3s ease-in-out infinite'
-                    }}
-                  />
-                </>
-              )}
             </div>
           )
         })}
@@ -226,24 +192,50 @@ export function TypingVisualizer({
       
       {/* 우아한 상태 표시 */}
       <div className="flex justify-center mt-6">
-        <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-2xl shadow-black/20">
-          
+        <div 
+          className="inline-flex items-center px-6 py-3 rounded-full backdrop-blur-2xl border"
+          style={{
+            backgroundColor: 'var(--color-visualizer-status-bg)',
+            borderColor: 'var(--color-visualizer-status-border)'
+          }}
+        >
           {/* 상태 텍스트 */}
-          <span className="text-sm font-light text-white/70 transition-all duration-500">
+          <span 
+            className="text-sm font-light transition-all duration-500"
+            style={{ color: 'var(--color-visualizer-status-text)' }}
+          >
             {isComposing ? (
-              <span className="text-white/90">
-                중앙 조합 <span className="font-mono bg-white/[0.10] px-3 py-1 rounded-full ml-2 text-xs font-medium">{composingText}</span>
+              <span style={{ color: 'var(--color-visualizer-status-text-active)' }}>
+                중앙 조합 
+                <span 
+                  className="font-mono px-3 py-1 rounded-full ml-2 text-xs font-medium"
+                  style={{
+                    backgroundColor: 'var(--color-visualizer-composing-bg)',
+                    color: 'var(--color-visualizer-composing-text)'
+                  }}
+                >
+                  {composingText}
+                </span>
                 {comboCount > 8 && (
-                  <span className="ml-3 px-2 py-1 rounded-full text-xs bg-white/[0.08] text-white/70">
+                  <span 
+                    className="ml-3 px-2 py-1 rounded-full text-xs"
+                    style={{
+                      backgroundColor: 'var(--color-visualizer-status-bg)',
+                      color: 'var(--color-visualizer-status-text)'
+                    }}
+                  >
                     COMBO {comboCount}
                   </span>
                 )}
               </span>
             ) : (
-              <span className="text-white/50">
+              <span style={{ color: 'var(--color-visualizer-status-text)' }}>
                 시그니처 한글 조합 모드
                 {comboCount > 0 && (
-                  <span className="ml-3 text-white/40 text-xs">
+                  <span 
+                    className="ml-3 text-xs"
+                    style={{ color: 'var(--color-visualizer-status-text)' }}
+                  >
                     COMBO {comboCount}
                   </span>
                 )}

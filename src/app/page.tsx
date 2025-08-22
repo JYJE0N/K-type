@@ -37,36 +37,38 @@ export default function Home() {
     
     setTargetText(newText)
     resetTest()
-  }, [language, testTarget, testMode, theme, sentenceLength, sentenceStyle, setTargetText, resetTest])
+  }, [language, testTarget, testMode, sentenceLength, sentenceStyle, setTargetText, resetTest])
 
   return (
     <>
       <ThemeInitializer />
       <Layout>
-      {/* 메인 컨테이너 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
-        
-        {/* 섹션 1: 메인 타이핑 영역 */}
-        <section className="w-full">
-          {/* 언어 선택 토글 */}
-          <div className="flex justify-center mb-6">
-            <LanguageToggle />
-          </div>
-          
-          <ClientOnly 
-            fallback={
-              <div className="animate-pulse">
-                <div className="h-20 bg-surface rounded-lg mb-6"></div>
-                <div className="h-40 bg-surface rounded-lg"></div>
+        {/* 메인 컨테이너 */}
+        <div className="p-8">
+          <div className="w-full max-w-6xl mx-auto">
+            
+            {/* 섹션 1: 메인 타이핑 영역 */}
+            <section className="w-full">
+              {/* 언어 선택 토글 */}
+              <div className="flex justify-center mb-6">
+                <LanguageToggle />
               </div>
-            }
-          >
-            <TypingEngine className="w-full" />
-          </ClientOnly>
-        </section>
+              
+              <ClientOnly 
+                fallback={
+                  <div className="animate-pulse">
+                    <div className="h-20 rounded-lg mb-6" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+                    <div className="h-40 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+                  </div>
+                }
+              >
+                <TypingEngine className="w-full" />
+              </ClientOnly>
+            </section>
 
-      </div>
-    </Layout>
+          </div>
+        </div>
+      </Layout>
     </>
   )
 }

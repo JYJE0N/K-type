@@ -136,3 +136,6 @@ yarn-wrapper.sh
 # npm config
 .npmrc._*
 .DS_Store
+
+# Scripts directory
+scripts/
