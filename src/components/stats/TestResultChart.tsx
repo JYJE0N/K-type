@@ -48,6 +48,18 @@ export function TestResultChart({
   primaryMetric, 
   onMetricToggle 
 }: TestResultChartProps) {
+  
+  // 상대 시간 계산
+  const getRelativeTime = () => {
+    // 테스트 완료 시점을 현재로 가정
+    const now = new Date();
+    const secondsAgo = Math.floor((now.getTime() - (now.getTime() - 30000)) / 1000); // 임시로 30초 전
+    
+    if (secondsAgo < 60) return '방금 전';
+    if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}분 전`;
+    if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}시간 전`;
+    return `${Math.floor(secondsAgo / 86400)}일 전`;
+  };
   const [showShareModal, setShowShareModal] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
   
@@ -271,91 +283,25 @@ export function TestResultChart({
     return Math.floor(dataLength / 15); // 최대 15개 틱 표시
   };
 
-  // 티어 계산 (WPM 기준)
-  const wpm = primaryMetric === 'wpm' ? data.wpm : data.cpm * 0.2;
-  const getTier = () => {
-    if (wpm >= 80) return { name: '마스터', color: '#b9f2ff', icon: '💎', current: 80, next: null };
-    if (wpm >= 60) return { name: '전문가', color: '#e5e4e2', icon: '🏆', current: 60, next: 80 };
-    if (wpm >= 40) return { name: '고급', color: '#ffd700', icon: '🥇', current: 40, next: 60 };
-    if (wpm >= 20) return { name: '중급', color: '#c0c0c0', icon: '🥈', current: 20, next: 40 };
-    return { name: '초급', color: '#cd7f32', icon: '🥉', current: 0, next: 20 };
-  };
-  
-  // 레벨업 진행률 계산
-  const getLevelProgress = () => {
-    const tier = getTier();
-    if (!tier.next) return 100; // 최고 레벨
-    
-    const progress = ((wpm - tier.current) / (tier.next - tier.current)) * 100;
-    return Math.max(0, Math.min(100, Math.round(progress)));
-  };
 
-  const tier = getTier();
-
-  // 고급 커스텀 툴팁
+  // 간결한 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0]?.payload;
       return (
-        <div className="stats-card-compact" 
+        <div className="bg-black/80 text-white px-3 py-2 rounded-lg text-xs font-medium" 
              style={{ 
-               border: '1px solid var(--color-border)',
-               borderRadius: '12px',
-               padding: '16px',
-               minWidth: '200px',
-               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+               border: '1px solid rgba(255,255,255,0.1)',
                backdropFilter: 'blur(8px)'
              }}>
-          <div className="stats-description font-semibold mb-3 flex items-center gap-2" 
-               style={{ color: 'var(--color-text-primary)' }}>
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: themeColors.primary }}></div>
-            {Math.floor(label / 60) > 0 ? 
-              `${Math.floor(label / 60)}:${String(label % 60).padStart(2, '0')}` : 
-              `${label}초`} 지점
+          <div className="flex items-center gap-1 mb-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <span>{Math.floor(label)}초 지점</span>
           </div>
           
-          <div className="space-y-3">
-            {payload.map((entry: any, index: number) => {
-              let suffix = '';
-              let color = entry.color;
-              
-              if (entry.dataKey === 'speed') {
-                suffix = ` ${primaryMetric.toUpperCase()}`;
-                color = themeColors.primary;
-              } else if (entry.dataKey === 'strokeSpeed') {
-                suffix = ' 키/초';
-                color = themeColors.secondary;
-              }
-              
-              return (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="stats-caption">
-                    <span style={{ fontWeight: '500' }}>{entry.name}</span>
-                  </span>
-                  <span className="stats-body font-bold" style={{ color }}>
-                    {entry.value}{suffix}
-                  </span>
-                </div>
-              );
-            })}
-            
-            {/* 성과 평가 */}
-            {data && (
-              <div className="border-t pt-3 mt-3" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="flex items-center justify-between">
-                  <span className="stats-caption">성과 수준</span>
-                  <span className="text-xs px-2 py-1 rounded-full font-medium" 
-                        style={{ 
-                          backgroundColor: data.speed >= zones.excellent ? themeColors.primary : 
-                                         data.speed >= zones.good ? themeColors.secondary : themeColors.accent,
-                          color: 'white'
-                        }}>
-                    {data.speed >= zones.excellent ? '우수' : 
-                     data.speed >= zones.good ? '양호' : '개선 필요'}
-                  </span>
-                </div>
-              </div>
-            )}
+          <div className="space-y-0.5">
+            <div>CPM {Math.floor(data?.speed || 0)}</div>
+            <div>WPM {Math.floor((data?.speed || 0) * 0.2)}</div>
           </div>
         </div>
       );
@@ -363,21 +309,9 @@ export function TestResultChart({
     return null;
   };
 
-  // 그라디언트 정의
-  const gradientOffset = () => {
-    const dataMax = Math.max(...chartData.map(d => d.speed));
-    const dataMin = Math.min(...chartData.map(d => d.speed));
-    
-    if (dataMax <= 0) return 0;
-    if (dataMin >= 0) return 1;
-    
-    return dataMax / (dataMax - dataMin);
-  };
-
-  const off = gradientOffset();
 
   const handleShare = async () => {
-    const shareText = `🎯 타이핑 테스트 완료!\n\n📊 ${primaryMetric.toUpperCase()}: ${primaryMetric === 'cpm' ? data.cpm : data.wpm}\n🎯 정확도: ${data.accuracy.toFixed(1)}%\n⏱️ 시간: ${Math.floor(data.timeElapsed / 60)}:${String(data.timeElapsed % 60).padStart(2, '0')}\n🏆 티어: ${tier.name}\n\n#타이핑연습 #한글타이핑`;
+    const shareText = `🎯 타이핑 테스트 완료!\n\n📊 ${primaryMetric.toUpperCase()}: ${primaryMetric === 'cpm' ? data.cpm : data.wpm}\n🎯 정확도: ${data.accuracy.toFixed(1)}%\n⏱️ 시간: ${Math.floor(data.timeElapsed / 60)}:${String(data.timeElapsed % 60).padStart(2, '0')}\n\n#타이핑연습 #한글타이핑`;
     
     if (navigator.share) {
       try {
@@ -401,33 +335,20 @@ export function TestResultChart({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="stats-subtitle mb-2">테스트 결과</h2>
-          <div className="flex items-center gap-2">
-            <IoCalendarOutline className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
-            <p className="stats-description">
+          <h2 className="stats-subtitle mb-1">상세 메트릭</h2>
+          <div className="flex items-center gap-1">
+            <IoCalendarOutline className="w-3 h-3" style={{ color: 'var(--color-text-tertiary)' }} />
+            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
               {new Date().toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: '2-digit', 
                 day: '2-digit',
                 timeZone: 'Asia/Seoul'
-              }).replace(/\./g, '-').replace(/-$/, '')} 방금 전
+              }).replace(/\./g, '-').replace(/-$/, '')} • {getRelativeTime()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {/* 티어 배지 */}
-          <div 
-            className="flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold"
-            style={{ 
-              backgroundColor: tier.color + '20',
-              color: tier.color,
-              border: `1px solid ${tier.color}40`
-            }}
-          >
-            <span className="text-lg">{tier.icon}</span>
-            <span>{tier.name}</span>
-          </div>
-          
           {/* 메트릭 토글 - iOS 스타일 */}
           <button
             onClick={() => onMetricToggle(primaryMetric === 'cpm' ? 'wpm' : 'cpm')}
@@ -476,6 +397,7 @@ export function TestResultChart({
           </button>
         </div>
       </div>
+
 
       {/* 차트 영역 */}
       <div className="w-full">
@@ -783,107 +705,6 @@ export function TestResultChart({
             </div>
           )}
         </div>
-      </div>
-          
-      {/* 결과값 카드 섹션 */}
-      <div className="mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {/* CPM */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <FaKeyboard className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {Math.round(data.cpm)}
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  CPM
-                </div>
-              </div>
-
-              {/* 정확도 */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <TbTargetArrow className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {data.accuracy.toFixed(1)}<span className="text-sm">%</span>
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  정확도
-                </div>
-              </div>
-              
-              {/* 평균 스트로크/초 */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <IoAnalyticsSharp className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {(data.cpm / 60).toFixed(1)}
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  키/초
-                </div>
-              </div>
-
-              {/* 소요시간 */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <Clock className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {Math.floor(data.timeElapsed / 60)}:{String(Math.floor(data.timeElapsed % 60)).padStart(2, '0')}
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  소요시간
-                </div>
-              </div>
-
-              {/* 최고성적 달성률 */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <Trophy className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {Math.round((data.cpm / zones.personalBest) * 100)}<span className="text-sm">%</span>
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  최고기록
-                </div>
-              </div>
-
-              {/* 레벨업까지 */}
-              <div className="flex flex-col items-center p-4 rounded-xl text-center" 
-                   style={{ 
-                     backgroundColor: 'var(--color-background)', 
-                     border: '1px solid var(--color-border)',
-                     boxShadow: 'var(--chart-shadow-light)'
-                   }}>
-                <IoSparkles className="w-6 h-6 mb-2" style={{ color: themeColors.primary }} />
-                <div className="text-2xl font-bold mb-1" style={{ color: themeColors.primary }}>
-                  {getLevelProgress()}<span className="text-sm">%</span>
-                </div>
-                <div className="text-sm font-medium" style={{ color: themeColors.muted }}>
-                  레벨업까지
-                </div>
-              </div>
-            </div>
       </div>
 
       {/* 액션 버튼들 */}

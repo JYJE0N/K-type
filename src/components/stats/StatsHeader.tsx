@@ -1,5 +1,9 @@
 "use client";
 
+import { SimpleTierBadge } from '@/components/ui/TierBadge';
+import { defaultTierSystem } from '@/utils/tierSystem';
+import { useUserProgressStore } from '@/stores/userProgressStore';
+
 interface StatsHeaderProps {
   className?: string;
   language: 'korean' | 'english';
@@ -17,11 +21,26 @@ export function StatsHeader({
   sentenceLength,
   sentenceStyle
 }: StatsHeaderProps) {
+  const { bestCPM, averageSpeed, totalTests } = useUserProgressStore();
+
+  // 현재 사용자의 티어 정보 계산
+  const currentStats = {
+    averageCPM: bestCPM || averageSpeed || 0,
+    averageAccuracy: 90, // 임시값
+    averageConsistency: 80, // 임시값
+    totalTests: totalTests || 0
+  };
+
+  const currentTier = defaultTierSystem.calculateCurrentTier(currentStats);
+
   return (
     <div className={`mb-8 ${className}`}>
-      <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-        통계 및 분석
-      </h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+          통계 및 분석
+        </h1>
+        
+      </div>
       
       <div className="flex items-center gap-2 flex-wrap">
         {/* 언어 칩 */}

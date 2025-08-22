@@ -53,8 +53,8 @@ export function useTestCompletionHandler() {
       totalTests: totalTests + 1
     });
 
-    // 티어가 상승했는지 확인 (minCPM으로 비교)
-    if (newTier.minCPM > currentTier.minCPM) {
+    // 티어가 상승했는지 확인 (minPercentile로 비교)
+    if (newTier.minPercentile > currentTier.minPercentile) {
       setPromotionData({
         fromTier: currentTier,
         toTier: newTier

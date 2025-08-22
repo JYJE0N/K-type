@@ -7,16 +7,26 @@
 // 1. 티어 정의 시스템
 // ===============================
 
+// 사용자 성능 데이터 인터페이스
+export interface UserPerformanceData {
+  userId: string
+  weightedScore: number
+  averageCPM: number
+  averageAccuracy: number
+  averageConsistency: number
+  totalTests: number
+  lastUpdated: Date
+}
+
 export interface TierConfig {
   id: string
   name: string
   icon: string
   color: string
   gradient: [string, string]
-  minCPM: number
-  minAccuracy: number
-  minConsistency: number
-  requiredTests: number
+  minPercentile: number  // 최소 백분위수 (0-100)
+  maxPercentile: number  // 최대 백분위수 (0-100)
+  minTests: number       // 최소 테스트 횟수 (신뢰성 확보)
   description: string
   rewards: {
     title: string
@@ -26,25 +36,20 @@ export interface TierConfig {
 }
 
 export interface TierRequirements {
-  cpm: {
-    current: number
-    required: number
-    progress: number
-  }
-  accuracy: {
-    current: number
-    required: number
-    progress: number
-  }
-  consistency: {
-    current: number
-    required: number
-    progress: number
+  percentile: {
+    current: number      // 현재 백분위수
+    required: number     // 다음 티어 필요 백분위수
+    progress: number     // 진행률
   }
   tests: {
-    current: number
-    required: number
-    progress: number
+    current: number      // 현재 테스트 횟수
+    required: number     // 필요 테스트 횟수
+    progress: number     // 진행률
+  }
+  ranking: {
+    current: number      // 현재 순위
+    total: number        // 전체 사용자 수
+    percentile: number   // 백분위수
   }
 }
 
@@ -59,10 +64,9 @@ export const DEFAULT_TIERS: TierConfig[] = [
     icon: '🥉',
     color: '#CD7F32',
     gradient: ['#CD7F32', '#B8860B'],
-    minCPM: 0,
-    minAccuracy: 0,
-    minConsistency: 0,
-    requiredTests: 0,
+    minPercentile: 0,
+    maxPercentile: 39,    // 하위 40%
+    minTests: 1,
     description: '타이핑 여정의 시작',
     rewards: {
       title: '새내기 타이피스트',
@@ -74,10 +78,9 @@ export const DEFAULT_TIERS: TierConfig[] = [
     icon: '🥈',
     color: '#C0C0C0',
     gradient: ['#C0C0C0', '#A9A9A9'],
-    minCPM: 150,
-    minAccuracy: 85,
-    minConsistency: 70,
-    requiredTests: 5,
+    minPercentile: 40,
+    maxPercentile: 59,    // 40-60%
+    minTests: 3,
     description: '기초를 다진 타이피스트',
     rewards: {
       title: '기초 마스터',
@@ -90,10 +93,9 @@ export const DEFAULT_TIERS: TierConfig[] = [
     icon: '🥇',
     color: '#FFD700',
     gradient: ['#FFD700', '#FFA500'],
-    minCPM: 250,
-    minAccuracy: 90,
-    minConsistency: 80,
-    requiredTests: 10,
+    minPercentile: 60,
+    maxPercentile: 79,    // 60-80%
+    minTests: 5,
     description: '숙련된 타이핑 실력자',
     rewards: {
       title: '골든 핑거',
@@ -104,13 +106,12 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'platinum',
     name: '플래티넘',
-    icon: '💎',
+    icon: '🏆',
     color: '#E5E4E2',
     gradient: ['#E5E4E2', '#BFBFBF'],
-    minCPM: 350,
-    minAccuracy: 93,
-    minConsistency: 85,
-    requiredTests: 15,
+    minPercentile: 80,
+    maxPercentile: 89,    // 80-90%
+    minTests: 10,
     description: '전문가 수준의 타이핑',
     rewards: {
       title: '플래티넘 엘리트',
@@ -120,17 +121,16 @@ export const DEFAULT_TIERS: TierConfig[] = [
   },
   {
     id: 'diamond',
-    name: '다이아몬드',
-    icon: '💠',
+    name: '다이아',
+    icon: '💎',
     color: '#B9F2FF',
     gradient: ['#B9F2FF', '#87CEEB'],
-    minCPM: 450,
-    minAccuracy: 95,
-    minConsistency: 90,
-    requiredTests: 25,
-    description: '최고 수준의 타이핑 마스터',
+    minPercentile: 90,
+    maxPercentile: 95,    // 90-96%
+    minTests: 15,
+    description: '최고의 타이피스트',
     rewards: {
-      title: '다이아몬드 마스터',
+      title: '다이아 마스터',
       badge: 'diamond-legend',
       theme: 'diamond-theme'
     }
@@ -141,10 +141,9 @@ export const DEFAULT_TIERS: TierConfig[] = [
     icon: '👑',
     color: '#FF6B35',
     gradient: ['#FF6B35', '#F7931E'],
-    minCPM: 550,
-    minAccuracy: 97,
-    minConsistency: 93,
-    requiredTests: 50,
+    minPercentile: 96,
+    maxPercentile: 100,   // 상위 4%
+    minTests: 20,
     description: '타이핑계의 전설',
     rewards: {
       title: '타이핑 레전드',
@@ -160,27 +159,79 @@ export const DEFAULT_TIERS: TierConfig[] = [
 
 export class TierSystem {
   private tiers: TierConfig[]
+  private userDatabase: UserPerformanceData[] = [] // 실제로는 DB에서 가져옴
   
   constructor(customTiers?: TierConfig[]) {
     this.tiers = customTiers || DEFAULT_TIERS
-    // 티어를 minCPM 기준으로 정렬
-    this.tiers.sort((a, b) => a.minCPM - b.minCPM)
+    // 티어를 minPercentile 기준으로 정렬
+    this.tiers.sort((a, b) => a.minPercentile - b.minPercentile)
   }
 
   /**
-   * 현재 통계를 기반으로 티어 계산
+   * 가중치 기반 종합 점수 계산
+   */
+  calculateWeightedScore(stats: {
+    averageCPM: number
+    averageAccuracy: number
+    averageConsistency: number
+    totalTests: number
+  }): number {
+    const weights = {
+      cpm: 0.5,          // 50% - 타이핑 속도가 가장 중요
+      accuracy: 0.3,     // 30% - 정확도
+      consistency: 0.15, // 15% - 일관성
+      experience: 0.05   // 5% - 경험치 (테스트 횟수)
+    }
+    
+    // 정규화된 점수들
+    const normalizedCPM = Math.min(stats.averageCPM / 600, 1) * 100        // 600타를 만점으로
+    const normalizedAccuracy = stats.averageAccuracy                        // 이미 0-100
+    const normalizedConsistency = stats.averageConsistency                  // 이미 0-100
+    const normalizedExperience = Math.min(stats.totalTests / 50, 1) * 100  // 50회를 만점으로
+    
+    const weightedScore = 
+      normalizedCPM * weights.cpm +
+      normalizedAccuracy * weights.accuracy +
+      normalizedConsistency * weights.consistency +
+      normalizedExperience * weights.experience
+    
+    return Math.round(weightedScore * 100) / 100 // 소수점 둘째자리까지
+  }
+
+  /**
+   * 백분위수 계산 (모든 사용자 대비)
+   */
+  calculatePercentile(userScore: number, allUserScores: number[]): number {
+    if (allUserScores.length === 0) return 50 // 데이터가 없으면 중간값
+    
+    const sortedScores = allUserScores.sort((a, b) => a - b)
+    const lowerCount = sortedScores.filter(score => score < userScore).length
+    
+    return Math.round((lowerCount / sortedScores.length) * 100)
+  }
+
+  /**
+   * 현재 통계를 기반으로 티어 계산 (백분위수 기반)
    */
   calculateCurrentTier(stats: {
     averageCPM: number
     averageAccuracy: number
     averageConsistency: number
     totalTests: number
-  }): TierConfig {
-    // 역순으로 확인 (가장 높은 티어부터)
+  }, allUserScores?: number[]): TierConfig {
+    const userScore = this.calculateWeightedScore(stats)
+    
+    // 모든 사용자 점수가 없으면 임시 데이터 사용
+    const scores = allUserScores || this.generateSampleScores()
+    const percentile = this.calculatePercentile(userScore, scores)
+    
+    // 최소 테스트 횟수 조건도 확인
     for (let i = this.tiers.length - 1; i >= 0; i--) {
       const tier = this.tiers[i]
       
-      if (this.meetsRequirements(stats, tier)) {
+      if (percentile >= tier.minPercentile && 
+          percentile <= tier.maxPercentile &&
+          stats.totalTests >= tier.minTests) {
         return tier
       }
     }
@@ -190,41 +241,63 @@ export class TierSystem {
   }
 
   /**
-   * 다음 티어까지의 진행률 계산
+   * 다음 티어까지의 진행률 계산 (백분위수 기반)
    */
   calculateProgress(stats: {
     averageCPM: number
     averageAccuracy: number
     averageConsistency: number
     totalTests: number
-  }): TierRequirements | null {
-    const currentTier = this.calculateCurrentTier(stats)
+  }, allUserScores?: number[]): TierRequirements | null {
+    const scores = allUserScores || this.generateSampleScores()
+    const userScore = this.calculateWeightedScore(stats)
+    const currentPercentile = this.calculatePercentile(userScore, scores)
+    
+    const currentTier = this.calculateCurrentTier(stats, allUserScores)
     const nextTier = this.getNextTier(currentTier.id)
     
     if (!nextTier) return null // 이미 최고 티어
     
+    // 현재 순위 계산
+    const sortedScores = scores.sort((a, b) => b - a) // 내림차순
+    const currentRank = sortedScores.findIndex(score => score <= userScore) + 1
+    
     return {
-      cpm: {
-        current: stats.averageCPM,
-        required: nextTier.minCPM,
-        progress: Math.min(100, (stats.averageCPM / nextTier.minCPM) * 100)
-      },
-      accuracy: {
-        current: stats.averageAccuracy,
-        required: nextTier.minAccuracy,
-        progress: Math.min(100, (stats.averageAccuracy / nextTier.minAccuracy) * 100)
-      },
-      consistency: {
-        current: stats.averageConsistency,
-        required: nextTier.minConsistency,
-        progress: Math.min(100, (stats.averageConsistency / nextTier.minConsistency) * 100)
+      percentile: {
+        current: currentPercentile,
+        required: nextTier.minPercentile,
+        progress: currentPercentile >= nextTier.minPercentile ? 100 : 
+                 Math.round((currentPercentile / nextTier.minPercentile) * 100)
       },
       tests: {
         current: stats.totalTests,
-        required: nextTier.requiredTests,
-        progress: Math.min(100, (stats.totalTests / nextTier.requiredTests) * 100)
+        required: nextTier.minTests,
+        progress: Math.min(100, (stats.totalTests / nextTier.minTests) * 100)
+      },
+      ranking: {
+        current: currentRank,
+        total: scores.length,
+        percentile: currentPercentile
       }
     }
+  }
+
+  /**
+   * 임시 사용자 점수 데이터 생성 (실제로는 DB에서 가져옴)
+   */
+  private generateSampleScores(): number[] {
+    const scores = []
+    
+    // 정규분포를 따르는 점수 생성 (평균 65, 표준편차 20)
+    for (let i = 0; i < 1000; i++) {
+      const random1 = Math.random()
+      const random2 = Math.random()
+      const gaussian = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2)
+      const score = Math.max(0, Math.min(100, 65 + gaussian * 20))
+      scores.push(Math.round(score * 100) / 100)
+    }
+    
+    return scores
   }
 
   /**
@@ -245,17 +318,13 @@ export class TierSystem {
     
     const missingRequirements: string[] = []
     
-    if (stats.averageCPM < nextTier.minCPM) {
-      missingRequirements.push(`CPM ${nextTier.minCPM - stats.averageCPM}타 부족`)
+    const progress = this.calculateProgress(stats)
+    
+    if (!progress || progress.ranking.percentile < nextTier.minPercentile) {
+      missingRequirements.push(`백분위 ${nextTier.minPercentile}% 달성 필요`)
     }
-    if (stats.averageAccuracy < nextTier.minAccuracy) {
-      missingRequirements.push(`정확도 ${(nextTier.minAccuracy - stats.averageAccuracy).toFixed(1)}% 부족`)
-    }
-    if (stats.averageConsistency < nextTier.minConsistency) {
-      missingRequirements.push(`일관성 ${(nextTier.minConsistency - stats.averageConsistency).toFixed(1)}% 부족`)
-    }
-    if (stats.totalTests < nextTier.requiredTests) {
-      missingRequirements.push(`테스트 ${nextTier.requiredTests - stats.totalTests}회 부족`)
+    if (stats.totalTests < nextTier.minTests) {
+      missingRequirements.push(`테스트 ${nextTier.minTests - stats.totalTests}회 부족`)
     }
     
     return {
@@ -316,12 +385,14 @@ export class TierSystem {
     averageConsistency: number
     totalTests: number
   }, tier: TierConfig): boolean {
-    return (
-      stats.averageCPM >= tier.minCPM &&
-      stats.averageAccuracy >= tier.minAccuracy &&
-      stats.averageConsistency >= tier.minConsistency &&
-      stats.totalTests >= tier.requiredTests
-    )
+    if (stats.totalTests < tier.minTests) {
+      return false
+    }
+    
+    const progress = this.calculateProgress(stats)
+    if (!progress) return false
+    
+    return progress.ranking.percentile >= tier.minPercentile
   }
 
   private getNextTier(currentTierId: string): TierConfig | null {
@@ -351,7 +422,7 @@ export class TierSystem {
    */
   addCustomTier(tier: TierConfig): void {
     this.tiers.push(tier)
-    this.tiers.sort((a, b) => a.minCPM - b.minCPM)
+    this.tiers.sort((a, b) => a.minPercentile - b.minPercentile)
   }
 
   /**
@@ -362,7 +433,7 @@ export class TierSystem {
     if (index === -1) return false
     
     this.tiers[index] = { ...this.tiers[index], ...updates }
-    this.tiers.sort((a, b) => a.minCPM - b.minCPM)
+    this.tiers.sort((a, b) => a.minPercentile - b.minPercentile)
     return true
   }
 }
