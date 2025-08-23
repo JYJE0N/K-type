@@ -13,6 +13,7 @@ interface TextRendererProps {
   currentIndex: number;
   userInput: string;
   mistakes: number[];
+  isPaused?: boolean;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export function TextRenderer({
   currentIndex,
   userInput,
   mistakes,
+  isPaused = false,
   className = "",
 }: TextRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,15 +89,16 @@ export function TextRenderer({
         const targetScrollTop = relativeTop - windowCenter;
 
 
-        // 부드러운 내부 스크롤 - 더 자연스러운 곡선 애니메이션
-        if (currentIndex <= 0) {
+        // 부드러운 내부 스크롤 - 일시정지 상태 고려
+        // 일시정지 중이거나 진행 중인 상태에서는 현재 위치 유지
+        if (currentIndex <= 0 && !isPaused) {
           textContainer.scrollTo({
             top: Math.max(0, targetScrollTop),
             behavior: "instant",
           });
         } else {
-          // CSS transition으로 더 부드러운 스크롤
-          (textContainer as HTMLElement).style.scrollBehavior = "smooth";
+          // CSS transition으로 더 부드러운 스크롤 (일시정지 중에도 위치 유지)
+          (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
           textContainer.scrollTop = Math.max(0, targetScrollTop);
         }
 

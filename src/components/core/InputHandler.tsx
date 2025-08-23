@@ -327,27 +327,32 @@ export function InputHandler({
       }
     }
     
-    // 전역 ESC 키 처리 (focus 상관없이 동작)
+    // 더 강력한 전역 ESC 키 처리 (모든 키보드에서 동작)
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      // ESC 키에 대한 다중 조건 체크
+      if (event.key === 'Escape' || event.keyCode === 27 || event.which === 27) {
         event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+        
         const currentState = useTypingStore.getState()
+        console.log('🔥 Global ESC detected from:', (event.target as HTMLElement)?.tagName || 'unknown', 'KeyCode:', event.keyCode)
         
         if (currentState.isActive && !currentState.isPaused) {
           // 첫 번째 ESC: 일시정지
-          console.log('⏸️ ESC pressed - pausing test')
+          console.log('⏸️ Global ESC - pausing test')
           if (onPause) {
             onPause()
           }
         } else if (currentState.isPaused) {
           // 두 번째 ESC: 중단
-          console.log('⏹️ ESC pressed - stopping test')
+          console.log('⏹️ Global ESC - stopping test')
           if (onRestart) {
             onRestart()
           }
         } else if (currentState.isCountingDown) {
           // 카운트다운 중: 즉시 중단
-          console.log('⏹️ ESC pressed during countdown - stopping test')
+          console.log('⏹️ Global ESC during countdown - stopping test')
           if (onRestart) {
             onRestart()
           }
@@ -355,15 +360,18 @@ export function InputHandler({
       }
     }
     
+    // 다중 이벤트 리스너 등록 (최대 호환성)
     document.addEventListener('click', handlePageClick)
-    document.addEventListener('keydown', handleGlobalKeyDown)
+    document.addEventListener('keydown', handleGlobalKeyDown, { capture: true })
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true })
     
     return () => {
       clearTimeout(timer)
       document.removeEventListener('click', handlePageClick)
-      document.removeEventListener('keydown', handleGlobalKeyDown)
+      document.removeEventListener('keydown', handleGlobalKeyDown, { capture: true })
+      window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true })
     }
-  }, [disabled, isCompleted])
+  }, [disabled, isCompleted, onPause, onRestart])
 
   // Browser-specific adjustments
   useEffect(() => {

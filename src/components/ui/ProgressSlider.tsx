@@ -255,3 +255,46 @@ export function WordProgressSlider({
     </div>
   );
 }
+
+/**
+ * 글자(캐릭터) 기반 진행율 슬라이더  
+ */
+interface CharacterProgressSliderProps extends Omit<ProgressSliderProps, 'value'> {
+  currentIndex: number;
+  totalLength: number;
+  showCount?: boolean;
+  elapsedTime?: number; // 경과 시간 (초)
+}
+
+export function CharacterProgressSlider({ 
+  currentIndex, 
+  totalLength, 
+  showCount = false,
+  elapsedTime = 0,
+  ...props 
+}: CharacterProgressSliderProps) {
+  const progress = totalLength > 0 ? (currentIndex / totalLength) * 100 : 0;
+  
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="space-y-2">
+      <ProgressSlider 
+        value={progress} 
+        {...props} 
+        showLabel={true}
+        customLabel={formatTime(elapsedTime)}
+      />
+      {showCount && (
+        <div className="flex justify-between text-xs text-text-secondary">
+          <span>{currentIndex} 글자</span>
+          <span>{totalLength} 글자</span>
+        </div>
+      )}
+    </div>
+  );
+}

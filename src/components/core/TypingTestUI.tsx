@@ -1,7 +1,6 @@
 "use client";
 
 import { IoStop, IoPauseSharp, IoPlay, IoReloadCircle } from "react-icons/io5";
-import { LuAlarmClockCheck } from "react-icons/lu";
 import { FaKeyboard } from "react-icons/fa6";
 import { TextRenderer } from "./TextRenderer";
 import { InputHandler } from "./InputHandler";
@@ -10,13 +9,13 @@ import { GhostIndicator } from "./GhostIndicator";
 import { PromotionModal } from "@/components/gamification/PromotionModal";
 import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
 import {
-  TimeProgressSlider,
-  WordProgressSlider,
+  CharacterProgressSlider,
 } from "@/components/ui/ProgressSlider";
 import { LanguageMismatchAlert } from "@/components/ui/LanguageMismatchAlert";
 import { useTypingStore } from "@/stores/typingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TierConfig } from "@/utils/tierSystem";
+import { useEffect, useState } from "react";
 
 interface TypingTestUIProps {
   // 상태
@@ -27,12 +26,9 @@ interface TypingTestUIProps {
 
   // 타이머 관련
   currentTime: number;
-  getRemainingTime: () => number | null;
-  getTimeProgress: () => number | null;
-  getFormattedTime: (seconds: number) => string;
 
-  // 완료 처리 관련
-  getWordProgress: () => number;
+  // 완료 처리 관련  
+  getWordProgress?: () => number;
   showPromotionModal: boolean;
   promotionData: { fromTier: TierConfig; toTier: TierConfig } | null;
   closePromotionModal: () => void;
@@ -75,10 +71,7 @@ export function TypingTestUI({
   userInput,
   mistakes,
   currentTime,
-  getRemainingTime,
-  getTimeProgress,
-  getFormattedTime,
-  getWordProgress,
+  getWordProgress = () => 0,
   showPromotionModal,
   promotionData,
   closePromotionModal,
@@ -99,12 +92,47 @@ export function TypingTestUI({
   const { isActive, isPaused, isCompleted, isCountingDown, countdownValue } =
     useTypingStore();
 
-  const { testMode, testTarget } = useSettingsStore();
+  const { testTarget } = useSettingsStore();
+  
+  // 가상 키보드 감지
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      // 모바일에서만 감지
+      if (window.innerWidth <= 768) {
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        const windowHeight = window.innerHeight;
+        const keyboardHeight = windowHeight - viewportHeight;
+        
+        // 키보드가 100px 이상 올라왔을 때
+        const isKeyboardUp = keyboardHeight > 100;
+        setKeyboardVisible(isKeyboardUp);
+        
+        // CSS 변수 업데이트
+        document.documentElement.style.setProperty(
+          '--keyboard-height', 
+          isKeyboardUp ? `${keyboardHeight}px` : '0px'
+        );
+        
+        // body 클래스 토글
+        document.body.classList.toggle('keyboard-visible', isKeyboardUp);
+      }
+    };
 
-  // 남은 시간 표시
-  const remainingTime = getRemainingTime();
-  const timeProgress = getTimeProgress();
-  const wordProgress = getWordProgress();
+    // 이벤트 리스너 등록
+    window.addEventListener('resize', handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   return (
     <div className={`typing-test-container ${className}`}>
@@ -202,12 +230,10 @@ export function TypingTestUI({
 
           {/* 진행률 슬라이더 - PC용 */}
           <div className="progress-slider-container hidden md:block">
-            {/* 단어 기반 프로그레스바 (경과 시간 표시) */}
-            <WordProgressSlider
-              currentWords={Math.floor(
-                (currentIndex / targetText.length) * testTarget
-              )}
-              totalWords={testTarget}
+            {/* 글자 기반 프로그레스바 (경과 시간 표시) */}
+            <CharacterProgressSlider
+              currentIndex={currentIndex}
+              totalLength={targetText.length}
               elapsedTime={currentTime}
               variant="success"
               size="md"
@@ -235,6 +261,7 @@ export function TypingTestUI({
             currentIndex={currentIndex}
             userInput={userInput}
             mistakes={mistakes}
+            isPaused={isPaused}
             className="mb-4"
           />
 
@@ -252,7 +279,7 @@ export function TypingTestUI({
 
         {/* 타이핑 시각화 컨테이너 - 고정 높이로 위치 안정화 */}
         <div
-          className="typing-visualizer-container mb-8"
+          className="typing-visualizer-container mb-8 composition-panel md:static md:mb-8"
           style={{ minHeight: "80px" }}
         >
           {isActive && !isPaused && (
@@ -263,12 +290,9 @@ export function TypingTestUI({
           )}
         </div>
 
-        {/* 모바일용 고정 프로그레스바 - 고정 윈도우 아래쪽 */}
+        {/* 모바일용 고정 프로그레스바 - 가상 키보드 대응 */}
         <div
           className="mobile-progress-bar md:hidden fixed left-1 right-1 z-20"
-          style={{
-            top: "calc(var(--mobile-window-top) + var(--mobile-window-height) + var(--mobile-progress-spacing))",
-          }}
         >
           <div
             className="rounded-lg p-3"
@@ -277,11 +301,9 @@ export function TypingTestUI({
               border: "1px solid var(--color-background)",
             }}
           >
-            <WordProgressSlider
-              currentWords={Math.floor(
-                (currentIndex / targetText.length) * testTarget
-              )}
-              totalWords={testTarget}
+            <CharacterProgressSlider
+              currentIndex={currentIndex}
+              totalLength={targetText.length}
               elapsedTime={currentTime}
               variant="success"
               size="sm"
@@ -292,13 +314,13 @@ export function TypingTestUI({
           </div>
         </div>
 
-        {/* 컨트롤 버튼들 */}
-        <div className="controls-container flex justify-center items-center gap-4 mb-6 mt-16 md:mt-0">
+        {/* 컨트롤 버튼들 - 가상 키보드 대응 */}
+        <div className="mobile-controls md:bottom-auto controls-container flex justify-center items-center gap-4 mb-6 mt-16 md:mt-0 fixed md:static left-0 right-0 z-30">
           {!isActive && !isCompleted && !isCountingDown && (
             <>
               <button
                 onClick={onStart}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-102 active:scale-95"
                 style={{ backgroundColor: "var(--color-interactive-primary)" }}
               >
                 <IoPlay className="w-5 h-5" />
@@ -307,7 +329,7 @@ export function TypingTestUI({
 
               <button
                 onClick={onRestart}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-102 active:scale-95"
                 style={{
                   backgroundColor: "var(--color-interactive-secondary)",
                 }}
@@ -322,7 +344,7 @@ export function TypingTestUI({
             <>
               <button
                 onClick={onPause}
-                className="typing-button-secondary flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-10 hover:scale-105 active:scale-95"
+                className="typing-button-secondary flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-10 hover:scale-102 active:scale-95"
               >
                 <IoPauseSharp className="w-5 h-5" />
                 일시정지
@@ -330,7 +352,7 @@ export function TypingTestUI({
 
               <button
                 onClick={onStop}
-                className="typing-button-restart flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-10 hover:scale-105 active:scale-95"
+                className="typing-button-restart flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-10 hover:scale-102 active:scale-95"
               >
                 <IoStop className="w-5 h-5" />
                 중단
@@ -342,7 +364,7 @@ export function TypingTestUI({
             <>
               <button
                 onClick={onResume}
-                className="typing-button-primary flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:opacity-90 hover:scale-105 active:scale-95"
+                className="typing-button-primary flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:opacity-90 hover:scale-102 active:scale-95"
               >
                 <IoPlay className="w-5 h-5" />
                 재개하기
@@ -350,7 +372,7 @@ export function TypingTestUI({
 
               <button
                 onClick={onRestart}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-102 active:scale-95"
                 style={{
                   backgroundColor: "var(--color-interactive-secondary)",
                 }}

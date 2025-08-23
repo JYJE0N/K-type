@@ -118,7 +118,11 @@ export const CharacterRenderer = memo(function CharacterRenderer({
         
         {/* 현재 문자 아래 커서 */}
         {showCursor && status === "current" && (
-          <span className="typing-cursor absolute left-0 w-full h-0.5 rounded-sm transition-all duration-150" />
+          <span 
+            className={`typing-cursor absolute left-0 w-full h-0.5 rounded-sm transition-all duration-150 ${
+              specialKey === "space" ? "current-char-glow space-underline" : "pulse-glow"
+            }`} 
+          />
         )}
       </span>
     </span>

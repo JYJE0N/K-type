@@ -28,6 +28,35 @@
   --mobile-window-top: calc(9rem + 1vh);
   --mobile-window-height: calc(55vh - var(--mobile-window-top) - 1rem);
   --mobile-progress-spacing: 2.75rem;
+  --keyboard-height: 0px; /* 가상 키보드 높이 */
+}
+
+/* 가상 키보드가 올라왔을 때 UI 조정 */
+.keyboard-visible {
+  --mobile-progress-spacing: 1rem; /* 더 위로 이동 */
+}
+
+/* 모바일 고정 프로그레스바 - 가상 키보드 고려 */
+.mobile-progress-bar {
+  bottom: calc(var(--keyboard-height) + 1rem);
+  top: unset !important;
+}
+
+/* 컨트롤 버튼들 - 가상 키보드 고려 */  
+.mobile-controls {
+  bottom: calc(var(--keyboard-height) + 0.5rem);
+}
+
+/* 글자 조합 패널 - 가상 키보드 고려 */
+@media (max-width: 768px) {
+  .composition-panel {
+    position: fixed !important;
+    bottom: calc(var(--keyboard-height) + 3.5rem);
+    left: 0;
+    right: 0;
+    z-index: 25;
+    margin-bottom: 0 !important;
+  }
 }
 
 /* 📱 모바일 고정 윈도우 스크롤바 숨기기 */
@@ -43,10 +72,26 @@
   transition: scroll-behavior 0.2s ease-in-out;
 }
 
-/* 모바일 텍스트 줄간격 */
-.mobile-typing-text {
-  line-height: 1.4;
-  letter-spacing: 0.02em;
+/* 모바일 텍스트 줄간격 - 더 조밀하게 (강제 적용) */
+.mobile-typing-text,
+.mobile-typing-text * {
+  line-height: 1.2 !important; /* 1.4 → 1.2로 줄간격 축소 */
+  letter-spacing: 0.01em !important; /* 0.02em → 0.01em으로 자간 축소 */
+}
+
+/* 모바일 전용 추가 조정 */
+@media (max-width: 768px) {
+  .typing-text-container {
+    line-height: 1.2 !important;
+    letter-spacing: 0.01em !important;
+  }
+  
+  .typing-text-container .word-group,
+  .typing-text-container .word-group *,
+  .typing-text-container span {
+    line-height: 1.2 !important;
+    letter-spacing: 0.01em !important;
+  }
 }
 
 /* PC 텍스트 기본 줄간격 */

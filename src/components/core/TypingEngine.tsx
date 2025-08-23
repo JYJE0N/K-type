@@ -53,9 +53,6 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       
       // 타이머 관련
       currentTime={timer.currentTime}
-      getRemainingTime={timer.getRemainingTime}
-      getTimeProgress={timer.getTimeProgress}
-      getFormattedTime={timer.getFormattedTime}
       
       // 완료 처리 관련
       getWordProgress={getWordProgress}
