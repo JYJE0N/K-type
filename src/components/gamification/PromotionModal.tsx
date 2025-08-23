@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  getTierColor,
-  type TierConfig,
-} from "@/utils/tierSystem";
+import { getTierColor, type TierConfig } from "@/utils/tierSystem";
 import { FaKeyboard } from "react-icons/fa6";
 import { IoBulb, IoGift, IoAddCircle } from "react-icons/io5";
 import { HiCheckBadge } from "react-icons/hi2";
@@ -60,6 +57,41 @@ export function PromotionModal({
       sequence();
     }
   }, [isOpen, onComplete]);
+
+  // 키보드 단축키 핸들러
+  useEffect(() => {
+    if (!isOpen || animationStep !== "complete") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "Escape":
+          event.preventDefault();
+          onClose();
+          break;
+        case "Enter":
+          event.preventDefault();
+          if (event.shiftKey) {
+            // Shift + Enter: 계속 연습
+            if (onContinue) {
+              onContinue();
+            } else {
+              onClose();
+            }
+          } else {
+            // Enter: 자세히보기
+            if (onViewStats) {
+              onViewStats();
+            } else {
+              onClose();
+            }
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, animationStep, onClose, onContinue, onViewStats]);
 
   if (!isOpen) return null;
 
@@ -359,6 +391,122 @@ export function PromotionModal({
                     <IoBulb className="w-4 h-4" />
                     자세히 보기
                   </button>
+                </div>
+              )}
+
+              {/* 키보드 단축키 안내 - 컴팩트 버전 */}
+              {animationStep === "complete" && (
+                <div
+                  className="border-t text-center"
+                  style={{
+                    marginTop: "var(--spacing-3)",
+                    paddingTop: "var(--spacing-3)",
+                    borderColor: "var(--color-border-light)",
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-center"
+                    style={{ gap: "var(--spacing-2)" }}
+                  >
+                    <div
+                      className="flex items-center"
+                      style={{ gap: "var(--spacing-1)" }}
+                    >
+                      <div
+                        className="rounded border"
+                        style={{
+                          padding: "var(--spacing-1) var(--spacing-2)",
+                          fontSize: "var(--font-size-xs)",
+                          fontWeight: "600",
+                          backgroundColor: "var(--color-shortcut-key-bg)",
+                          color: "var(--color-shortcut-key-text)",
+                          borderColor: "var(--color-shortcut-key-border)",
+                        }}
+                      >
+                        Shift+Enter
+                      </div>
+                      <span
+                        style={{
+                          color: "var(--color-shortcut-label-text)",
+                          fontSize: "var(--font-size-xs)",
+                        }}
+                      >
+                        계속 연습
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        color: "var(--color-shortcut-separator)",
+                        fontSize: "var(--font-size-xs)",
+                      }}
+                    >
+                      •
+                    </div>
+
+                    <div
+                      className="flex items-center"
+                      style={{ gap: "var(--spacing-1)" }}
+                    >
+                      <div
+                        className="rounded border"
+                        style={{
+                          padding: "var(--spacing-1) var(--spacing-2)",
+                          fontSize: "var(--font-size-xs)",
+                          fontWeight: "600",
+                          backgroundColor: "var(--color-shortcut-key-bg)",
+                          color: "var(--color-shortcut-key-text)",
+                          borderColor: "var(--color-shortcut-key-border)",
+                        }}
+                      >
+                        Enter
+                      </div>
+                      <span
+                        style={{
+                          color: "var(--color-shortcut-label-text)",
+                          fontSize: "var(--font-size-xs)",
+                        }}
+                      >
+                        자세히 보기
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        color: "var(--color-shortcut-separator)",
+                        fontSize: "var(--font-size-xs)",
+                      }}
+                    >
+                      •
+                    </div>
+
+                    <div
+                      className="flex items-center"
+                      style={{ gap: "var(--spacing-1)" }}
+                    >
+                      <div
+                        className="rounded border"
+                        style={{
+                          padding: "var(--spacing-1) var(--spacing-2)",
+                          fontSize: "var(--font-size-xs)",
+                          fontWeight: "600",
+                          backgroundColor: "var(--color-shortcut-key-bg)",
+                          color: "var(--color-shortcut-key-text)",
+                          borderColor: "var(--color-shortcut-key-border)",
+                        }}
+                      >
+                        Esc
+                      </div>
+                      <span
+                        style={{
+                          color: "var(--color-shortcut-label-text)",
+                          fontSize: "var(--font-size-xs)",
+                        }}
+                      >
+                        창 닫기
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

@@ -123,7 +123,7 @@ export function TypingTestUI({
             className="text-lg font-medium mb-8 animate-pulse"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            한/영키 확인하셨나요?
+            한/영키 확인했나요?
           </div>
 
           {/* 심플한 원형 프로그레스 */}
@@ -200,8 +200,8 @@ export function TypingTestUI({
             <GhostIndicator />
           </div>
 
-          {/* 진행률 슬라이더 */}
-          <div className="progress-slider-container">
+          {/* 진행률 슬라이더 - PC용 */}
+          <div className="progress-slider-container hidden md:block">
             {/* 단어 기반 프로그레스바 (경과 시간 표시) */}
             <WordProgressSlider
               currentWords={Math.floor(
@@ -243,6 +243,8 @@ export function TypingTestUI({
             onBackspace={onBackspace}
             onTestStart={onTestStart}
             onResume={isPaused ? onResume : undefined}
+            onPause={onPause}
+            onRestart={onRestart}
             disabled={isCompleted}
             className="typing-input"
           />
@@ -261,8 +263,37 @@ export function TypingTestUI({
           )}
         </div>
 
+        {/* 모바일용 고정 프로그레스바 - 고정 윈도우 아래쪽 */}
+        <div
+          className="mobile-progress-bar md:hidden fixed left-1 right-1 z-20"
+          style={{
+            top: "calc(var(--mobile-window-top) + var(--mobile-window-height) + var(--mobile-progress-spacing))",
+          }}
+        >
+          <div
+            className="rounded-lg p-3"
+            style={{
+              backgroundColor: "var(--color-background)",
+              border: "1px solid var(--color-background)",
+            }}
+          >
+            <WordProgressSlider
+              currentWords={Math.floor(
+                (currentIndex / targetText.length) * testTarget
+              )}
+              totalWords={testTarget}
+              elapsedTime={currentTime}
+              variant="success"
+              size="sm"
+              className="w-full"
+              showCount={false}
+              animated={false}
+            />
+          </div>
+        </div>
+
         {/* 컨트롤 버튼들 */}
-        <div className="controls-container flex justify-center items-center gap-4 mb-6">
+        <div className="controls-container flex justify-center items-center gap-4 mb-6 mt-16 md:mt-0">
           {!isActive && !isCompleted && !isCountingDown && (
             <>
               <button

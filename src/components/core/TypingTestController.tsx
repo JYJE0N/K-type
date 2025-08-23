@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { useTypingStore } from "@/stores/typingStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -39,7 +39,7 @@ export function useTypingTestController() {
   } = useTypingStore();
 
   const { calculateStats, resetStats, liveStats } = useStatsStore();
-  const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled, countdownEnabled } = useSettingsStore();
+  const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled, countdownEnabled, sentenceLength, sentenceStyle } = useSettingsStore();
   const { recordTest, updateCharacterStats, updateMistakePattern, recentTests } = useUserProgressStore();
   
   // 언어 감지 시스템
@@ -50,36 +50,22 @@ export function useTypingTestController() {
     severity: 'info' | 'warning' | 'error';
   }>({ show: false, message: '', severity: 'info' });
 
-  // 새로운 텍스트 생성
+  // 새로운 텍스트 생성 (설정에 따른 통일된 로직)
   const generateNewText = useCallback(() => {
     const languagePack = getLanguagePack(language);
     if (!languagePack) return "";
 
     const textGenerator = new TextGenerator(languagePack);
-
-    let finalTextType = textType;
-    let wordCount = testTarget;
-
-    if (testMode === "sentences") {
-      // 문장 모드일 때는 목표값에 따라 텍스트 타입 결정
-      if (testTarget === 1) {
-        finalTextType = "short-sentences"; // 단문: 15-20자 한 문장
-        wordCount = 1; // 한 문장
-      } else if (testTarget === 3) {
-        finalTextType = "medium-sentences"; // 중문
-        wordCount = 3;
-      } else {
-        finalTextType = "long-sentences"; // 장문
-        wordCount = 5;
-      }
-    }
-
-    const newText = textGenerator.generateText(finalTextType, {
-      wordCount,
+    // 설정에 따른 통일된 텍스트 생성
+    const newText = textGenerator.generateNewText({
+      mode: testMode,
+      count: testTarget,
+      sentenceLength,
+      sentenceStyle
     });
 
     return newText;
-  }, [language, textType, testMode, testTarget]);
+  }, [language, testMode, testTarget]);
 
   // 테스트 재시작
   const handleRestart = useCallback(() => {
@@ -109,7 +95,7 @@ export function useTypingTestController() {
     if (typingEffectsEnabled) {
       typingEffectsManager.resetCombo();
     }
-  }, [generateNewText, resetTest, setTargetText, resetStats, ghostModeEnabled, testMode, testTarget, typingEffectsEnabled]);
+  }, [generateNewText, resetTest, setTargetText, resetStats, ghostModeEnabled, testMode, testTarget, typingEffectsEnabled, recentTests, language, textType]);
 
   // 테스트 시작
   const handleStart = useCallback(() => {
@@ -196,6 +182,17 @@ export function useTypingTestController() {
 
     return liveStats;
   }, [isCompleted, firstKeystrokeTime, calculateStats, keystrokes, mistakes.length, startTime, currentIndex, textType, targetText, userInput, liveStats]);
+
+  // 전역 이벤트 리스너 (승급 모달에서 새 테스트 요청)
+  useEffect(() => {
+    const handleRestartTest = () => {
+      console.log('🔄 전역 이벤트 수신: 새 테스트 시작 요청');
+      handleRestart();
+    };
+
+    window.addEventListener('typing:restart-test', handleRestartTest);
+    return () => window.removeEventListener('typing:restart-test', handleRestartTest);
+  }, [handleRestart]);
 
   return {
     // 상태

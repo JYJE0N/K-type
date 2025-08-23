@@ -41,52 +41,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   // 테스트 완료 시 처리는 TestCompletionHandler에서 담당
   // (중복 제거: controller.handleTestCompletion은 더 이상 호출하지 않음)
 
-  // 글로벌 키보드 단축키 처리
-  useEffect(() => {
-    const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      // ESC 키: 일시정지
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        if (controller.isActive && !controller.isPaused) {
-          controller.pauseTest();
-        }
-        return;
-      }
-
-      // Shift + Enter: 새로고침
-      if (event.shiftKey && event.key === 'Enter') {
-        event.preventDefault();
-        controller.handleRestart();
-        return;
-      }
-
-      // 테스트 시작 (아무 키)
-      if (!controller.isActive && !controller.isCompleted && !controller.isCountingDown) {
-        // 특수키는 제외 (Shift, Ctrl, Alt, Meta, Tab, F1-F12 등)
-        if (!event.ctrlKey && !event.altKey && !event.metaKey && 
-            !['Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock', 'ContextMenu'].includes(event.key) &&
-            !event.key.startsWith('F')) {
-          event.preventDefault();
-          controller.handleStart();
-          return;
-        }
-      }
-
-      // 일시정지 상태에서 아무 키로 재개
-      if (controller.isPaused) {
-        if (!event.ctrlKey && !event.altKey && !event.metaKey && 
-            !['Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock', 'ContextMenu'].includes(event.key) &&
-            !event.key.startsWith('F')) {
-          event.preventDefault();
-          controller.resumeTest();
-          return;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [controller]);
+  // 전역 이벤트 처리는 InputHandler에서 담당
 
   return (
     <TypingTestUI

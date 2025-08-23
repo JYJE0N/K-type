@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Layout } from '@/components/ui/Layout'
 import { TypingEngine } from '@/components/core/TypingEngine'
 import { ClientOnly } from '@/components/ClientOnly'
@@ -10,6 +11,27 @@ import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
+
+// URL 파라미터 처리를 위한 별도 컴포넌트
+function UrlParamHandler() {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const restart = searchParams.get('restart')
+    if (restart === 'true') {
+      console.log('🔄 URL 파라미터로 새 테스트 시작 요청됨')
+      // 약간의 딜레이 후 새 텍스트 생성 트리거
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('typing:restart-test'))
+      }, 100)
+      
+      // URL에서 파라미터 제거 (히스토리 깨끗하게 유지)
+      window.history.replaceState({}, '', '/')
+    }
+  }, [searchParams])
+
+  return null
+}
 
 export default function Home() {
   const { language, testTarget, testMode, theme, sentenceLength, sentenceStyle } = useSettingsStore()
@@ -42,6 +64,9 @@ export default function Home() {
   return (
     <>
       <ThemeInitializer />
+      <Suspense fallback={null}>
+        <UrlParamHandler />
+      </Suspense>
       <Layout>
         {/* 메인 컨테이너 */}
         <div className="p-8">

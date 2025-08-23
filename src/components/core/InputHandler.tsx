@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTypingStore } from '@/stores/typingStore'
-import { IMEHandler, isKoreanJamo, getBrowserType } from '@/utils/koreanIME'
+import { IMEHandler, isKoreanJamo, getBrowserType, isCompletedKorean } from '@/utils/koreanIME'
 
 interface InputHandlerProps {
   onKeyPress: (key: string) => void
   onBackspace: () => void
   onTestStart: () => void
   onResume?: () => void
+  onPause?: () => void
+  onRestart?: () => void
   onCompositionChange?: (isComposing: boolean) => void
   disabled?: boolean
   className?: string
@@ -19,6 +21,8 @@ export function InputHandler({
   onBackspace,
   onTestStart,
   onResume,
+  onPause,
+  onRestart,
   onCompositionChange,
   disabled = false,
   className = ''
@@ -52,13 +56,13 @@ export function InputHandler({
       setTestStarted(true)
       setShowStartHint(false)
     }
-  }, [testStarted, isActive, onTestStart])
+  }, [testStarted, isActive])
 
   // Process character input (unified handler)
   const processCharacter = useCallback((char: string) => {
-    // Skip Korean jamo
-    if (isKoreanJamo(char)) {
-      console.log(`🔤 Skipping Korean jamo: "${char}"`)
+    // Skip only incomplete Korean jamo, allow completed Korean characters (가-힣)
+    if (isKoreanJamo(char) && !isCompletedKorean(char)) {
+      console.log(`🔤 Skipping incomplete Korean jamo: "${char}"`)
       return
     }
 
@@ -73,15 +77,23 @@ export function InputHandler({
     // Auto-start test on first character
     if (!testStarted && !isCountingDown && !isActive) {
       handleTestStart()
-      return // 카운트다운 시작 후에는 이 키 입력은 처리하지 않음
+      // 첫 글자도 처리할 수 있도록 return 제거
+      // 카운트다운이 끝나면 아래 로직에서 처리됨
     }
 
-    // 테스트가 활성화된 상태에서만 키 입력 처리
-    if (isActive && !isCountingDown) {
+    // 상태를 다시 한번 확인 (React 동기화 문제 해결)
+    const currentStore = useTypingStore.getState()
+    const actualIsActive = currentStore.isActive
+    const actualIsCountingDown = currentStore.isCountingDown
+    
+    console.log(`🔍 State check: hook(${isActive},${isCountingDown}) vs store(${actualIsActive},${actualIsCountingDown})`)
+    
+    // 테스트가 활성화된 상태에만 키 입력 처리 (스토어 직접 확인)
+    if (actualIsActive && !actualIsCountingDown) {
       console.log(`✅ Processing character: "${char}" (${char.charCodeAt(0)})`)
       onKeyPress(char)
     } else {
-      console.log(`⏸️ Skipping key input during countdown or inactive state`)
+      console.log(`⏸️ Skipping key input - isActive: ${actualIsActive}, isCountingDown: ${actualIsCountingDown}, testStarted: ${testStarted}`)
     }
     
     // Mark as processed (clear after 200ms to prevent memory leak)
@@ -89,7 +101,7 @@ export function InputHandler({
     setTimeout(() => {
       processedInputRef.current.delete(charId)
     }, 200)
-  }, [testStarted, handleTestStart, onKeyPress])
+  }, [testStarted, onKeyPress])
 
   // Handle direct input (for non-IME characters)
   const handleInput = useCallback((event: React.FormEvent<HTMLInputElement>) => {
@@ -108,108 +120,107 @@ export function InputHandler({
     if (value.length > 0) {
       const lastChar = value[value.length - 1]
       
-      // Only process if it's not a Korean jamo and is a valid character
-      if (lastChar && lastChar.charCodeAt(0) >= 32 && !isKoreanJamo(lastChar)) {
+      // Only process if it's not an incomplete Korean jamo and is a valid character
+      if (lastChar && lastChar.charCodeAt(0) >= 32 && !(isKoreanJamo(lastChar) && !isCompletedKorean(lastChar))) {
         processCharacter(lastChar)
       }
       
       // Clear input to prevent accumulation
       target.value = ''
     }
-  }, [disabled, isCompleted, processCharacter])
+  }, [disabled, isCompleted])
 
-  // Handle keyboard events
+  // Handle keyboard events (전역 이벤트 처리 제외 문자만)
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log('⌨️ Key pressed:', event.key, { disabled, isCompleted, testStarted, isActive, isPaused })
-    if (disabled || isCompleted) {
-      console.log('❌ Key blocked by disabled/completed check')
-      return
-    }
-
-    // 일시정지 상태에서 아무 키나 누르면 해제
-    if (isPaused && onResume) {
-      console.log('▶️ Resuming from pause')
-      onResume()
-      return
-    }
+    if (disabled || isCompleted) return
 
     const key = event.key
     
-    // Handle backspace
+    // ESC 키: 일시정지/중단 (직접 처리)
+    if (key === 'Escape') {
+      event.preventDefault();
+      const currentState = useTypingStore.getState()
+      
+      if (currentState.isActive && !currentState.isPaused) {
+        // 첫 번째 ESC: 일시정지
+        console.log('⏸️ ESC pressed - pausing test');
+        if (onPause) {
+          onPause();
+        }
+      } else if (currentState.isPaused) {
+        // 두 번째 ESC: 중단
+        console.log('⏹️ ESC pressed - stopping test');
+        if (onRestart) {
+          onRestart();
+        }
+      } else if (currentState.isCountingDown) {
+        // 카운트다운 중: 즉시 중단
+        console.log('⏹️ ESC pressed during countdown - stopping test');
+        if (onRestart) {
+          onRestart();
+        }
+      }
+      return;
+    }
+    
+    // Shift+Enter: 새로고침 (직접 처리)
+    if (event.shiftKey && key === 'Enter') {
+      event.preventDefault();
+      if (onRestart) {
+        onRestart();
+      }
+      return;
+    }
+
+    // Backspace 처리
     if (key === 'Backspace') {
       event.preventDefault()
-      console.log('🔙 Backspace pressed')
       onBackspace()
-      
-      // Clear input field
-      if (inputRef.current) {
-        inputRef.current.value = ''
-      }
+      if (inputRef.current) inputRef.current.value = ''
       return
     }
     
-    // Handle Enter and Tab as special characters
+    // Enter, Tab 처리
     if (key === 'Enter' || key === 'Tab') {
       event.preventDefault()
-      
-      // Auto-start if needed
       if (!testStarted && !isCountingDown && !isActive) {
         handleTestStart()
-        return
+        // 첫 글자도 처리할 수 있도록 return 제거
       }
-      
-      // Process only if test is active
       if (isActive && !isCountingDown) {
-        const specialChar = key === 'Enter' ? '\n' : '\t'
-        processCharacter(specialChar)
+        processCharacter(key === 'Enter' ? '\n' : '\t')
       }
       return
     }
     
-    // Handle Space explicitly (more reliable than composition)
+    // 스페이스 처리  
     if (key === ' ') {
       event.preventDefault()
-      
-      // Auto-start if needed
       if (!testStarted && !isCountingDown && !isActive) {
         handleTestStart()
-        return
+        // 첫 글자도 처리할 수 있도록 return 제거
       }
-      
-      // Process only if test is active
-      if (isActive && !isCountingDown) {
-        // Skip if IME is composing (let composition handle it)
-        if (imeHandler.current.isComposing()) {
-          console.log('🎭 Skipping space during IME composition')
-          return
-        }
-        
+      if (isActive && !isCountingDown && !imeHandler.current.isComposing()) {
         processCharacter(' ')
       }
       return
     }
     
-    // For other single characters, let composition or input event handle it
-    // This prevents double processing
+    // ASCII 문자 처리
     if (key.length === 1 && !imeHandler.current.isComposing()) {
-      // For non-IME languages, we can process immediately
       const charCode = key.charCodeAt(0)
-      if (charCode < 128 && charCode >= 32) { // ASCII printable characters
+      if (charCode < 128 && charCode >= 32) {
         event.preventDefault()
-        
-        // Auto-start if needed
         if (!testStarted && !isCountingDown && !isActive) {
           handleTestStart()
-          return
+          // 첫 글자도 처리할 수 있도록 return 제거
         }
-        
-        // Process only if test is active
         if (isActive && !isCountingDown) {
           processCharacter(key)
         }
       }
     }
-  }, [disabled, isCompleted, testStarted, isCountingDown, isActive, isPaused, handleTestStart, onBackspace, onResume, processCharacter])
+  }, [disabled, isCompleted, testStarted, isCountingDown, isActive, isPaused, onBackspace, onResume])
 
   // Composition event handlers (for IME)
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
@@ -222,13 +233,13 @@ export function InputHandler({
     if (showStartHint) {
       setShowStartHint(false)
     }
-  }, [onCompositionChange, showStartHint, setCompositionState])
+  }, [onCompositionChange, showStartHint])
 
   const handleCompositionUpdate = useCallback((event: React.CompositionEvent) => {
     console.log('🎭 Composition update:', event.data)
     imeHandler.current.updateComposition(event.data || '')
     setCompositionState(true, event.data || '')
-  }, [setCompositionState])
+  }, [])
 
   const handleCompositionEnd = useCallback((event: React.CompositionEvent) => {
     console.log('🎭 Composition ended:', event.data)
@@ -252,7 +263,7 @@ export function InputHandler({
     if (inputRef.current) {
       inputRef.current.value = ''
     }
-  }, [testStarted, handleTestStart, processCharacter, onCompositionChange, setCompositionState])
+  }, [testStarted, onCompositionChange])
 
   // Handle click to focus and start test
   const handleContainerClick = useCallback(() => {
@@ -283,7 +294,7 @@ export function InputHandler({
     if (showStartHint) {
       setShowStartHint(false)
     }
-  }, [maintainFocus, showStartHint, testStarted, isActive, isPaused, handleTestStart, onResume])
+  }, [showStartHint, testStarted, isActive, isPaused, handleTestStart, onResume])
 
   // Reset when test state changes
   useEffect(() => {
@@ -302,7 +313,7 @@ export function InputHandler({
     }
   }, [disabled, isCompleted, isActive])
 
-  // Initial focus and maintain focus
+  // Initial focus and maintain focus + Global ESC handler
   useEffect(() => {
     const timer = setTimeout(() => {
       maintainFocus()
@@ -316,13 +327,43 @@ export function InputHandler({
       }
     }
     
+    // 전역 ESC 키 처리 (focus 상관없이 동작)
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        const currentState = useTypingStore.getState()
+        
+        if (currentState.isActive && !currentState.isPaused) {
+          // 첫 번째 ESC: 일시정지
+          console.log('⏸️ ESC pressed - pausing test')
+          if (onPause) {
+            onPause()
+          }
+        } else if (currentState.isPaused) {
+          // 두 번째 ESC: 중단
+          console.log('⏹️ ESC pressed - stopping test')
+          if (onRestart) {
+            onRestart()
+          }
+        } else if (currentState.isCountingDown) {
+          // 카운트다운 중: 즉시 중단
+          console.log('⏹️ ESC pressed during countdown - stopping test')
+          if (onRestart) {
+            onRestart()
+          }
+        }
+      }
+    }
+    
     document.addEventListener('click', handlePageClick)
+    document.addEventListener('keydown', handleGlobalKeyDown)
     
     return () => {
       clearTimeout(timer)
       document.removeEventListener('click', handlePageClick)
+      document.removeEventListener('keydown', handleGlobalKeyDown)
     }
-  }, [maintainFocus, disabled, isCompleted])
+  }, [disabled, isCompleted])
 
   // Browser-specific adjustments
   useEffect(() => {
@@ -376,43 +417,3 @@ export function InputHandler({
   )
 }
 
-// 입력 지연시간 측정을 위한 유틸리티 훅
-export function useInputLatency() {
-  const lastInputTime = useRef<number>(0)
-  const latencyHistory = useRef<number[]>([])
-
-  const measureLatency = useCallback(() => {
-    const now = performance.now()
-    const latency = now - lastInputTime.current
-    
-    if (lastInputTime.current > 0 && latency < 1000) {
-      latencyHistory.current.push(latency)
-      
-      if (latencyHistory.current.length > 100) {
-        latencyHistory.current.shift()
-      }
-    }
-    
-    lastInputTime.current = now
-    
-    return latency
-  }, [])
-
-  const getAverageLatency = useCallback(() => {
-    const history = latencyHistory.current
-    if (history.length === 0) return 0
-    
-    return history.reduce((sum, latency) => sum + latency, 0) / history.length
-  }, [])
-
-  const resetLatencyHistory = useCallback(() => {
-    latencyHistory.current = []
-    lastInputTime.current = 0
-  }, [])
-
-  return {
-    measureLatency,
-    getAverageLatency,
-    resetLatencyHistory
-  }
-}

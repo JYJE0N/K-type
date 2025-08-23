@@ -139,10 +139,16 @@ export function useTestCompletionHandler() {
     setShowPromotionModal(false);
     setPromotionData(null);
     
-    // 모달 닫기 후 메인 페이지로 이동하여 새 테스트 시작
-    setTimeout(() => {
-      router.push('/');
-    }, 300);
+    // 현재 페이지가 메인 페이지라면 새로운 텍스트를 강제로 생성
+    if (window.location.pathname === '/') {
+      // 전역 이벤트로 새 테스트 시작 요청
+      window.dispatchEvent(new CustomEvent('typing:restart-test'));
+    } else {
+      // 다른 페이지에서 온 경우 메인 페이지로 이동 후 새 테스트 시작
+      setTimeout(() => {
+        router.push('/?restart=true');
+      }, 300);
+    }
   }, [router]);
 
   // 자세히 보기 (통계 페이지로 이동)

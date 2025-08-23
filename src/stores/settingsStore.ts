@@ -45,7 +45,7 @@ interface SettingsStore extends Settings {
 }
 
 const defaultSettings: Settings = {
-  language: 'korean',
+  language: 'korean',      // 한글을 기본 언어로 복구
   theme: 'light',
   testMode: 'words',
   testTarget: 50,          // 50개 단어 기본

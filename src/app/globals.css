@@ -23,6 +23,37 @@
   transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* 📱 모바일 고정 윈도우 레이아웃 변수 */
+:root {
+  --mobile-window-top: calc(9rem + 1vh);
+  --mobile-window-height: calc(55vh - var(--mobile-window-top) - 1rem);
+  --mobile-progress-spacing: 2.75rem;
+}
+
+/* 📱 모바일 고정 윈도우 스크롤바 숨기기 */
+.typing-text-container::-webkit-scrollbar {
+  display: none;
+}
+
+.typing-text-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  /* 더 부드러운 스크롤 애니메이션 */
+  transition: scroll-behavior 0.2s ease-in-out;
+}
+
+/* 모바일 텍스트 줄간격 */
+.mobile-typing-text {
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* PC 텍스트 기본 줄간격 */
+.desktop-typing-text {
+  line-height: 1.6;
+}
+
 /* 📏 디자인 토큰 (Design Tokens) */
 :root {
   /* 📏 스페이싱 토큰 */
@@ -1410,4 +1441,25 @@ html[data-theme="high-contrast"] .stats-modal-container {
 .context-chip:hover {
   background-color: var(--color-interactive-secondary);
   color: var(--color-text-inverse);
+}
+
+/* ===============================
+   📱 모바일 고정 텍스트 윈도우
+   =============================== */
+
+/* WebKit 스크롤바 숨김 */
+.typing-text-container::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Firefox 스크롤바 숨김 */
+.typing-text-container {
+  scrollbar-width: none;
+}
+
+/* IE/Edge 스크롤바 숨김 */
+.typing-text-container {
+  -ms-overflow-style: none;
 }

@@ -390,6 +390,14 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const updates = processKeystroke(state, key, expectedChar, isCorrect)
     set(updates)
     
+    // 마지막 글자 입력 후 자동 완료 체크
+    const newIndex = updates.currentIndex || state.currentIndex
+    if (newIndex >= state.targetText.length) {
+      console.log('🏁 Test completed - reached end of text')
+      setTimeout(() => get().completeTest(), 50)
+      return
+    }
+    
     // 타이핑 이펙트 트리거
     const effectsTimeElapsed = (Date.now() - (state.startTime?.getTime() || Date.now())) / 1000
     const effectsMinutes = effectsTimeElapsed / 60
