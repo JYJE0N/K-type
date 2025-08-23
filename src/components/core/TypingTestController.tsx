@@ -27,6 +27,7 @@ export function useTypingTestController() {
     isActive,
     isPaused,
     isCompleted,
+    isCountingDown,
     resetTest,
     setTargetText,
     startCountdown,
@@ -148,37 +149,17 @@ export function useTypingTestController() {
     calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), textType, targetText, userInput, firstKeystrokeTime);
   }, [calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
 
-  // 테스트 완료 처리
+  // 테스트 완료 처리 (🚨 recordTest 제거 - TestCompletionHandler에서만 처리)
   const handleTestCompletion = useCallback(() => {
     if (!isCompleted || !firstKeystrokeTime) return;
 
+    // 통계 계산만 수행 (저장은 TestCompletionHandler에서)
     calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), textType, targetText, userInput, firstKeystrokeTime);
     
-    // 사용자 진행률 기록
-    recordTest({
-      cpm: liveStats.cpm || 0,
-      wpm: liveStats.wpm || 0,
-      accuracy: liveStats.accuracy || 0,
-      consistency: liveStats.consistency || 0,
-      keystrokes: keystrokes,
-      mistakes: mistakes,
-      language,
-      textType,
-      mode: testMode,
-      target: testTarget,
-      device: 'desktop' as const,
-      id: `session_${Date.now()}`,
-      rawWpm: liveStats.rawWpm || 0,
-      rawCpm: liveStats.rawCpm || 0,
-    });
-
-    // TODO: 고스트 모드 기록 저장 구현 필요
-    // if (ghostModeEnabled) {
-    //   ghostModeManager.saveCurrentSession(...);
-    // }
+    console.log('📊 TypingTestController: 통계 계산 완료 (저장 제외)');
 
     return liveStats;
-  }, [isCompleted, firstKeystrokeTime, calculateStats, recordTest, keystrokes, mistakes.length, language, textType, testMode, testTarget, ghostModeEnabled, targetText]);
+  }, [isCompleted, firstKeystrokeTime, calculateStats, keystrokes, mistakes.length, startTime, currentIndex, textType, targetText, userInput, liveStats]);
 
   return {
     // 상태
@@ -189,6 +170,7 @@ export function useTypingTestController() {
     isActive,
     isPaused,
     isCompleted,
+    isCountingDown,
     
     // 액션
     handleRestart,

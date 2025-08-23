@@ -23,6 +23,8 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     showPromotionModal, 
     promotionData, 
     closePromotionModal, 
+    handleContinueTest,
+    handleViewStats,
     getWordProgress,
     handleTestCompletion 
   } = useTestCompletionHandler();
@@ -36,38 +38,55 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     }
   }, [controller.targetText, controller.handleRestart]);
 
-  // 테스트 완료 시 처리
-  useEffect(() => {
-    if (controller.isCompleted) {
-      const finalStats = controller.handleTestCompletion();
-      if (finalStats) {
-        // 최종 통계를 사용한 추가 처리가 필요하다면 여기서
-      }
-    }
-  }, [controller.isCompleted, controller.handleTestCompletion]);
+  // 테스트 완료 시 처리는 TestCompletionHandler에서 담당
+  // (중복 제거: controller.handleTestCompletion은 더 이상 호출하지 않음)
 
-  // Shift+Enter 글로벌 단축키 처리
+  // 글로벌 키보드 단축키 처리
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      // Shift+Enter 조합 감지
+      // ESC 키: 일시정지
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (controller.isActive && !controller.isPaused) {
+          controller.pauseTest();
+        }
+        return;
+      }
+
+      // Shift + Enter: 새로고침
       if (event.shiftKey && event.key === 'Enter') {
         event.preventDefault();
-        console.log("🚀 Shift+Enter detected - Restarting test");
         controller.handleRestart();
+        return;
+      }
+
+      // 테스트 시작 (아무 키)
+      if (!controller.isActive && !controller.isCompleted && !controller.isCountingDown) {
+        // 특수키는 제외 (Shift, Ctrl, Alt, Meta, Tab, F1-F12 등)
+        if (!event.ctrlKey && !event.altKey && !event.metaKey && 
+            !['Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock', 'ContextMenu'].includes(event.key) &&
+            !event.key.startsWith('F')) {
+          event.preventDefault();
+          controller.handleStart();
+          return;
+        }
+      }
+
+      // 일시정지 상태에서 아무 키로 재개
+      if (controller.isPaused) {
+        if (!event.ctrlKey && !event.altKey && !event.metaKey && 
+            !['Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock', 'ContextMenu'].includes(event.key) &&
+            !event.key.startsWith('F')) {
+          event.preventDefault();
+          controller.resumeTest();
+          return;
+        }
       }
     };
 
-    document.addEventListener("keydown", handleGlobalKeyDown, {
-      capture: true,
-      passive: false
-    });
-
-    return () => {
-      document.removeEventListener("keydown", handleGlobalKeyDown, {
-        capture: true
-      });
-    };
-  }, [controller.handleRestart]);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [controller]);
 
   return (
     <TypingTestUI
@@ -88,6 +107,8 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       showPromotionModal={showPromotionModal}
       promotionData={promotionData}
       closePromotionModal={closePromotionModal}
+      handleContinueTest={handleContinueTest}
+      handleViewStats={handleViewStats}
       
       // 액션 핸들러 전달
       onStart={controller.handleStart}

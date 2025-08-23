@@ -69,6 +69,17 @@ interface UserProgress {
   totalPracticeTime: number // 총 연습 시간 (초)
   averageSpeed: number // 평균 속도 (CPM)
   ranking: number // 상위 몇 퍼센트
+  
+  // 마지막 테스트 결과 (TestResultChart용)
+  lastTestResult: {
+    cpm: number
+    wpm: number
+    accuracy: number
+    timeElapsed: number
+    mistakes: Array<{position: number, expected: string, actual: string}>
+    targetText: string
+    userInput: string
+  } | null
 }
 
 interface UserProgressStore extends UserProgress {
@@ -76,6 +87,10 @@ interface UserProgressStore extends UserProgress {
   userId: string | null
   isLoading: boolean
   error: string | null
+  
+  // 중복 저장 방지를 위한 락
+  isRecording: boolean
+  lastRecordTime: number
   
   // Actions
   initializeUser: () => Promise<void>
@@ -116,6 +131,7 @@ const initialState: UserProgress = {
   totalPracticeTime: 0,
   averageSpeed: 0,
   ranking: 0,
+  lastTestResult: null,
 }
 
 const API_BASE = '/api/progress'
@@ -127,34 +143,73 @@ export const useUserProgressStore = create<UserProgressStore>()(
       userId: null,
       isLoading: false,
       error: null,
+      
+      // 🔐 중복 저장 방지 초기값
+      isRecording: false,
+      lastRecordTime: 0,
 
       initializeUser: async () => {
         const state = get()
-        if (state.userId) return
+        
+        // SSR 안전성: localStorage 접근 전 클라이언트 환경 확인
+        if (typeof window === 'undefined') {
+          console.warn('initializeUser called on server-side, skipping')
+          return
+        }
+
+        // 💾 이미 userId가 있고 데이터도 있으면 재초기화 스킵
+        if (state.userId && state.totalTests > 0) {
+          console.log('🔄 User already initialized with data, skipping')
+          return
+        }
 
         // localStorage에서 userId 확인 또는 새로 생성
-        let userId = localStorage.getItem('ktypes-user-id')
+        let userId: string | null = null
+        try {
+          userId = localStorage.getItem('ktypes-user-id')
+          console.log('📱 localStorage userId:', userId)
+        } catch (error) {
+          console.warn('localStorage not available:', error)
+        }
         
         if (!userId) {
           try {
             const response = await axios.get(API_BASE)
             userId = response.data.userId
-            localStorage.setItem('ktypes-user-id', userId || '')
+            console.log('🌐 Server userId:', userId)
+            try {
+              localStorage.setItem('ktypes-user-id', userId || '')
+            } catch (error) {
+              console.warn('localStorage write failed:', error)
+            }
           } catch (error) {
             console.error('Failed to initialize user:', error)
             // 오프라인 모드일 때 임시 ID 생성
             userId = `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-            localStorage.setItem('ktypes-user-id', userId || '')
+            console.log('🔌 Offline userId:', userId)
+            try {
+              localStorage.setItem('ktypes-user-id', userId || '')
+            } catch (error) {
+              console.warn('localStorage write failed:', error)
+            }
           }
         }
 
+        // userId 설정
         set({ userId })
+        console.log('👤 User ID set:', userId)
+        
+        // 서버에서 진행률 가져오기 (있으면)
         await get().fetchProgress()
       },
 
       fetchProgress: async () => {
-        const { userId } = get()
-        if (!userId) return
+        const state = get()
+        const { userId } = state
+        if (!userId) {
+          console.log('❌ fetchProgress: No userId')
+          return
+        }
 
         set({ isLoading: true, error: null })
 
@@ -164,34 +219,40 @@ export const useUserProgressStore = create<UserProgressStore>()(
           })
 
           if (response.data.progress) {
-            const progress = response.data.progress
-            set({
-              bestCPM: progress.bestCPM || 0,
-              bestWPM: progress.bestWPM || 0,
-              bestAccuracy: progress.bestAccuracy || 0,
-              bestConsistency: progress.bestConsistency || 0,
-              totalTests: progress.totalTests || 0,
-              totalTime: progress.totalTime || 0,
-              totalWords: progress.totalWords || 0,
-              totalKeystrokes: progress.totalKeystrokes || 0,
-              totalMistakes: progress.totalMistakes || 0,
-              averageCPM: progress.averageCPM || 0,
-              averageWPM: progress.averageWPM || 0,
-              averageAccuracy: progress.averageAccuracy || 0,
-              averageConsistency: progress.averageConsistency || 0,
-              improvementTrend: progress.improvementTrend || [],
-              lastTestDate: progress.lastTestDate ? new Date(progress.lastTestDate) : null,
-              weakCharacters: progress.weakCharacters || [],
-              commonMistakes: progress.commonMistakes || [],
-              recentTests: progress.recentTests || [],
-              currentStreak: progress.currentStreak || 0,
-              longestStreak: progress.longestStreak || 0,
-              lastStreakDate: progress.lastStreakDate ? new Date(progress.lastStreakDate) : null,
-            })
+            const serverProgress = response.data.progress
+            const localProgress = state
+            
+            // 🔄 로컬과 서버 데이터 병합 (최신 것 우선)
+            const mergedProgress = {
+              bestCPM: Math.max(serverProgress.bestCPM || 0, localProgress.bestCPM || 0),
+              bestWPM: Math.max(serverProgress.bestWPM || 0, localProgress.bestWPM || 0),
+              bestAccuracy: Math.max(serverProgress.bestAccuracy || 0, localProgress.bestAccuracy || 0),
+              bestConsistency: Math.max(serverProgress.bestConsistency || 0, localProgress.bestConsistency || 0),
+              totalTests: Math.max(serverProgress.totalTests || 0, localProgress.totalTests || 0),
+              totalTime: Math.max(serverProgress.totalTime || 0, localProgress.totalTime || 0),
+              totalWords: Math.max(serverProgress.totalWords || 0, localProgress.totalWords || 0),
+              totalKeystrokes: Math.max(serverProgress.totalKeystrokes || 0, localProgress.totalKeystrokes || 0),
+              totalMistakes: serverProgress.totalMistakes || localProgress.totalMistakes || 0,
+              averageCPM: serverProgress.averageCPM || localProgress.averageCPM || 0,
+              averageWPM: serverProgress.averageWPM || localProgress.averageWPM || 0,
+              averageAccuracy: serverProgress.averageAccuracy || localProgress.averageAccuracy || 0,
+              averageConsistency: serverProgress.averageConsistency || localProgress.averageConsistency || 0,
+              improvementTrend: serverProgress.improvementTrend || localProgress.improvementTrend || [],
+              lastTestDate: serverProgress.lastTestDate ? new Date(serverProgress.lastTestDate) : (localProgress.lastTestDate || null),
+              weakCharacters: serverProgress.weakCharacters || localProgress.weakCharacters || [],
+              commonMistakes: serverProgress.commonMistakes || localProgress.commonMistakes || [],
+              recentTests: serverProgress.recentTests || localProgress.recentTests || [],
+              currentStreak: Math.max(serverProgress.currentStreak || 0, localProgress.currentStreak || 0),
+              longestStreak: Math.max(serverProgress.longestStreak || 0, localProgress.longestStreak || 0),
+              lastStreakDate: serverProgress.lastStreakDate ? new Date(serverProgress.lastStreakDate) : (localProgress.lastStreakDate || null),
+            }
+            
+            set(mergedProgress)
+            console.log('🔄 Progress merged from server:', mergedProgress)
           }
         } catch (error) {
-          // API 에러 시 조용히 실패 - 로컬 스토리지 데이터만 사용
-          console.log('Using local storage only - API not available')
+          // API 에러 시 로컬 스토리지 데이터 유지
+          console.log('📱 Using localStorage data only - API not available')
           set({ error: null })  // 에러 메시지 표시 안함
         } finally {
           set({ isLoading: false })
@@ -199,25 +260,38 @@ export const useUserProgressStore = create<UserProgressStore>()(
       },
 
       recordTest: async (session: TypingSession) => {
-        // 실제 타이핑한 단어 수 계산 (현재 위치 기반)
-        const actualWordsTyped = Math.max(1, Math.ceil(session.keystrokes.length / 5))
+        const currentTime = Date.now();
+        const state = get();
         
-        // newRecord를 먼저 생성
-        const newRecord: TestRecord = {
-          id: `test-${Date.now()}`,
-          date: new Date(),
-          mode: session.mode,
-          textType: session.textType,
-          language: session.language,
-          duration: session.duration || 0,
-          wordsTyped: actualWordsTyped,
-          cpm: session.cpm,  // TestResult에서 표시하는 것과 동일한 값
-          wpm: session.wpm,
-          accuracy: session.accuracy,
-          consistency: session.consistency || 0,
-          mistakes: session.mistakes.length,
-          keystrokes: session.keystrokes.length,
+        // 🔐 중복 호출 방지: 이미 처리 중이거나 1초 이내 재호출
+        if (state.isRecording || (currentTime - state.lastRecordTime < 1000)) {
+          console.log('⚠️ UserProgressStore: 중복 recordTest 호출 차단');
+          return;
         }
+
+        // 🔐 처리 시작
+        set({ isRecording: true, lastRecordTime: currentTime });
+
+        try {
+          // 실제 타이핑한 단어 수 계산 (현재 위치 기반)
+          const actualWordsTyped = Math.max(1, Math.ceil(session.keystrokes.length / 5))
+          
+          // newRecord를 먼저 생성
+          const newRecord: TestRecord = {
+            id: session.id || `test-${currentTime}`,
+            date: new Date(),
+            mode: session.mode,
+            textType: session.textType,
+            language: session.language,
+            duration: session.duration || 0,
+            wordsTyped: actualWordsTyped,
+            cpm: session.cpm,
+            wpm: session.wpm,
+            accuracy: session.accuracy,
+            consistency: session.consistency || 0,
+            mistakes: session.mistakes.length,
+            keystrokes: session.keystrokes.length,
+          }
 
         set((state) => {
           // 최근 테스트 기록 업데이트 (최대 50개 유지)
@@ -237,13 +311,57 @@ export const useUserProgressStore = create<UserProgressStore>()(
           const totalMistakes = state.totalMistakes + session.mistakes.length
 
           // 평균 통계 계산
-          const averageCPM = totalKeystrokes / (totalTime / 60)
-          const averageWPM = totalWords / (totalTime / 60)
-          const averageAccuracy = ((totalKeystrokes - totalMistakes) / totalKeystrokes) * 100
-          const averageConsistency = recentTests.reduce((sum, t) => sum + t.consistency, 0) / recentTests.length
+          const averageCPM = totalTime > 0 ? totalKeystrokes / (totalTime / 60) : 0
+          const averageWPM = totalTime > 0 ? totalWords / (totalTime / 60) : 0
+          const averageAccuracy = totalKeystrokes > 0 ? ((totalKeystrokes - totalMistakes) / totalKeystrokes) * 100 : 0
+          const averageConsistency = recentTests.length > 0 ? recentTests.reduce((sum, t) => sum + t.consistency, 0) / recentTests.length : 0
 
           // 향상도 추적 업데이트 (최근 10개)
           const improvementTrend = [session.wpm, ...state.improvementTrend].slice(0, 10)
+
+          // 향상도 계산
+          const improvementRate = (() => {
+            if (improvementTrend.length < 2) return 0
+            const recent = improvementTrend.slice(0, Math.min(5, improvementTrend.length))
+            const older = improvementTrend.slice(Math.min(5, improvementTrend.length))
+            if (older.length === 0) return 0
+            const recentAvg = recent.reduce((sum, wpm) => sum + wpm, 0) / recent.length
+            const olderAvg = older.reduce((sum, wpm) => sum + wpm, 0) / older.length
+            return olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0
+          })()
+
+          // 인사이트 섹션용 데이터 계산
+          const totalPracticeTime = totalTime // 총 연습시간 (초)
+          const averageSpeed = Math.round(averageCPM) // 평균 타수 (CPM, 반올림)
+          
+          // 백분위 계산 (임시로 베스트 CPM 기반 계산)
+          // 실제로는 전체 사용자 데이터와 비교해야 하지만, 여기서는 간단한 추정치 사용
+          const ranking = (() => {
+            if (bestCPM >= 400) return 95 // 상위 5%
+            if (bestCPM >= 350) return 90 // 상위 10%
+            if (bestCPM >= 300) return 80 // 상위 20%
+            if (bestCPM >= 250) return 70 // 상위 30%
+            if (bestCPM >= 200) return 60 // 상위 40%
+            if (bestCPM >= 150) return 50 // 상위 50%
+            if (bestCPM >= 100) return 40 // 상위 60%
+            if (bestCPM >= 50) return 30  // 상위 70%
+            return Math.max(10, Math.min(25, Math.round(bestCPM / 2))) // 최소 10%, 최대 25%
+          })()
+
+          // 마지막 테스트 결과 저장 (TestResultChart용)
+          const lastTestResult = {
+            cpm: session.cpm,
+            wpm: session.wpm,
+            accuracy: session.accuracy,
+            timeElapsed: session.duration || 0,
+            mistakes: session.mistakes.map(m => ({
+              position: m.position,
+              expected: m.expected,
+              actual: m.actual
+            })),
+            targetText: session.targetText || '',
+            userInput: session.userInput || ''
+          }
 
           return {
             ...state,
@@ -263,24 +381,41 @@ export const useUserProgressStore = create<UserProgressStore>()(
             improvementTrend,
             lastTestDate: new Date(),
             recentTests,
+            improvementRate,
+            totalPracticeTime,
+            averageSpeed,
+            ranking,
+            lastTestResult,
           }
         })
 
         // 스트릭 업데이트
         get().updateStreak()
 
-        // 서버에 저장
-        const { userId } = get()
-        if (userId && !userId.startsWith('offline-')) {
-          try {
-            await axios.post(API_BASE, {
-              userId,
-              testRecord: newRecord
-            })
-          } catch (error) {
-            console.error('Failed to save test to server:', error)
-            // 서버 저장 실패해도 로컬은 유지
+          // 서버에 저장
+          const currentState = get();
+          const { userId } = currentState;
+          if (userId && !userId.startsWith('offline-')) {
+            try {
+              await axios.post(API_BASE, {
+                userId,
+                testRecord: newRecord
+              })
+              console.log('✅ UserProgressStore: 서버 저장 완료');
+            } catch (error) {
+              console.error('❌ UserProgressStore: 서버 저장 실패', error);
+              // 서버 저장 실패해도 로컬은 유지
+            }
           }
+
+          console.log('✅ UserProgressStore: recordTest 완료');
+
+        } catch (error) {
+          console.error('❌ UserProgressStore: recordTest 실패', error);
+          throw error;
+        } finally {
+          // 🔐 처리 완료 (락 해제)
+          set({ isRecording: false });
         }
       },
 
@@ -430,6 +565,10 @@ export const useUserProgressStore = create<UserProgressStore>()(
     {
       name: 'user-progress',
       partialize: (state) => ({
+        // 🔐 중요: userId 포함하여 사용자 식별 유지
+        userId: state.userId,
+        
+        // 기본 통계
         bestCPM: state.bestCPM,
         bestWPM: state.bestWPM,
         bestAccuracy: state.bestAccuracy,
@@ -445,12 +584,23 @@ export const useUserProgressStore = create<UserProgressStore>()(
         averageConsistency: state.averageConsistency,
         improvementTrend: state.improvementTrend,
         lastTestDate: state.lastTestDate,
+        
+        // 분석 데이터
         weakCharacters: state.weakCharacters,
         commonMistakes: state.commonMistakes,
         recentTests: state.recentTests,
+        
+        // 스트릭 데이터
         currentStreak: state.currentStreak,
         longestStreak: state.longestStreak,
         lastStreakDate: state.lastStreakDate,
+        
+        // 인사이트 섹션 데이터 (누락되었던 부분)
+        improvementRate: state.improvementRate,
+        totalPracticeTime: state.totalPracticeTime,
+        averageSpeed: state.averageSpeed,
+        ranking: state.ranking,
+        lastTestResult: state.lastTestResult,
       }),
     }
   )

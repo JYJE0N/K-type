@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 
 interface ProgressSliderProps {
   value: number; // 0-100 사이의 값
@@ -9,6 +9,7 @@ interface ProgressSliderProps {
   customLabel?: string; // 커스텀 라벨 (퍼센테이지 대신)
   size?: 'sm' | 'md' | 'lg';
   variant?: 'primary' | 'success' | 'warning' | 'info';
+  animated?: boolean; // 스크롤 애니메이션 여부
 }
 
 /**
@@ -21,13 +22,55 @@ export function ProgressSlider({
   showLabel = true,
   customLabel,
   size = 'md',
-  variant = 'primary'
+  variant = 'primary',
+  animated = false
 }: ProgressSliderProps) {
+  
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animatedValue, setAnimatedValue] = useState(0);
   
   // 값 범위 제한 (0-100)
   const normalizedValue = useMemo(() => {
     return Math.min(100, Math.max(0, value));
   }, [value]);
+
+  // 스크롤 애니메이션을 위한 Intersection Observer
+  useEffect(() => {
+    if (!animated) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sliderRef.current) {
+      observer.observe(sliderRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [animated, isVisible]);
+
+  // 애니메이션 값 업데이트
+  useEffect(() => {
+    if (!animated) {
+      setAnimatedValue(normalizedValue);
+      return;
+    }
+
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        setAnimatedValue(normalizedValue);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, normalizedValue, animated]);
+
+  const displayValue = animated ? animatedValue : normalizedValue;
 
   // 크기별 스타일
   const sizeClasses = {
@@ -48,22 +91,26 @@ export function ProgressSlider({
     }
   };
 
-  // 색상별 스타일
+  // 색상별 스타일 (그라데이션 포함)
   const variantClasses = {
     primary: {
-      fill: "bg-interactive-primary",
+      fill: "",
+      gradient: "linear-gradient(90deg, var(--color-interactive-secondary), var(--color-interactive-primary))",
       thumb: "bg-white border-white"
     },
     success: {
       fill: "bg-feedback-success",
+      gradient: "",
       thumb: "bg-white border-white"
     },
     warning: {
-      fill: "bg-feedback-warning", 
+      fill: "bg-feedback-warning",
+      gradient: "", 
       thumb: "bg-white border-white"
     },
     info: {
       fill: "bg-feedback-info",
+      gradient: "",
       thumb: "bg-white border-white"
     }
   };
@@ -72,36 +119,50 @@ export function ProgressSlider({
   const variantStyle = variantClasses[variant];
 
   return (
-    <div className={`progress-slider relative mx-auto ${className}`} style={{ width: '45%', minWidth: '200px', maxWidth: '300px' }}>
+    <div 
+      ref={sliderRef}
+      className={`progress-slider relative mx-auto ${className}`} 
+      style={{ 
+        width: `${animated ? '70%' : '50%'} !important`, 
+        minWidth: `${animated ? '250px' : '200px'} !important`, 
+        maxWidth: `${animated ? '400px' : '300px'} !important` 
+      }}
+    >
       {/* 슬라이더 트랙 */}
-      <div className={`slider-track relative w-full ${sizeStyle.track} bg-border rounded-full`}>
+      <div className={`slider-track relative ${sizeStyle.track} bg-border rounded-full`} style={{ width: '100%' }}>
         {/* 진행 바 */}
         <div 
-          className={`slider-fill ${sizeStyle.track} ${variantStyle.fill} rounded-full transition-all duration-300 ease-out`}
-          style={{ width: `${normalizedValue}%` }}
+          className={`slider-fill ${sizeStyle.track} ${variantStyle.fill} rounded-full transition-all ease-out z-10`}
+          style={{ 
+            width: `${displayValue}%`,
+            background: variantStyle.gradient || undefined,
+            transitionDuration: animated ? '1200ms' : '300ms'
+          }}
         />
       </div>
       
       {/* 슬라이더 썸 (동그란 핸들) - 트랙 위에 별도 레이어 */}
       <div 
-        className={`slider-thumb absolute top-1/2 ${sizeStyle.thumb} ${variantStyle.thumb} border-2 rounded-full shadow-lg transition-all duration-300 ease-out z-10`}
+        className={`slider-thumb absolute top-1/2 ${sizeStyle.thumb} ${variantStyle.thumb} border-2 rounded-full shadow-lg transition-all ease-out z-20`}
         style={{ 
-          left: `${normalizedValue}%`,
-          transform: 'translate(-50%, -50%)'
+          left: `${displayValue}%`,
+          transform: 'translate(-50%, -50%)',
+          transitionDuration: animated ? '1200ms' : '300ms'
         }}
       />
 
       {/* 진행율 라벨 (썸과 중앙정렬) */}
       {showLabel && (
         <div 
-          className={`progress-label absolute ${sizeStyle.label} font-mono font-bold text-text-primary bg-surface px-3 py-2 rounded shadow-md border border-border transition-all duration-300 ease-out z-20`}
+          className={`progress-label absolute ${sizeStyle.label} font-mono font-bold text-text-primary bg-surface px-3 py-2 rounded shadow-md border border-border transition-all ease-out z-30`}
           style={{ 
-            left: `${normalizedValue}%`,
+            left: `${displayValue}%`,
             transform: 'translateX(-50%)',
-            top: '-48px'
+            top: '-48px',
+            transitionDuration: animated ? '1200ms' : '300ms'
           }}
         >
-          {customLabel || `${Math.round(normalizedValue)}%`}
+          {customLabel || `${Math.round(displayValue)}%`}
         </div>
       )}
     </div>

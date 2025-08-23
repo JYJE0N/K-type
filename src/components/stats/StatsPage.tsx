@@ -19,17 +19,18 @@ import { InsightsSection } from "./InsightsSection";
 export function StatsPage() {
   const { isCompleted } = useTypingStore();
   const { liveStats } = useStatsStore();
-  const { language, testMode, testTarget, sentenceLength, sentenceStyle } = useSettingsStore();
-  const { 
-    bestWPM, 
-    bestCPM, 
-    recentTests, 
-    improvementRate, 
-    totalTests, 
-    totalPracticeTime, 
-    averageSpeed, 
+  const { language, testMode, testTarget, sentenceLength, sentenceStyle } =
+    useSettingsStore();
+  const {
+    bestWPM,
+    bestCPM,
+    recentTests,
+    improvementRate,
+    totalTests,
+    totalPracticeTime,
+    averageSpeed,
     totalKeystrokes,
-    ranking 
+    ranking,
   } = useUserProgressStore();
 
   const [mounted, setMounted] = useState(false);
@@ -42,10 +43,11 @@ export function StatsPage() {
   }, []);
 
   // 테스트 결과 데이터 확인
-  const hasStatsData = liveStats && 
-    typeof liveStats.cpm === 'number' && 
-    typeof liveStats.wpm === 'number' && 
-    typeof liveStats.accuracy === 'number' &&
+  const hasStatsData =
+    liveStats &&
+    typeof liveStats.cpm === "number" &&
+    typeof liveStats.wpm === "number" &&
+    typeof liveStats.accuracy === "number" &&
     liveStats.cpm > 0;
 
   // 상태 업데이트
@@ -53,18 +55,25 @@ export function StatsPage() {
     if (mounted) {
       setHasRecentTests(recentTests.length > 0);
     }
-  }, [mounted, isCompleted, hasStatsData, liveStats, improvementRate, recentTests.length]);
+  }, [
+    mounted,
+    isCompleted,
+    hasStatsData,
+    liveStats,
+    improvementRate,
+    recentTests.length,
+  ]);
 
   // 재도전 핸들러
   const handleRestart = useCallback(() => {
-    console.log('🔄 Starting new test');
-    
+    console.log("🔄 Starting new test");
+
     const { resetTest } = useTypingStore.getState();
     const { resetStats } = useStatsStore.getState();
-    
+
     resetTest();
     resetStats();
-    
+
     window.location.href = "/";
   }, []);
 
@@ -84,16 +93,22 @@ export function StatsPage() {
   }, [handleRestart]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 lg:px-8 font-korean" 
-         style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
-      
+    <div
+      className="w-full max-w-6xl mx-auto px-4 lg:px-8 font-korean"
+      style={{
+        paddingTop: "var(--spacing-8)",
+        paddingBottom: "var(--spacing-8)",
+      }}
+    >
       {/* 타이틀 및 컨텍스트 */}
       <StatsHeader
-        language={language as 'korean' | 'english'}
-        testMode={testMode as 'words' | 'sentences'}
+        language={language as "korean" | "english"}
+        testMode={testMode as "words" | "sentences"}
         testTarget={testTarget}
         sentenceLength={sentenceLength}
-        sentenceStyle={sentenceStyle as 'plain' | 'punctuation' | 'numbers' | 'mixed'}
+        sentenceStyle={
+          sentenceStyle as "plain" | "punctuation" | "numbers" | "mixed"
+        }
       />
 
       {/* 섹션 1: 테스트 결과 */}
@@ -129,32 +144,32 @@ export function StatsPage() {
         totalKeystrokes={totalKeystrokes}
         ranking={ranking}
         mounted={mounted}
+        primaryMetric={primaryMetric}
       />
 
       {/* 하단 액션 버튼 */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
+      <div className="flex justify-center items-center mt-12">
         <button
           onClick={handleRestart}
           className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
           style={{
-            backgroundColor: 'var(--color-interactive-primary)',
-            color: 'white',
-            boxShadow: 'var(--chart-shadow-heavy)'
+            backgroundColor: "var(--color-interactive-primary)",
+            color: "white",
+            boxShadow: "var(--chart-shadow-heavy)",
           }}
         >
           <IoPlay className="w-5 h-5" />
           연습 계속하기
         </button>
-
-        <div className="text-center">
-          <p className="stats-caption">
-            Shift + Tab 또는 Shift + Enter로 빠른 재시작
-          </p>
-        </div>
       </div>
 
       {/* 키보드 단축키 안내 */}
-      <KeyboardShortcuts />
+      <div className="flex justify-center mt-6">
+        <KeyboardShortcuts
+          showRestart={true}
+          showContinue={true}
+        />
+      </div>
     </div>
   );
 }

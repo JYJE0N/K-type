@@ -10,6 +10,8 @@ interface PromotionModalProps {
   toTier: TierConfig;
   onClose: () => void;
   onComplete?: () => void;
+  onContinue?: () => void; // 계속하기 (새 테스트 시작)
+  onViewStats?: () => void; // 자세히보기 (통계 페이지로)
 }
 
 export function PromotionModal({
@@ -17,7 +19,9 @@ export function PromotionModal({
   fromTier,
   toTier,
   onClose,
-  onComplete
+  onComplete,
+  onContinue,
+  onViewStats
 }: PromotionModalProps) {
   const [animationStep, setAnimationStep] = useState<'entering' | 'celebrating' | 'revealing' | 'complete'>('entering');
   const [showConfetti, setShowConfetti] = useState(false);
@@ -70,7 +74,13 @@ export function PromotionModal({
         
         {/* 닫기 버튼 */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            if (onViewStats) {
+              onViewStats();
+            } else {
+              onClose();
+            }
+          }}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-text-tertiary bg-opacity-20 hover:bg-opacity-30 transition-colors"
         >
           <X className="w-4 h-4 text-text-secondary" />
@@ -202,15 +212,24 @@ export function PromotionModal({
               {animationStep === 'complete' && (
                 <div className="flex gap-3">
                   <button
-                    onClick={onClose}
+                    onClick={() => {
+                      if (onContinue) {
+                        onContinue();
+                      } else {
+                        onClose();
+                      }
+                    }}
                     className="flex-1 btn btn-secondary"
                   >
                     계속하기
                   </button>
                   <button
                     onClick={() => {
-                      // 통계 페이지로 이동하거나 다른 액션
-                      onClose();
+                      if (onViewStats) {
+                        onViewStats();
+                      } else {
+                        onClose();
+                      }
                     }}
                     className="flex-1 btn btn-primary"
                   >

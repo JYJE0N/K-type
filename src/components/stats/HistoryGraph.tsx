@@ -8,6 +8,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { useUserProgressStore } from "@/stores/userProgressStore";
@@ -54,11 +55,20 @@ export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
   if (data.length === 0) {
     return (
       <div className="w-full">
-        <div className="bg-background rounded-lg p-4 h-64 flex items-center justify-center">
-          <div className="text-center text-secondary">
+        <div 
+          className="rounded-lg p-4 h-64 flex items-center justify-center"
+          style={{ backgroundColor: "var(--color-background)" }}
+        >
+          <div 
+            className="text-center"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
             <div className="text-4xl mb-4">📊</div>
             <p className="text-sm">아직 테스트 기록이 없습니다</p>
-            <p className="caption text-muted mt-2">
+            <p 
+              className="text-xs mt-2"
+              style={{ color: "var(--color-text-tertiary)" }}
+            >
               테스트를 완료하면 여기에 성과 추이가 표시됩니다
             </p>
           </div>
@@ -69,7 +79,10 @@ export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
 
   return (
     <div className="w-full">
-      <div className="h-64 bg-background rounded-lg p-4 mb-4 flex items-center justify-center">
+      <div 
+        className="h-80 rounded-lg p-4 mb-4 flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-background)" }}
+      >
         <div className="w-full h-full">
           <ResponsiveContainer
             width="100%"
@@ -116,21 +129,39 @@ export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
                 }}
                 labelFormatter={(label) => `테스트 #${label}`}
               />
+              
+              <Legend 
+                wrapperStyle={{
+                  paddingTop: "20px",
+                  color: "var(--color-text-primary)",
+                }}
+                iconType="line"
+                formatter={(value) => {
+                  if (value === "cpm") return "CPM";
+                  if (value === "wpm") return "WPM";
+                  if (value === "accuracy") return "정확도 (%)";
+                  return value;
+                }}
+              />
 
               <Line
                 type="monotone"
                 dataKey="cpm"
                 stroke="var(--color-interactive-primary)"
                 strokeWidth={3}
-                dot={{ fill: "var(--color-interactive-primary)", strokeWidth: 2, r: 4 }}
+                dot={{ 
+                  fill: "var(--color-interactive-primary)", 
+                  strokeWidth: 2, 
+                  r: 5,
+                  stroke: "var(--color-background)"
+                }}
                 activeDot={{
-                  r: 6,
+                  r: 8,
                   stroke: "var(--color-interactive-primary)",
                   strokeWidth: 3,
                   fill: "var(--color-background)",
                 }}
                 connectNulls={true}
-                name="cpm"
               />
 
               <Line
@@ -138,15 +169,19 @@ export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
                 dataKey="wpm"
                 stroke="var(--color-interactive-secondary)"
                 strokeWidth={2}
-                dot={{ fill: "var(--color-interactive-secondary)", strokeWidth: 2, r: 3 }}
+                dot={{ 
+                  fill: "var(--color-interactive-secondary)", 
+                  strokeWidth: 2, 
+                  r: 4,
+                  stroke: "var(--color-background)"
+                }}
                 activeDot={{
-                  r: 5,
+                  r: 7,
                   stroke: "var(--color-interactive-secondary)",
                   strokeWidth: 2,
                   fill: "var(--color-background)",
                 }}
                 connectNulls={true}
-                name="wpm"
               />
 
               <Line
@@ -154,36 +189,22 @@ export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
                 dataKey="accuracy"
                 stroke="var(--color-feedback-success)"
                 strokeWidth={2}
-                dot={{ fill: "var(--color-feedback-success)", strokeWidth: 2, r: 3 }}
+                dot={{ 
+                  fill: "var(--color-feedback-success)", 
+                  strokeWidth: 2, 
+                  r: 4,
+                  stroke: "var(--color-background)"
+                }}
                 activeDot={{
-                  r: 5,
+                  r: 7,
                   stroke: "var(--color-feedback-success)",
                   strokeWidth: 2,
                   fill: "var(--color-background)",
                 }}
                 connectNulls={true}
-                name="accuracy"
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* 범례 */}
-      <div className="bg-surface rounded-lg p-4 border border-opacity-20 border-interactive-primary">
-        <div className="flex justify-center items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full shadow-sm bg-interactive-primary"></div>
-            <span className="text-sm text-primary font-medium">CPM</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full shadow-sm bg-interactive-secondary"></div>
-            <span className="text-sm text-primary font-medium">WPM</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full shadow-sm bg-feedback-success"></div>
-            <span className="text-sm text-primary font-medium">정확도 (%)</span>
-          </div>
         </div>
       </div>
     </div>

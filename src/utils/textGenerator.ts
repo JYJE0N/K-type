@@ -40,7 +40,7 @@ export class TextGenerator {
     return this.generatePlainWords(count) // 기본값
   }
 
-  // 순수 단어 생성 (구두점, 숫자 제외)
+  // 순수 단어 생성 (구두점, 숫자 제외) - 중복 방지
   private generatePlainWords(count: number): string {
     const words = this.languagePack.wordLists.plain
     const selectedWords: string[] = []
@@ -48,9 +48,23 @@ export class TextGenerator {
     console.log(`📝 순수 단어 생성 - 개수: ${count}`)
     console.log(`📝 사용 가능한 단어 수: ${words.length}`)
 
+    // 사용 가능한 단어 풀 복사 (중복 방지를 위해)
+    const availableWords = [...words]
+
     for (let i = 0; i < count; i++) {
-      const randomWord = words[Math.floor(Math.random() * words.length)]
-      selectedWords.push(randomWord)
+      if (availableWords.length === 0) {
+        // 모든 단어를 사용했으면 풀을 다시 채움
+        availableWords.push(...words)
+        console.log(`📝 단어 풀 리셋 - ${i + 1}번째 단어부터 재사용`)
+      }
+
+      // 랜덤 인덱스 선택 후 해당 단어 제거
+      const randomIndex = Math.floor(Math.random() * availableWords.length)
+      const selectedWord = availableWords[randomIndex]
+      selectedWords.push(selectedWord)
+      
+      // 사용된 단어를 풀에서 제거
+      availableWords.splice(randomIndex, 1)
     }
 
     const result = selectedWords.join(' ')
@@ -58,7 +72,7 @@ export class TextGenerator {
     return result
   }
 
-  // 길이와 스타일에 따른 문장 생성
+  // 길이와 스타일에 따른 문장 생성 - 중복 방지
   private generateSentencesByLengthAndStyle(
     length: SentenceLength, 
     style: SentenceStyle, 
@@ -73,9 +87,23 @@ export class TextGenerator {
 
     const selectedSentences: string[] = []
     
+    // 사용 가능한 문장 풀 복사 (중복 방지를 위해)
+    const availableSentences = [...sentences]
+    
     for (let i = 0; i < count; i++) {
-      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
-      selectedSentences.push(randomSentence)
+      if (availableSentences.length === 0) {
+        // 모든 문장을 사용했으면 풀을 다시 채움
+        availableSentences.push(...sentences)
+        console.log(`📝 문장 풀 리셋 - ${i + 1}번째 문장부터 재사용`)
+      }
+
+      // 랜덤 인덱스 선택 후 해당 문장 제거
+      const randomIndex = Math.floor(Math.random() * availableSentences.length)
+      const selectedSentence = availableSentences[randomIndex]
+      selectedSentences.push(selectedSentence)
+      
+      // 사용된 문장을 풀에서 제거
+      availableSentences.splice(randomIndex, 1)
     }
 
     const result = selectedSentences.join(' ')
@@ -114,7 +142,7 @@ export class TextGenerator {
     }
   }
 
-  // 순수 단어만 생성 (구두점, 숫자 제외) - 레거시 호환성
+  // 순수 단어만 생성 (구두점, 숫자 제외) - 레거시 호환성, 중복 방지
   private generateWords(count: number): string {
     // 새로운 구조 우선 시도
     const words = this.languagePack.wordLists.plain || []
@@ -130,9 +158,23 @@ export class TextGenerator {
     console.log(`📝 사용 가능한 단어 수: ${words.length}`)
     console.log(`📝 첫 10개 단어: ${words.slice(0, 10).join(', ')}`)
 
+    // 사용 가능한 단어 풀 복사 (중복 방지를 위해)
+    const availableWords = [...words]
+
     for (let i = 0; i < count; i++) {
-      const randomWord = words[Math.floor(Math.random() * words.length)]
-      selectedWords.push(randomWord)
+      if (availableWords.length === 0) {
+        // 모든 단어를 사용했으면 풀을 다시 채움
+        availableWords.push(...words)
+        console.log(`📝 레거시 단어 풀 리셋 - ${i + 1}번째 단어부터 재사용`)
+      }
+
+      // 랜덤 인덱스 선택 후 해당 단어 제거
+      const randomIndex = Math.floor(Math.random() * availableWords.length)
+      const selectedWord = availableWords[randomIndex]
+      selectedWords.push(selectedWord)
+      
+      // 사용된 단어를 풀에서 제거
+      availableWords.splice(randomIndex, 1)
     }
 
     const result = selectedWords.join(' ')
@@ -246,10 +288,23 @@ export class TextGenerator {
 
     const selectedSentences: string[] = []
 
-    // 정확히 요청된 문장 수만큼 생성
+    // 정확히 요청된 문장 수만큼 생성 - 중복 방지
+    const availableSentences = [...sentences]
+    
     for (let i = 0; i < sentenceCount; i++) {
-      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
-      selectedSentences.push(randomSentence)
+      if (availableSentences.length === 0) {
+        // 모든 문장을 사용했으면 풀을 다시 채움
+        availableSentences.push(...sentences)
+        console.log(`📝 레거시 문장 풀 리셋 - ${i + 1}번째 문장부터 재사용`)
+      }
+
+      // 랜덤 인덱스 선택 후 해당 문장 제거
+      const randomIndex = Math.floor(Math.random() * availableSentences.length)
+      const selectedSentence = availableSentences[randomIndex]
+      selectedSentences.push(selectedSentence)
+      
+      // 사용된 문장을 풀에서 제거
+      availableSentences.splice(randomIndex, 1)
     }
 
     const result = selectedSentences.join(' ')
@@ -295,14 +350,26 @@ export class TextGenerator {
       return this.generateWords(Math.ceil(targetCharCount / 3)) // 한글 평균 3글자 = 1단어
     }
 
-    // 목표 글자수에 맞춰 문장들 선택
+    // 목표 글자수에 맞춰 문장들 선택 - 중복 방지
     const selectedSentences: string[] = []
+    const availableSentences = [...sentences]
     let currentCharCount = 0
 
     while (currentCharCount < targetCharCount) {
-      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)]
-      selectedSentences.push(randomSentence)
-      currentCharCount += randomSentence.length
+      if (availableSentences.length === 0) {
+        // 모든 문장을 사용했으면 풀을 다시 채움
+        availableSentences.push(...sentences)
+        console.log(`📝 ${typeName} 풀 리셋`)
+      }
+
+      // 랜덤 인덱스 선택 후 해당 문장 제거
+      const randomIndex = Math.floor(Math.random() * availableSentences.length)
+      const selectedSentence = availableSentences[randomIndex]
+      selectedSentences.push(selectedSentence)
+      currentCharCount += selectedSentence.length
+      
+      // 사용된 문장을 풀에서 제거
+      availableSentences.splice(randomIndex, 1)
       
       // 무한 루프 방지
       if (selectedSentences.length > 20) break

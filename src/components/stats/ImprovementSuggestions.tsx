@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
-import { Lightbulb, TrendingUp, Target, Zap, Flame, AlertCircle, Info } from "lucide-react";
+import {
+  Lightbulb,
+  TrendingUp,
+  Target,
+  Zap,
+  Flame,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 
 interface Suggestion {
   type: "speed" | "accuracy" | "finger" | "posture";
@@ -147,85 +155,122 @@ export function ImprovementSuggestions() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800 border-red-200";
+        return {
+          backgroundColor: "var(--transparent)",
+          color: "var(--color-text-primary)",
+          borderColor: "var(--color-feedback-error)",
+          opacity: "0.9",
+        };
       case "medium":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return {
+          backgroundColor: "var(--transparent)",
+          color: "var(--color-text-primary)",
+          borderColor: "var(--color-interactive-primary)",
+          opacity: "0.9",
+        };
       case "low":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return {
+          backgroundColor: "var(--transparent)",
+          color: "var(--color-text-primary)",
+          borderColor: "var(--color-interactive-secondary)",
+          opacity: "0.9",
+        };
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return {
+          backgroundColor: "var(--color-text-tertiary)",
+          color: "var(--color-text-inverse)",
+          borderColor: "var(--color-text-tertiary)",
+          opacity: "0.9",
+        };
     }
   };
 
   if (suggestions.length === 0) {
     return (
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">개선 제안</h2>
+      <>
+        <div className="mb-4">
+          <h3 className="stats-subtitle">개선 제안</h3>
         </div>
-        <div className="card-content text-center py-8">
-          <div className="text-accent text-4xl mb-4">🎉</div>
-          <p className="title-sm text-primary">훌륭합니다!</p>
+        <div
+          className="flex-1 flex flex-col items-center justify-center text-center"
+          style={{ color: "var(--color-text-secondary)" }}
+        >
+          <div className="text-4xl mb-4">🎉</div>
           <p
-            className="text-sm text-secondary"
-            style={{ marginTop: "var(--spacing-sm)" }}
+            className="font-medium mb-2"
+            style={{ color: "var(--color-text-primary)" }}
           >
+            훌륭합니다!
+          </p>
+          <p className="text-sm">
             현재 실력이 매우 좋습니다. 꾸준히 연습을 계속하세요!
           </p>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2 className="card-title">개선 제안</h2>
+    <>
+      <div className="mb-4">
+        <h3 className="stats-subtitle">개선 제안</h3>
       </div>
 
-      <div className="card-content">
-        <div className="space-y-4">
-          {suggestions.map((suggestion, index) => {
-            const IconComponent = suggestion.icon;
-            return (
-              <div
-                key={index}
-                className="bg-background rounded-lg p-4 border border-interactive-primary border-opacity-20 shadow-sm hover:shadow-md transition-all duration-200 hover:border-opacity-40"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-interactive-primary bg-opacity-10 rounded-full flex items-center justify-center">
-                      <IconComponent className="w-5 h-5 text-interactive-primary" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-primary">
-                        {suggestion.title}
-                      </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(suggestion.priority)}`}>
-                        {getPriorityLabel(suggestion.priority)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-secondary leading-relaxed">
-                      {suggestion.description}
-                    </p>
-                  </div>
+      <div className="space-y-3 flex-1">
+        {suggestions.map((suggestion, index) => {
+          const IconComponent = suggestion.icon;
+          return (
+            <div
+              key={index}
+              className="flex items-start gap-4 rounded-lg p-4 border transition-all duration-200 hover:shadow-md"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                borderColor: "var(--color-border)",
+              }}
+            >
+              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center border"
+                  style={{
+                    backgroundColor: "var(--color-elevated)",
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <IconComponent
+                    className="w-5 h-5"
+                    style={{ color: "var(--color-text-primary)" }}
+                  />
                 </div>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-medium border"
+                  style={getPriorityStyle(suggestion.priority)}
+                >
+                  {getPriorityLabel(suggestion.priority)}
+                </span>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-6 p-4 bg-surface rounded-lg border border-interactive-secondary border-opacity-20">
-          <p className="text-sm text-muted text-center">
-            💡 개선 제안은 통계를 기반으로 제공됩니다.
-          </p>
-        </div>
+              <div className="flex-1 min-w-0">
+                <div className="mb-2">
+                  <h3
+                    className="text-lg font-semibold"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {suggestion.title}
+                  </h3>
+                </div>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--color-text-tertiary)" }}
+                >
+                  {suggestion.description}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </>
   );
 }

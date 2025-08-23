@@ -32,6 +32,8 @@ interface TypingTestUIProps {
   showPromotionModal: boolean;
   promotionData: { fromTier: TierConfig; toTier: TierConfig } | null;
   closePromotionModal: () => void;
+  handleContinueTest?: () => void;
+  handleViewStats?: () => void;
   
   // 액션 핸들러
   onStart: () => void;
@@ -64,6 +66,8 @@ export function TypingTestUI({
   showPromotionModal,
   promotionData,
   closePromotionModal,
+  handleContinueTest,
+  handleViewStats,
   onStart,
   onRestart,
   onKeyPress,
@@ -176,14 +180,7 @@ export function TypingTestUI({
           <div className="flex justify-between items-center mb-4">
             {/* 시간/진행률 표시 */}
             <div className="progress-info flex items-center gap-3">
-              {false && remainingTime !== null && ( // 시간 모드 제거됨
-                <div className="time-display flex items-center gap-2">
-                  <LuAlarmClockCheck className="w-5 h-5 text-interactive-primary" />
-                  <span className="text-lg font-mono text-text-primary">
-                    {getFormattedTime(remainingTime || 0)}
-                  </span>
-                </div>
-              )}
+              {/* 시간 모드 제거됨 - 경과 시간은 프로그레스바에서 확인 */}
             </div>
             
             {/* 고스트 인디케이터 */}
@@ -192,44 +189,24 @@ export function TypingTestUI({
 
           {/* 진행률 슬라이더 */}
           <div className="progress-slider-container">
-            {false && remainingTime !== null && ( // 시간 모드 제거됨
-              <TimeProgressSlider
-                elapsed={currentTime}
-                total={testTarget}
-                variant="primary"
-                size="md"
-                className="w-full"
-                showTime={false}
-              />
-            )}
-            
-            {testMode === "words" && (
-              <WordProgressSlider
-                currentWords={Math.floor((currentIndex / targetText.length) * testTarget)}
-                totalWords={testTarget}
-                elapsedTime={currentTime}
-                variant="success"
-                size="md"
-                className="w-full"
-                showCount={false}
-              />
-            )}
+            {/* 단어 기반 프로그레스바 (경과 시간 표시) */}
+            <WordProgressSlider
+              currentWords={Math.floor((currentIndex / targetText.length) * testTarget)}
+              totalWords={testTarget}
+              elapsedTime={currentTime}
+              variant="success"
+              size="md"
+              className=""
+              showCount={false}
+              animated={false}
+            />
           </div>
         </div>
 
-        {/* 타이핑 시각화 (활성 상태일 때만) */}
-        {isActive && !isPaused && (
-          <div className="typing-visualizer-container mb-4">
-            <TypingVisualizer 
-              text={targetText} 
-              currentIndex={currentIndex}
-            />
-          </div>
-        )}
-
-        {/* 텍스트 렌더러와 입력 핸들러 */}
+        {/* 텍스트 렌더러와 입력 핸들러 - 고정 위치 */}
         <div 
-          className="typing-area relative mb-8 cursor-pointer"
+          className="typing-area relative cursor-pointer"
+          style={{ minHeight: '200px' }}
           onClick={() => {
             if (!isActive && !isCompleted && !isCountingDown) {
               onStart();
@@ -254,6 +231,19 @@ export function TypingTestUI({
             disabled={isCompleted}
             className="typing-input"
           />
+        </div>
+
+        {/* 타이핑 시각화 컨테이너 - 고정 높이로 위치 안정화 */}
+        <div 
+          className="typing-visualizer-container mb-8"
+          style={{ minHeight: '80px' }}
+        >
+          {isActive && !isPaused && (
+            <TypingVisualizer 
+              text={targetText} 
+              currentIndex={currentIndex}
+            />
+          )}
         </div>
 
         {/* 컨트롤 버튼들 */}
@@ -340,6 +330,8 @@ export function TypingTestUI({
           fromTier={promotionData.fromTier}
           toTier={promotionData.toTier}
           onClose={closePromotionModal}
+          onContinue={handleContinueTest}
+          onViewStats={handleViewStats}
         />
       )}
     </div>

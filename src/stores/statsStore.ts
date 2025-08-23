@@ -48,7 +48,6 @@ const initialStats: LiveStats = {
 }
 
 export const useStatsStore = create<StatsStore>((set, get) => {
-  // 이벤트 버스 리스너 등록
   const store = {
   liveStats: initialStats,
 
@@ -217,34 +216,58 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   }
 }
 
-  // 이벤트 버스 리스너 등록
-  eventBus.on('stats:update', (data) => {
-    store.calculateStats(
-      data.keystrokes,
-      data.mistakes,
-      data.startTime,
-      data.currentIndex,
-      data.currentTime,
-      data.textType,
-      data.currentText,
-      data.userInput,
-      data.firstKeystrokeTime
-    )
-  })
-
-  eventBus.on('test:completed', (data) => {
-    store.calculateStats(
-      data.keystrokes,
-      data.mistakes,
-      data.startTime,
-      data.currentIndex,
-      data.currentTime,
-      data.textType,
-      data.currentText,
-      data.userInput,
-      data.firstKeystrokeTime
-    )
-  })
-
   return store
 })
+
+// 🚨 긴급: 이벤트 버스 리스너 완전 비활성화 (사이트 벽돌 방지)
+if (false && typeof window !== 'undefined') {
+  let isListenersRegistered = false;
+
+  const registerEventListeners = () => {
+    if (isListenersRegistered) return;
+    isListenersRegistered = true;
+
+    eventBus.on('stats:update', (data) => {
+      const { calculateStats } = useStatsStore.getState();
+      calculateStats(
+        data.keystrokes,
+        data.mistakes,
+        data.startTime,
+        data.currentIndex,
+        data.currentTime,
+        data.textType,
+        data.currentText,
+        data.userInput,
+        data.firstKeystrokeTime
+      );
+    });
+
+    eventBus.on('test:completed', async (data) => {
+      const { calculateStats } = useStatsStore.getState();
+      
+      // 최종 통계 계산
+      calculateStats(
+        data.keystrokes,
+        data.mistakes,
+        data.startTime,
+        data.currentIndex,
+        data.currentTime,
+        data.textType,
+        data.currentText,
+        data.userInput,
+        data.firstKeystrokeTime
+      );
+
+      // 🔥 구조 개선: recordTest는 TestCompletionHandler에서만 처리
+      // statsStore는 통계 계산만 담당 (단일 책임 원칙)
+      console.log('📊 StatsStore: 통계 계산 완료 - 저장은 TestCompletionHandler에서 처리');
+    });
+  };
+
+  // DOM이 로드된 후 리스너 등록
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', registerEventListeners);
+  } else {
+    registerEventListeners();
+  }
+}

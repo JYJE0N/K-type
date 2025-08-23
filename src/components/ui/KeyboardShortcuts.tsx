@@ -34,9 +34,8 @@ interface ShortcutRowProps {
 function ShortcutRow({ label, keys, icon }: ShortcutRowProps) {
   return (
     <div 
-      className="flex items-center w-full rounded"
+      className="flex items-center rounded"
       style={{
-        maxWidth: '20rem',
         padding: 'var(--spacing-2) var(--spacing-3)',
         gap: 'var(--spacing-4)',
         backgroundColor: 'var(--color-shortcut-card-bg)'
@@ -110,7 +109,7 @@ export function KeyboardShortcuts({
   return (
     <div className={`flex justify-center ${className}`}>
       <div 
-        className="flex flex-col items-center"
+        className="flex flex-wrap items-center justify-center"
         style={{ gap: 'var(--spacing-2)' }}
       >
         {showStart && (

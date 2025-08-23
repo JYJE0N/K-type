@@ -102,6 +102,10 @@ export interface TypingSession {
   keystrokes: Keystroke[];
   mistakes: Mistake[];
   
+  // 텍스트 정보
+  targetText?: string;      // 테스트 대상 텍스트
+  userInput?: string;       // 사용자 입력 텍스트
+  
   // 시간 정보
   startTime?: Date;
   endTime?: Date;

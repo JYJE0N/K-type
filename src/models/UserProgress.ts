@@ -245,69 +245,140 @@ UserProgressSchema.virtual('level').get(function() {
   return 'Master'
 })
 
-// 메서드
-UserProgressSchema.methods.addTestRecord = function(record: ITestRecord) {
-  this.recentTests.unshift(record)
-  if (this.recentTests.length > 50) {
-    this.recentTests = this.recentTests.slice(0, 50)
-  }
-  
-  // 최고 기록 업데이트
-  this.bestCPM = Math.max(this.bestCPM, record.cpm)
-  this.bestWPM = Math.max(this.bestWPM, record.wpm)
-  this.bestAccuracy = Math.max(this.bestAccuracy, record.accuracy)
-  this.bestConsistency = Math.max(this.bestConsistency, record.consistency)
-  
-  // 누적 통계 업데이트
-  this.totalTests++
-  this.totalTime += record.duration
-  this.totalWords += record.wordsTyped
-  this.totalKeystrokes += record.keystrokes
-  this.totalMistakes += record.mistakes
-  
-  // 평균 계산
-  this.averageCPM = this.totalKeystrokes / (this.totalTime / 60)
-  this.averageWPM = this.totalWords / (this.totalTime / 60)
-  this.averageAccuracy = ((this.totalKeystrokes - this.totalMistakes) / this.totalKeystrokes) * 100
-  
-  // 향상도 추적
-  this.improvementTrend.unshift(record.wpm)
-  if (this.improvementTrend.length > 10) {
-    this.improvementTrend = this.improvementTrend.slice(0, 10)
-  }
-  
-  this.lastTestDate = new Date()
-  
-  return this.save()
-}
+// 메서드 (버전 충돌 방지)
+UserProgressSchema.methods.addTestRecord = async function(record: ITestRecord) {
+  const maxRetries = 3;
+  let attempts = 0;
 
-UserProgressSchema.methods.updateStreak = function() {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  
-  const lastDate = this.lastStreakDate ? new Date(this.lastStreakDate) : null
-  if (lastDate) lastDate.setHours(0, 0, 0, 0)
-  
-  if (!lastDate) {
-    this.currentStreak = 1
-  } else {
-    const dayDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (dayDiff === 0) {
-      // 같은 날
-    } else if (dayDiff === 1) {
-      // 연속
-      this.currentStreak++
-    } else {
-      // 끊김
-      this.currentStreak = 1
+  while (attempts < maxRetries) {
+    try {
+      // 최신 문서 다시 가져오기 (버전 충돌 방지)
+      const Model = this.constructor as any;
+      const latest = await Model.findById(this._id);
+      if (!latest) {
+        throw new Error('Document not found');
+      }
+
+      // 최신 데이터로 업데이트
+      latest.recentTests.unshift(record);
+      if (latest.recentTests.length > 50) {
+        latest.recentTests = latest.recentTests.slice(0, 50);
+      }
+      
+      // 최고 기록 업데이트
+      latest.bestCPM = Math.max(latest.bestCPM, record.cpm);
+      latest.bestWPM = Math.max(latest.bestWPM, record.wpm);
+      latest.bestAccuracy = Math.max(latest.bestAccuracy, record.accuracy);
+      latest.bestConsistency = Math.max(latest.bestConsistency, record.consistency);
+      
+      // 누적 통계 업데이트
+      latest.totalTests++;
+      latest.totalTime += record.duration;
+      latest.totalWords += record.wordsTyped;
+      latest.totalKeystrokes += record.keystrokes;
+      latest.totalMistakes += record.mistakes;
+      
+      // 평균 계산 (division by zero 방지)
+      const timeInMinutes = latest.totalTime / 60;
+      latest.averageCPM = timeInMinutes > 0 ? latest.totalKeystrokes / timeInMinutes : 0;
+      latest.averageWPM = timeInMinutes > 0 ? latest.totalWords / timeInMinutes : 0;
+      latest.averageAccuracy = latest.totalKeystrokes > 0 ? 
+        ((latest.totalKeystrokes - latest.totalMistakes) / latest.totalKeystrokes) * 100 : 100;
+      latest.averageConsistency = latest.recentTests.length > 0 ? 
+        latest.recentTests.reduce((sum: number, test: ITestRecord) => sum + test.consistency, 0) / latest.recentTests.length : 100;
+      
+      // 향상도 추적
+      latest.improvementTrend.unshift(record.wpm);
+      if (latest.improvementTrend.length > 10) {
+        latest.improvementTrend = latest.improvementTrend.slice(0, 10);
+      }
+      
+      latest.lastTestDate = new Date();
+      
+      // 저장 시도
+      await latest.save();
+      
+      // 성공 시 현재 객체도 업데이트
+      Object.assign(this, latest.toObject());
+      return this;
+      
+    } catch (error: any) {
+      attempts++;
+      
+      if (error.name === 'VersionError' && attempts < maxRetries) {
+        // 짧은 지연 후 재시도
+        await new Promise(resolve => setTimeout(resolve, 100 * attempts));
+        continue;
+      }
+      
+      // 최대 재시도 횟수 초과 또는 다른 에러
+      throw error;
     }
   }
   
-  this.longestStreak = Math.max(this.longestStreak, this.currentStreak)
-  this.lastStreakDate = today
+  throw new Error(`Failed to save after ${maxRetries} attempts`);
+}
+
+UserProgressSchema.methods.updateStreak = async function() {
+  const maxRetries = 3;
+  let attempts = 0;
+
+  while (attempts < maxRetries) {
+    try {
+      // 최신 문서 다시 가져오기 (버전 충돌 방지)
+      const Model = this.constructor as any;
+      const latest = await Model.findById(this._id);
+      if (!latest) {
+        throw new Error('Document not found');
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const lastDate = latest.lastStreakDate ? new Date(latest.lastStreakDate) : null;
+      if (lastDate) lastDate.setHours(0, 0, 0, 0);
+      
+      if (!lastDate) {
+        latest.currentStreak = 1;
+      } else {
+        const dayDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (dayDiff === 0) {
+          // 같은 날 - 변경 없음
+        } else if (dayDiff === 1) {
+          // 연속
+          latest.currentStreak++;
+        } else {
+          // 끊김
+          latest.currentStreak = 1;
+        }
+      }
+      
+      latest.longestStreak = Math.max(latest.longestStreak, latest.currentStreak);
+      latest.lastStreakDate = today;
+      
+      // 저장 시도
+      await latest.save();
+      
+      // 성공 시 현재 객체도 업데이트
+      Object.assign(this, latest.toObject());
+      return this;
+      
+    } catch (error: any) {
+      attempts++;
+      
+      if (error.name === 'VersionError' && attempts < maxRetries) {
+        // 짧은 지연 후 재시도
+        await new Promise(resolve => setTimeout(resolve, 100 * attempts));
+        continue;
+      }
+      
+      // 최대 재시도 횟수 초과 또는 다른 에러
+      throw error;
+    }
+  }
   
-  return this.save()
+  throw new Error(`Failed to update streak after ${maxRetries} attempts`);
 }
 
 // 모델이 이미 컴파일되었는지 확인

@@ -1,6 +1,7 @@
 "use client";
 
 import { IoPersonSharp, IoDiamond } from "react-icons/io5";
+import { useEffect, useState } from "react";
 import type { TierConfig } from '@/utils/tierSystem';
 
 interface TierBadgeProps {
@@ -20,6 +21,11 @@ export function TierBadge({
   showPercentile = false,
   currentPercentile = 0
 }: TierBadgeProps) {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const sizeClasses = {
     sm: { 
       icon: 'w-6 h-6', 
@@ -52,9 +58,9 @@ export function TierBadge({
     };
   };
 
-  // 배지 라벨 텍스트 또는 아이콘
+  // 배지 라벨 텍스트 또는 아이콘 - 클라이언트에서만 동적 값 표시
   const getBadgeContent = () => {
-    if (showPercentile && currentPercentile > 0) {
+    if (showPercentile && isClient && currentPercentile > 0) {
       if (currentPercentile >= 99) {
         return '99+';
       }

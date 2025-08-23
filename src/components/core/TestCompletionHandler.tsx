@@ -6,10 +6,11 @@ import { useTypingStore } from "@/stores/typingStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
+import { triggerTestCompletion, initializeTestCompletionManager } from "@/utils/testCompletionManager";
 
 /**
- * 타이핑 테스트 완료 처리 로직
- * 책임: 테스트 완료 감지, 통계 처리, 티어 승급, 결과 페이지 이동
+ * 🎯 간소화된 테스트 완료 핸들러 (중앙집중식 매니저 사용)
+ * 책임: 테스트 완료 감지, 이벤트 발행, 티어 승급, 페이지 이동
  */
 export function useTestCompletionHandler() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function useTestCompletionHandler() {
     toTier: TierConfig;
   } | null>(null);
 
-  const { isCompleted, targetText, currentIndex } = useTypingStore();
+  const { isCompleted, targetText, currentIndex, keystrokes, mistakes, startTime, firstKeystrokeTime } = useTypingStore();
   const { liveStats } = useStatsStore();
   const { 
     averageCPM, 
@@ -30,51 +31,74 @@ export function useTestCompletionHandler() {
     fetchProgress 
   } = useUserProgressStore();
 
-  // 사용자 초기화 (최초 실행시)
+  // 🎯 매니저 초기화 및 사용자 초기화
   useEffect(() => {
+    initializeTestCompletionManager();
     initializeUser();
     fetchProgress();
   }, [initializeUser, fetchProgress]);
 
-  // 티어 승급 체크
-  const checkTierPromotion = useCallback(() => {
-    if (totalTests < 5) return; // 최소 5회 테스트 필요
 
-    const currentTier = defaultTierSystem.calculateCurrentTier({
-      averageCPM,
-      averageAccuracy,
-      averageConsistency: averageConsistency || 0,
-      totalTests
-    });
-    const newTier = defaultTierSystem.calculateCurrentTier({
-      averageCPM: liveStats.cpm,
-      averageAccuracy: liveStats.accuracy,
-      averageConsistency: liveStats.consistency || 0,
-      totalTests: totalTests + 1
-    });
-
-    // 티어가 상승했는지 확인 (minPercentile로 비교)
-    if (newTier.minPercentile > currentTier.minPercentile) {
-      setPromotionData({
-        fromTier: currentTier,
-        toTier: newTier
-      });
-      setShowPromotionModal(true);
-    }
-  }, [totalTests, averageCPM, averageAccuracy, liveStats.cpm, liveStats.accuracy]);
-
-  // 테스트 완료 처리
+  // 🎯 간소화된 테스트 완료 처리 (이벤트 발행만)
   const handleTestCompletion = useCallback(async () => {
-    if (!isCompleted) return;
+    if (!isCompleted || !firstKeystrokeTime || !startTime) return;
 
-    // 티어 승급 체크
-    checkTierPromotion();
+    console.log('🎯 TestCompletionHandler: 테스트 완료 이벤트 발행');
 
-    // 약간의 지연 후 통계 페이지로 이동 (상태 정착 시간)
-    setTimeout(() => {
-      router.push('/stats');
-    }, 500);
-  }, [isCompleted, checkTierPromotion, router]);
+    let hasPromotion = false;
+
+    try {
+      // 🎯 중앙집중식 매니저에게 이벤트 위임
+      triggerTestCompletion({
+        keystrokes,
+        mistakes,
+        startTime,
+        currentIndex,
+        currentTime: new Date(),
+        firstKeystrokeTime,
+        currentText: targetText,
+        userInput: ''
+      });
+
+      // 티어 승급 체크 (UI 관련이므로 여기서 처리)
+      if (totalTests >= 5) {
+        const currentTier = defaultTierSystem.calculateCurrentTier({
+          averageCPM,
+          averageAccuracy,
+          averageConsistency: averageConsistency || 0,
+          totalTests
+        });
+        const newTier = defaultTierSystem.calculateCurrentTier({
+          averageCPM: liveStats.cpm,
+          averageAccuracy: liveStats.accuracy,
+          averageConsistency: liveStats.consistency || 0,
+          totalTests: totalTests + 1
+        });
+
+        // 티어가 상승했는지 확인 (minPercentile로 비교)
+        if (newTier.minPercentile > currentTier.minPercentile) {
+          hasPromotion = true;
+          setPromotionData({
+            fromTier: currentTier,
+            toTier: newTier
+          });
+          setShowPromotionModal(true);
+        }
+      }
+
+      console.log('✅ TestCompletionHandler: 이벤트 발행 완료');
+
+    } catch (error) {
+      console.error('❌ TestCompletionHandler: 이벤트 발행 실패', error);
+    }
+
+    // 승급이 없으면 바로 stats로 이동
+    if (!hasPromotion) {
+      setTimeout(() => {
+        router.push('/stats');
+      }, 500);
+    }
+  }, [isCompleted, firstKeystrokeTime, startTime, currentIndex, keystrokes, mistakes, targetText, router, totalTests, averageCPM, averageAccuracy, averageConsistency, liveStats]);
 
   // 테스트 완료 감지
   useEffect(() => {
@@ -83,11 +107,34 @@ export function useTestCompletionHandler() {
     }
   }, [isCompleted, targetText, currentIndex, handleTestCompletion]);
 
-  // 승급 모달 닫기
+  // 승급 모달 닫기 + stats 페이지로 이동
   const closePromotionModal = useCallback(() => {
     setShowPromotionModal(false);
     setPromotionData(null);
-  }, []);
+    
+    // 즉시 stats 페이지로 이동
+    router.push('/stats');
+  }, [router]);
+
+  // 계속하기 (새 테스트 시작)
+  const handleContinueTest = useCallback(() => {
+    setShowPromotionModal(false);
+    setPromotionData(null);
+    
+    // 모달 닫기 후 메인 페이지로 이동하여 새 테스트 시작
+    setTimeout(() => {
+      router.push('/');
+    }, 300);
+  }, [router]);
+
+  // 자세히 보기 (통계 페이지로 이동)
+  const handleViewStats = useCallback(() => {
+    setShowPromotionModal(false);
+    setPromotionData(null);
+    
+    // 즉시 stats 페이지로 이동
+    router.push('/stats');
+  }, [router]);
 
   // 진행률 계산 (단어 모드일 때)
   const getWordProgress = useCallback(() => {
@@ -102,6 +149,8 @@ export function useTestCompletionHandler() {
     showPromotionModal,
     promotionData,
     closePromotionModal,
+    handleContinueTest,
+    handleViewStats,
     
     // 진행률
     getWordProgress,
