@@ -7,6 +7,7 @@ import { useStatsStore } from "@/stores/statsStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { defaultTierSystem, type TierConfig } from "@/utils/tierSystem";
 import { triggerTestCompletion, initializeTestCompletionManager } from "@/utils/testCompletionManager";
+import { initDevTools } from "@/utils/devTools";
 
 /**
  * 🎯 간소화된 테스트 완료 핸들러 (중앙집중식 매니저 사용)
@@ -36,6 +37,23 @@ export function useTestCompletionHandler() {
     initializeTestCompletionManager();
     initializeUser();
     fetchProgress();
+    
+    // 개발자 도구 초기화
+    initDevTools();
+    
+    // 개발자 도구에서 승급 모달 테스트 이벤트 리스너
+    const handleTestPromotion = (event: CustomEvent) => {
+      const { fromTier, toTier } = event.detail;
+      setPromotionData({ fromTier, toTier });
+      setShowPromotionModal(true);
+      console.log('🎉 개발자 도구: 승급 모달 표시', fromTier.name, '→', toTier.name);
+    };
+    
+    window.addEventListener('test:promotion', handleTestPromotion as EventListener);
+    
+    return () => {
+      window.removeEventListener('test:promotion', handleTestPromotion as EventListener);
+    };
   }, [initializeUser, fetchProgress]);
 
 

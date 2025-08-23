@@ -110,6 +110,10 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       handleContinueTest={handleContinueTest}
       handleViewStats={handleViewStats}
       
+      // 언어 감지 관련
+      languageHint={controller.languageHint}
+      setLanguageHint={controller.setLanguageHint}
+      
       // 액션 핸들러 전달
       onStart={controller.handleStart}
       onRestart={controller.handleRestart}

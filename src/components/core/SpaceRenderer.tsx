@@ -9,11 +9,13 @@ import { CharacterState } from "@/utils/textState";
 interface SpaceRendererProps {
   state: CharacterState;
   showCursor: boolean;
+  'data-index'?: number;
 }
 
 export const SpaceRenderer = memo(function SpaceRenderer({ 
   state, 
-  showCursor 
+  showCursor,
+  'data-index': dataIndex
 }: SpaceRendererProps) {
   const { status, index, specialKey } = state;
   

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Ghost, Sparkles, Clock, Hash, Type, Timer } from 'lucide-react';
+import { Settings, Ghost, Sparkles, Clock, Hash, Type, Timer, X } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
 import { ButtonGroup } from '@/components/ui/ButtonGroup';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -103,6 +103,28 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
   // 설정 컨텐츠 렌더링 함수
   const renderSettingsContent = () => (
     <div className="space-y-6">
+      {/* 닫기 버튼 */}
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-lg font-semibold text-text-primary">설정</h2>
+        <button
+          onClick={() => {
+            if (onClose) {
+              onClose();
+            } else {
+              setInternalIsOpen(false);
+            }
+          }}
+          className="w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+          style={{
+            backgroundColor: 'var(--color-surface)',
+            border: '1px solid var(--color-border-primary)',
+            color: 'var(--color-text-secondary)'
+          }}
+          aria-label="설정 닫기"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
       {/* 테스트 설정 */}
       <div>
         <div className="flex items-center gap-2 mb-4">

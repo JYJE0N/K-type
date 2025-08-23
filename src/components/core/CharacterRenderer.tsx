@@ -9,6 +9,7 @@ import { CharacterState } from "@/utils/textState";
 interface CharacterRendererProps {
   state: CharacterState;
   showCursor: boolean;
+  'data-index'?: number;
 }
 
 /**
@@ -100,7 +101,8 @@ function getCharacterClass(status: string, specialKey?: string | null) {
 
 export const CharacterRenderer = memo(function CharacterRenderer({ 
   state, 
-  showCursor 
+  showCursor,
+  'data-index': dataIndex
 }: CharacterRendererProps) {
   const { char, status, index, specialKey } = state;
 

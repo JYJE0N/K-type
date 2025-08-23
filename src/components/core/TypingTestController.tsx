@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useTypingStore } from "@/stores/typingStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -9,6 +9,7 @@ import { getLanguagePack } from "@/modules/languages";
 import { TextGenerator } from "@/utils/textGenerator";
 import { ghostModeManager } from "@/utils/ghostMode";
 import { typingEffectsManager } from "@/utils/typingEffects";
+import { LanguageDetector, detectTextLanguage } from "@/utils/languageDetection";
 
 /**
  * 타이핑 테스트의 비즈니스 로직을 관리하는 컨트롤러
@@ -40,6 +41,14 @@ export function useTypingTestController() {
   const { calculateStats, resetStats, liveStats } = useStatsStore();
   const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled, countdownEnabled } = useSettingsStore();
   const { recordTest, updateCharacterStats, updateMistakePattern, recentTests } = useUserProgressStore();
+  
+  // 언어 감지 시스템
+  const languageDetector = useRef(new LanguageDetector());
+  const [languageHint, setLanguageHint] = useState<{
+    show: boolean;
+    message: string;
+    severity: 'info' | 'warning' | 'error';
+  }>({ show: false, message: '', severity: 'info' });
 
   // 새로운 텍스트 생성
   const generateNewText = useCallback(() => {
@@ -119,8 +128,30 @@ export function useTypingTestController() {
     }
   }, [targetText, handleRestart, startCountdown, countdownEnabled]);
 
-  // 키 입력 처리
+  // 키 입력 처리 (언어 감지 포함)
   const handleKeyPress = useCallback((key: string) => {
+    // 언어 불일치 감지 (한글/영문 텍스트에서만)
+    const textLanguage = detectTextLanguage(targetText);
+    if (textLanguage !== 'mixed' && userInput.length > 0) {
+      const recentInput = userInput + key;
+      const expectedPortion = targetText.substring(0, recentInput.length);
+      
+      const hintResult = languageDetector.current.checkInput(recentInput, expectedPortion);
+      
+      if (hintResult.showHint) {
+        setLanguageHint({
+          show: true,
+          message: hintResult.hintMessage,
+          severity: hintResult.severity
+        });
+        
+        // 3초 후 자동 숨김
+        setTimeout(() => {
+          setLanguageHint(prev => ({ ...prev, show: false }));
+        }, 3000);
+      }
+    }
+    
     // 타이핑 스토어의 handleKeyPress 호출 (상태 업데이트)
     const storeHandleKeyPress = useTypingStore.getState().handleKeyPress;
     storeHandleKeyPress(key);
@@ -142,12 +173,17 @@ export function useTypingTestController() {
     }
 
     // 이펙트 시스템은 이미 타이핑 스토어에서 처리됨
-  }, [getCurrentChar, calculateStats, updateCharacterStats, updateMistakePattern]);
+  }, [targetText, userInput, getCurrentChar, calculateStats, updateCharacterStats, updateMistakePattern]);
 
   // 백스페이스 처리
   const handleBackspace = useCallback(() => {
+    // 언어 힌트 숨김 (백스페이스 시)
+    if (languageHint.show) {
+      setLanguageHint(prev => ({ ...prev, show: false }));
+    }
+    
     calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), textType, targetText, userInput, firstKeystrokeTime);
-  }, [calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
+  }, [languageHint.show, calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
 
   // 테스트 완료 처리 (🚨 recordTest 제거 - TestCompletionHandler에서만 처리)
   const handleTestCompletion = useCallback(() => {
@@ -171,6 +207,7 @@ export function useTypingTestController() {
     isPaused,
     isCompleted,
     isCountingDown,
+    languageHint,
     
     // 액션
     handleRestart,
@@ -181,6 +218,7 @@ export function useTypingTestController() {
     pauseTest,
     resumeTest,
     stopTest,
+    setLanguageHint,
     
     // 유틸리티
     generateNewText,

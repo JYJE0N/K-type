@@ -123,9 +123,9 @@ export function ProgressSlider({
       ref={sliderRef}
       className={`progress-slider relative mx-auto ${className}`} 
       style={{ 
-        width: `${animated ? '70%' : '50%'} !important`, 
-        minWidth: `${animated ? '250px' : '200px'} !important`, 
-        maxWidth: `${animated ? '400px' : '300px'} !important` 
+        width: '40vw',
+        minWidth: '200px',
+        maxWidth: '350px'
       }}
     >
       {/* 슬라이더 트랙 */}

@@ -61,7 +61,7 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'bronze',
     name: '브론즈',
-    icon: '🥉',
+    icon: 'B',
     color: '#CD7F32',
     gradient: ['#CD7F32', '#B8860B'],
     minPercentile: 0,
@@ -75,7 +75,7 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'silver',
     name: '실버',
-    icon: '🥈',
+    icon: 'S',
     color: '#C0C0C0',
     gradient: ['#C0C0C0', '#A9A9A9'],
     minPercentile: 40,
@@ -90,8 +90,8 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'gold',
     name: '골드',
-    icon: '🥇',
-    color: '#FFD700',
+    icon: 'G',
+    color: '#B8860B',
     gradient: ['#FFD700', '#FFA500'],
     minPercentile: 60,
     maxPercentile: 79,    // 60-80%
@@ -106,7 +106,7 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'platinum',
     name: '플래티넘',
-    icon: '🏆',
+    icon: 'P',
     color: '#E5E4E2',
     gradient: ['#E5E4E2', '#BFBFBF'],
     minPercentile: 80,
@@ -122,7 +122,7 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'diamond',
     name: '다이아',
-    icon: '💎',
+    icon: 'D',
     color: '#B9F2FF',
     gradient: ['#B9F2FF', '#87CEEB'],
     minPercentile: 90,
@@ -138,7 +138,7 @@ export const DEFAULT_TIERS: TierConfig[] = [
   {
     id: 'master',
     name: '마스터',
-    icon: '👑',
+    icon: 'M',
     color: '#FF6B35',
     gradient: ['#FF6B35', '#F7931E'],
     minPercentile: 96,
@@ -494,7 +494,7 @@ export function generatePromotionMessage(fromTier: TierConfig, toTier: TierConfi
   celebration: string
 } {
   return {
-    title: `🎉 ${toTier.name} 티어 승급!`,
+    title: `${toTier.name} 티어 승급!`,
     message: `${fromTier.name}에서 ${toTier.name}으로 승급하셨습니다!\n새로운 타이틀: ${toTier.rewards.title}`,
     celebration: `${toTier.icon} ${toTier.description}`
   }

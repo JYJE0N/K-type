@@ -9,7 +9,11 @@ import { TypingVisualizer } from "./TypingVisualizer";
 import { GhostIndicator } from "./GhostIndicator";
 import { PromotionModal } from "@/components/gamification/PromotionModal";
 import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
-import { TimeProgressSlider, WordProgressSlider } from "@/components/ui/ProgressSlider";
+import {
+  TimeProgressSlider,
+  WordProgressSlider,
+} from "@/components/ui/ProgressSlider";
+import { LanguageMismatchAlert } from "@/components/ui/LanguageMismatchAlert";
 import { useTypingStore } from "@/stores/typingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TierConfig } from "@/utils/tierSystem";
@@ -20,13 +24,13 @@ interface TypingTestUIProps {
   currentIndex: number;
   userInput: string;
   mistakes: number[];
-  
+
   // 타이머 관련
   currentTime: number;
   getRemainingTime: () => number | null;
   getTimeProgress: () => number | null;
   getFormattedTime: (seconds: number) => string;
-  
+
   // 완료 처리 관련
   getWordProgress: () => number;
   showPromotionModal: boolean;
@@ -34,7 +38,19 @@ interface TypingTestUIProps {
   closePromotionModal: () => void;
   handleContinueTest?: () => void;
   handleViewStats?: () => void;
-  
+
+  // 언어 감지 관련
+  languageHint?: {
+    show: boolean;
+    message: string;
+    severity: "info" | "warning" | "error";
+  };
+  setLanguageHint?: (hint: {
+    show: boolean;
+    message: string;
+    severity: "info" | "warning" | "error";
+  }) => void;
+
   // 액션 핸들러
   onStart: () => void;
   onRestart: () => void;
@@ -44,7 +60,7 @@ interface TypingTestUIProps {
   onResume: () => void;
   onStop: () => void;
   onTestStart: () => void;
-  
+
   // 스타일
   className?: string;
 }
@@ -68,6 +84,8 @@ export function TypingTestUI({
   closePromotionModal,
   handleContinueTest,
   handleViewStats,
+  languageHint,
+  setLanguageHint,
   onStart,
   onRestart,
   onKeyPress,
@@ -76,16 +94,10 @@ export function TypingTestUI({
   onResume,
   onStop,
   onTestStart,
-  className = ""
+  className = "",
 }: TypingTestUIProps) {
-  
-  const {
-    isActive,
-    isPaused,
-    isCompleted,
-    isCountingDown,
-    countdownValue,
-  } = useTypingStore();
+  const { isActive, isPaused, isCompleted, isCountingDown, countdownValue } =
+    useTypingStore();
 
   const { testMode, testTarget } = useSettingsStore();
 
@@ -98,22 +110,22 @@ export function TypingTestUI({
     <div className={`typing-test-container ${className}`}>
       {/* 카운트다운 오버레이 */}
       {isCountingDown && (
-        <div 
+        <div
           className="countdown-overlay fixed inset-0 flex flex-col items-center justify-center"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(12px)',
-            zIndex: 9999
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backdropFilter: "blur(12px)",
+            zIndex: 9999,
           }}
         >
           {/* 준비 텍스트 */}
-          <div 
+          <div
             className="text-lg font-medium mb-8 animate-pulse"
-            style={{ color: 'var(--color-text-secondary)' }}
+            style={{ color: "var(--color-text-secondary)" }}
           >
-            준비하세요...
+            한/영키 확인하셨나요?
           </div>
-          
+
           {/* 심플한 원형 프로그레스 */}
           <div className="countdown-display relative w-32 h-32 flex items-center justify-center">
             {/* 원형 프로그레스 차트 */}
@@ -144,28 +156,30 @@ export function TypingTestUI({
                 strokeDashoffset="0"
                 style={{
                   animation: `spin-progress 1s ease-in-out forwards`,
-                  transformOrigin: 'center'
+                  transformOrigin: "center",
                 }}
                 key={countdownValue} // 키 변경으로 애니메이션 재시작
               />
             </svg>
-            
+
             {/* 중앙 텍스트/아이콘 */}
-            <div className="text-xl font-bold text-center flex items-center justify-center"
-                 style={{ 
-                   color: 'var(--color-text-primary)',
-                   textShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                 }}>
+            <div
+              className="text-xl font-bold text-center flex items-center justify-center"
+              style={{
+                color: "var(--color-text-primary)",
+                textShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
               {countdownValue === 3 && "준비"}
               {countdownValue === 2 && "시작"}
               {countdownValue === 1 && <FaKeyboard className="w-6 h-6" />}
             </div>
           </div>
-          
+
           {/* 시작 힌트 */}
-          <div 
+          <div
             className="text-sm mt-8 opacity-70"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            style={{ color: "var(--color-text-tertiary)" }}
           >
             타이핑 시작 준비!
           </div>
@@ -174,7 +188,6 @@ export function TypingTestUI({
 
       {/* 메인 컨텐츠 영역 */}
       <div className="main-content-area">
-        
         {/* 상단 정보 바 */}
         <div className="info-bar mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -182,7 +195,7 @@ export function TypingTestUI({
             <div className="progress-info flex items-center gap-3">
               {/* 시간 모드 제거됨 - 경과 시간은 프로그레스바에서 확인 */}
             </div>
-            
+
             {/* 고스트 인디케이터 */}
             <GhostIndicator />
           </div>
@@ -191,7 +204,9 @@ export function TypingTestUI({
           <div className="progress-slider-container">
             {/* 단어 기반 프로그레스바 (경과 시간 표시) */}
             <WordProgressSlider
-              currentWords={Math.floor((currentIndex / targetText.length) * testTarget)}
+              currentWords={Math.floor(
+                (currentIndex / targetText.length) * testTarget
+              )}
               totalWords={testTarget}
               elapsedTime={currentTime}
               variant="success"
@@ -204,9 +219,9 @@ export function TypingTestUI({
         </div>
 
         {/* 텍스트 렌더러와 입력 핸들러 - 고정 위치 */}
-        <div 
+        <div
           className="typing-area relative cursor-pointer"
-          style={{ minHeight: '200px' }}
+          style={{ minHeight: "200px" }}
           onClick={() => {
             if (!isActive && !isCompleted && !isCountingDown) {
               onStart();
@@ -222,7 +237,7 @@ export function TypingTestUI({
             mistakes={mistakes}
             className="mb-4"
           />
-          
+
           <InputHandler
             onKeyPress={onKeyPress}
             onBackspace={onBackspace}
@@ -234,13 +249,13 @@ export function TypingTestUI({
         </div>
 
         {/* 타이핑 시각화 컨테이너 - 고정 높이로 위치 안정화 */}
-        <div 
+        <div
           className="typing-visualizer-container mb-8"
-          style={{ minHeight: '80px' }}
+          style={{ minHeight: "80px" }}
         >
           {isActive && !isPaused && (
-            <TypingVisualizer 
-              text={targetText} 
+            <TypingVisualizer
+              text={targetText}
               currentIndex={currentIndex}
             />
           )}
@@ -253,16 +268,18 @@ export function TypingTestUI({
               <button
                 onClick={onStart}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: 'var(--color-interactive-primary)' }}
+                style={{ backgroundColor: "var(--color-interactive-primary)" }}
               >
                 <IoPlay className="w-5 h-5" />
                 시작하기
               </button>
-              
+
               <button
                 onClick={onRestart}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: 'var(--color-interactive-secondary)' }}
+                style={{
+                  backgroundColor: "var(--color-interactive-secondary)",
+                }}
               >
                 <IoReloadCircle className="w-5 h-5" />
                 새로고침
@@ -279,7 +296,7 @@ export function TypingTestUI({
                 <IoPauseSharp className="w-5 h-5" />
                 일시정지
               </button>
-              
+
               <button
                 onClick={onStop}
                 className="typing-button-restart flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-10 hover:scale-105 active:scale-95"
@@ -299,11 +316,13 @@ export function TypingTestUI({
                 <IoPlay className="w-5 h-5" />
                 재개하기
               </button>
-              
+
               <button
                 onClick={onRestart}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-white hover:opacity-90 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: 'var(--color-interactive-secondary)' }}
+                style={{
+                  backgroundColor: "var(--color-interactive-secondary)",
+                }}
               >
                 <IoReloadCircle className="w-5 h-5" />
                 새로고침
@@ -314,14 +333,26 @@ export function TypingTestUI({
 
         {/* 키보드 숏컷 안내 */}
         <div className="shortcuts-container">
-          <KeyboardShortcuts 
-            showStart={!isActive && !isCompleted && !isCountingDown} 
+          <KeyboardShortcuts
+            showStart={!isActive && !isCompleted && !isCountingDown}
             showPause={isActive && !isPaused}
             showResume={isPaused}
             showRestart={isActive || isPaused || isCompleted}
           />
         </div>
       </div>
+
+      {/* 언어 불일치 알림 */}
+      {languageHint && (
+        <LanguageMismatchAlert
+          show={languageHint.show}
+          message={languageHint.message}
+          severity={languageHint.severity}
+          onDismiss={() =>
+            setLanguageHint?.({ show: false, message: "", severity: "info" })
+          }
+        />
+      )}
 
       {/* 승급 모달 */}
       {showPromotionModal && promotionData && (
