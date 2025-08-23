@@ -74,23 +74,40 @@
 
 /* 모바일 텍스트 줄간격 - 더 조밀하게 (강제 적용) */
 .mobile-typing-text,
-.mobile-typing-text * {
-  line-height: 1.2 !important; /* 1.4 → 1.2로 줄간격 축소 */
-  letter-spacing: 0.01em !important; /* 0.02em → 0.01em으로 자간 축소 */
+.mobile-typing-text *,
+.mobile-typing-text .word-group,
+.mobile-typing-text .word-group * {
+  line-height: 1.1 !important; /* 1.2 → 1.1로 더욱 축소 */
+  letter-spacing: 0.005em !important; /* 0.01em → 0.005em으로 더욱 축소 */
+  margin-bottom: 0 !important; /* 하단 마진 제거 */
+  padding-bottom: 0 !important; /* 하단 패딩 제거 */
 }
 
 /* 모바일 전용 추가 조정 */
 @media (max-width: 768px) {
-  .typing-text-container {
-    line-height: 1.2 !important;
-    letter-spacing: 0.01em !important;
+  .typing-text-container,
+  .typing-text-container * {
+    line-height: 1.1 !important;
+    letter-spacing: 0.005em !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
   
   .typing-text-container .word-group,
   .typing-text-container .word-group *,
   .typing-text-container span {
-    line-height: 1.2 !important;
-    letter-spacing: 0.01em !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.005em !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* 모바일에서 텍스트 컨테이너 자체 패딩도 줄이기 */
+  .mobile-typing-text {
+    line-height: 1.1 !important;
+    padding-top: 1rem !important; /* 3rem → 1rem으로 축소 */
+    padding-bottom: 1rem !important; /* 3rem → 1rem으로 축소 */
   }
 }
 

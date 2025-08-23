@@ -8,9 +8,7 @@ import { TypingVisualizer } from "./TypingVisualizer";
 import { GhostIndicator } from "./GhostIndicator";
 import { PromotionModal } from "@/components/gamification/PromotionModal";
 import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
-import {
-  CharacterProgressSlider,
-} from "@/components/ui/ProgressSlider";
+import { CharacterProgressSlider } from "@/components/ui/ProgressSlider";
 import { LanguageMismatchAlert } from "@/components/ui/LanguageMismatchAlert";
 import { useTypingStore } from "@/stores/typingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -27,7 +25,7 @@ interface TypingTestUIProps {
   // 타이머 관련
   currentTime: number;
 
-  // 완료 처리 관련  
+  // 완료 처리 관련
   getWordProgress?: () => number;
   showPromotionModal: boolean;
   promotionData: { fromTier: TierConfig; toTier: TierConfig } | null;
@@ -93,43 +91,44 @@ export function TypingTestUI({
     useTypingStore();
 
   const { testTarget } = useSettingsStore();
-  
+
   // 가상 키보드 감지
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  
+
   useEffect(() => {
     const handleResize = () => {
       // 모바일에서만 감지
       if (window.innerWidth <= 768) {
-        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        const viewportHeight =
+          window.visualViewport?.height || window.innerHeight;
         const windowHeight = window.innerHeight;
         const keyboardHeight = windowHeight - viewportHeight;
-        
+
         // 키보드가 100px 이상 올라왔을 때
         const isKeyboardUp = keyboardHeight > 100;
         setKeyboardVisible(isKeyboardUp);
-        
+
         // CSS 변수 업데이트
         document.documentElement.style.setProperty(
-          '--keyboard-height', 
-          isKeyboardUp ? `${keyboardHeight}px` : '0px'
+          "--keyboard-height",
+          isKeyboardUp ? `${keyboardHeight}px` : "0px"
         );
-        
+
         // body 클래스 토글
-        document.body.classList.toggle('keyboard-visible', isKeyboardUp);
+        document.body.classList.toggle("keyboard-visible", isKeyboardUp);
       }
     };
 
     // 이벤트 리스너 등록
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener("resize", handleResize);
     }
-    
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener("resize", handleResize);
       }
     };
   }, []);
@@ -198,8 +197,8 @@ export function TypingTestUI({
                 textShadow: "0 2px 8px rgba(0,0,0,0.1)",
               }}
             >
-              {countdownValue === 3 && "준비"}
-              {countdownValue === 2 && "시작"}
+              {countdownValue === 3 && "3"}
+              {countdownValue === 2 && "2"}
               {countdownValue === 1 && <FaKeyboard className="w-6 h-6" />}
             </div>
           </div>
@@ -291,9 +290,7 @@ export function TypingTestUI({
         </div>
 
         {/* 모바일용 고정 프로그레스바 - 가상 키보드 대응 */}
-        <div
-          className="mobile-progress-bar md:hidden fixed left-1 right-1 z-20"
-        >
+        <div className="mobile-progress-bar md:hidden fixed left-1 right-1 z-20">
           <div
             className="rounded-lg p-3"
             style={{

@@ -31,12 +31,12 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
   
   const timer = useTypingTimer(handleTestCompletion);
 
-  // 초기 텍스트 생성
+  // 초기 텍스트 생성 (무한 루프 방지: handleRestart 의존성 제거)
   useEffect(() => {
     if (!controller.targetText) {
       controller.handleRestart();
     }
-  }, [controller.targetText, controller.handleRestart]);
+  }, [controller.targetText]); // handleRestart 제거하여 무한 루프 방지
 
   // 테스트 완료 시 처리는 TestCompletionHandler에서 담당
   // (중복 제거: controller.handleTestCompletion은 더 이상 호출하지 않음)

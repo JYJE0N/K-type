@@ -215,8 +215,9 @@ export function TextRenderer({
                 flexWrap: "wrap",
                 justifyContent: "center",
                 alignItems: "flex-start",
-                paddingTop: "3rem", // 더 많은 위쪽 여백으로 맥락 표시
-                paddingBottom: "3rem", // 더 많은 아래쪽 여백으로 맥락 표시
+                lineHeight: "1.1", // 직접 지정으로 확실히 적용
+                letterSpacing: "0.005em", // 직접 지정으로 확실히 적용
+                // paddingTop과 paddingBottom은 CSS에서 처리
               }}
             >
               {renderContent()}

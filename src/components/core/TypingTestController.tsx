@@ -65,7 +65,7 @@ export function useTypingTestController() {
     });
 
     return newText;
-  }, [language, testMode, testTarget]);
+  }, [language, testMode, testTarget, sentenceLength, sentenceStyle]);
 
   // 테스트 재시작
   const handleRestart = useCallback(() => {
