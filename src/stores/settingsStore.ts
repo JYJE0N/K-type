@@ -31,6 +31,10 @@ interface SettingsStore extends Settings {
   countdownEnabled: boolean
   setCountdownEnabled: (enabled: boolean) => void
   
+  // 한글 자모 색상 표시 설정
+  showJamoColors: boolean
+  setShowJamoColors: (enabled: boolean) => void
+  
   // 문장 설정 (새로운 구조)
   sentenceLength: SentenceLength
   setSentenceLength: (length: SentenceLength) => void
@@ -60,6 +64,7 @@ const defaultUISettings = {
   ghostModeEnabled: true, // 고스트 모드 기본 활성화
   typingEffectsEnabled: true, // 타이핑 이펙트 기본 활성화
   countdownEnabled: true, // 카운트다운 기본 활성화
+  showJamoColors: false, // 한글 자모 색상 표시 기본 비활성화
   sentenceLength: 'short' as SentenceLength, // 기본 단문
   sentenceStyle: 'plain' as SentenceStyle // 기본 일반 스타일
 }
@@ -122,6 +127,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       // 카운트다운 설정
       setCountdownEnabled: (enabled: boolean) => set({ countdownEnabled: enabled }),
+      
+      // 한글 자모 색상 표시 설정
+      setShowJamoColors: (enabled: boolean) => set({ showJamoColors: enabled }),
 
       // 문장 길이 설정
       setSentenceLength: (length: SentenceLength) => set({ sentenceLength: length }),

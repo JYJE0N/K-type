@@ -41,8 +41,9 @@ export function TypingVisualizer({
     
     // 중앙에 현재 글자 배치
     if (isComposing && composingText) {
-      // 조합 중인 문자를 중앙에
-      chars[centerPosition] = composingText
+      // 조합 중인 문자의 마지막 글자만 중앙에 표시
+      const lastChar = composingText.slice(-1)
+      chars[centerPosition] = lastChar
     } else {
       // 다음에 타이핑할 문자를 중앙에
       chars[centerPosition] = text[currentTypingIndex] || ''
@@ -214,7 +215,7 @@ export function TypingVisualizer({
                     color: 'var(--color-visualizer-composing-text)'
                   }}
                 >
-                  {composingText}
+                  {composingText.slice(-1)}
                 </span>
                 {comboCount > 8 && (
                   <span 

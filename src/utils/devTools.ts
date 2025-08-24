@@ -3,6 +3,7 @@
  */
 
 import { defaultTierSystem } from "./tierSystem";
+import { decomposeKorean } from "./koreanIME";
 
 // 전역에서 접근 가능한 개발자 도구
 declare global {
@@ -12,6 +13,8 @@ declare global {
       listTiers: () => void;
       testPromotion: () => void;
       resetProgress: () => void;
+      testJamoDecomposition: (text?: string) => void;
+      toggleJamoColors: () => void;
     };
   }
 }
@@ -70,6 +73,39 @@ export function initDevTools() {
         window.location.reload();
         console.log('🔄 모든 진행률이 초기화되었습니다.');
       }
+    },
+    
+    // 한글 자모 분해 테스트
+    testJamoDecomposition: (text = '한글테스트') => {
+      console.log(`🔤 한글 자모 분해 테스트: "${text}"`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━');
+      
+      for (const char of text) {
+        const components = decomposeKorean(char);
+        if (components) {
+          console.log(`"${char}" → 초성:${components.initial} 중성:${components.medial} ${components.hasFinal ? `종성:${components.final}` : '(종성없음)'}`);
+        } else {
+          console.log(`"${char}" → 한글이 아닙니다`);
+        }
+      }
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('사용법: devTools.testJamoDecomposition("문장을입력하세요")');
+    },
+    
+    // 자모 색상 토글
+    toggleJamoColors: () => {
+      // 설정 스토어에 접근해서 토글
+      const settingsStore = JSON.parse(localStorage.getItem('settings-store') || '{}');
+      const currentState = settingsStore.state?.showJamoColors || false;
+      
+      // 토글된 값 저장
+      if (!settingsStore.state) settingsStore.state = {};
+      settingsStore.state.showJamoColors = !currentState;
+      localStorage.setItem('settings-store', JSON.stringify(settingsStore));
+      
+      window.location.reload(); // 설정 적용을 위해 새로고침
+      console.log(`🎨 자모 색상 표시: ${!currentState ? 'ON' : 'OFF'}`);
     }
   };
 
@@ -81,5 +117,7 @@ export function initDevTools() {
     console.log('  devTools.testPromotion()       - 승급 모달 테스트');
     console.log('  devTools.showPromotionModal("bronze", "silver") - 특정 승급 표시');
     console.log('  devTools.resetProgress()       - 진행률 초기화');
+    console.log('  devTools.testJamoDecomposition("한글") - 자모 분해 테스트');
+    console.log('  devTools.toggleJamoColors()    - 자모 색상 토글');
   }
 }

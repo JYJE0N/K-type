@@ -11,6 +11,7 @@ import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
+import { initDevTools } from '@/utils/devTools'
 
 // URL 파라미터 처리를 위한 별도 컴포넌트
 function UrlParamHandler() {
@@ -37,9 +38,18 @@ export default function Home() {
   const { language, testTarget, testMode, theme, sentenceLength, sentenceStyle } = useSettingsStore()
   const { setTargetText, resetTest } = useTypingStore()
 
-  // 테마 초기화
+  // 테마 및 개발자 도구 초기화
   useEffect(() => {
     initializeTheme()
+    initDevTools()
+  }, [])
+
+  // 모바일 스크롤 제어를 위한 body 클래스 추가/제거
+  useEffect(() => {
+    document.body.classList.add('typing-page')
+    return () => {
+      document.body.classList.remove('typing-page')
+    }
   }, [])
 
   // 언어 또는 설정 변경 시 새로운 텍스트 생성
@@ -75,7 +85,7 @@ export default function Home() {
             {/* 섹션 1: 메인 타이핑 영역 */}
             <section className="w-full">
               {/* 언어 선택 토글 - 모바일에서 고정 위치 */}
-              <div className="flex justify-center mb-6 md:mb-6 md:relative md:z-auto mobile-language-toggle">
+              <div className="flex justify-center mb-6 md:mb-8 md:relative md:z-auto mobile-language-toggle">
                 <LanguageToggle />
               </div>
               

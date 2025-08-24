@@ -119,22 +119,19 @@ export function ThemeMenu({ className = '' }: ThemeMenuProps) {
       {/* 테마 선택 버튼 (팔레트) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg transition-colors"
-        style={{
-          backgroundColor: isOpen ? 'var(--color-background-elevated)' : 'transparent',
-          color: isOpen ? 'var(--color-interactive-primary)' : 'var(--color-text-secondary)'
-        }}
+        className={`p-2 rounded-lg transition-colors toolbar-icon ${isOpen ? 'active' : ''}`}
         onMouseEnter={(e) => {
           if (!isOpen) {
             e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'
-            e.currentTarget.style.color = 'var(--color-interactive-primary)'
           }
         }}
         onMouseLeave={(e) => {
           if (!isOpen) {
             e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--color-text-secondary)'
           }
+        }}
+        style={{
+          backgroundColor: isOpen ? 'var(--color-background-elevated)' : 'transparent'
         }}
         title="테마 선택"
         aria-expanded={isOpen}

@@ -36,6 +36,7 @@ export function useTypingTestController() {
     resumeTest,
     stopTest,
     getCurrentChar,
+    handleBackspace: storeHandleBackspace,
   } = useTypingStore();
 
   const { calculateStats, resetStats, liveStats } = useStatsStore();
@@ -163,13 +164,18 @@ export function useTypingTestController() {
 
   // 백스페이스 처리
   const handleBackspace = useCallback(() => {
+    console.log('🔙 TypingTestController: handleBackspace called');
+    
+    // 실제 백스페이스 처리
+    storeHandleBackspace();
+    
     // 언어 힌트 숨김 (백스페이스 시)
     if (languageHint.show) {
       setLanguageHint(prev => ({ ...prev, show: false }));
     }
     
     calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), textType, targetText, userInput, firstKeystrokeTime);
-  }, [languageHint.show, calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
+  }, [storeHandleBackspace, languageHint.show, calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
 
   // 테스트 완료 처리 (🚨 recordTest 제거 - TestCompletionHandler에서만 처리)
   const handleTestCompletion = useCallback(() => {

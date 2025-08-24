@@ -10,6 +10,7 @@ import { PromotionModal } from "@/components/gamification/PromotionModal";
 import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
 import { CharacterProgressSlider } from "@/components/ui/ProgressSlider";
 import { LanguageMismatchAlert } from "@/components/ui/LanguageMismatchAlert";
+// import { TypingPreview } from "@/components/ui/TypingPreview";
 import { useTypingStore } from "@/stores/typingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { TierConfig } from "@/utils/tierSystem";
@@ -229,37 +230,55 @@ export function TypingTestUI({
         </div>
       )}
 
-      {/* 메인 컨텐츠 영역 */}
-      <div className="main-content-area">
-        {/* 상단 정보 바 */}
-        <div className="info-bar mb-6">
-          <div className="flex justify-between items-center mb-4">
-            {/* 시간/진행률 표시 */}
-            <div className="progress-info flex items-center gap-3">
-              {/* 시간 모드 제거됨 - 경과 시간은 프로그레스바에서 확인 */}
+      {/* 메인 컨텐츠 영역 - 새로운 레이아웃 구성 */}
+      <div className="main-content-area max-w-4xl mx-auto px-4">
+        
+        {/* 1. 진행률 슬라이더 - 테스트 시작 시에만 표시 (배경만 제거) */}
+        {isActive && (
+          <div className="progress-slider-container mb-6">
+            <div className="w-full max-w-2xl mx-auto">
+              <CharacterProgressSlider
+                currentIndex={currentIndex}
+                totalLength={targetText.length}
+                elapsedTime={currentTime}
+                variant="success"
+                size="lg"
+                className=""
+                showCount={false}
+                animated={false}
+              />
             </div>
-
-            {/* 고스트 인디케이터 */}
-            <GhostIndicator />
           </div>
+        )}
 
-          {/* 진행률 슬라이더 - PC용 */}
-          <div className="progress-slider-container hidden md:block">
-            {/* 글자 기반 프로그레스바 (경과 시간 표시) */}
-            <CharacterProgressSlider
-              currentIndex={currentIndex}
-              totalLength={targetText.length}
-              elapsedTime={currentTime}
-              variant="success"
-              size="md"
-              className=""
-              showCount={false}
-              animated={false}
-            />
+        {/* iPad 전용 시작 버튼 */}
+        {!isActive && !isCompleted && !isCountingDown && (
+          <div className="ipad-start-button-container block md:hidden mb-6 text-center">
+            <button
+              onClick={() => {
+                console.log('📱 iPad explicit start button clicked');
+                onStart();
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--color-interactive-primary)',
+                color: 'var(--color-text-on-primary)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+              }}
+            >
+              <IoPlay className="w-5 h-5" />
+              타이핑 시작하기
+            </button>
+            <div 
+              className="text-xs mt-2 opacity-60"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              버튼을 눌러 시작하세요
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 텍스트 렌더러와 입력 핸들러 - 고정 위치 */}
+        {/* 2. 텍스트 필드 */}
         <div
           className="typing-area relative cursor-pointer"
           style={{ minHeight: "200px" }}
@@ -291,6 +310,16 @@ export function TypingTestUI({
             className="typing-input"
           />
         </div>
+
+        {/* 3. 현재 작성중인 글자 미리보기 패널 - PC에서만 표시 (주석처리) */}
+        {/* <div className="hidden md:block">
+          <TypingPreview
+            targetText={targetText}
+            currentIndex={currentIndex}
+            userInput={userInput}
+            isActive={isActive}
+          />
+        </div> */}
 
         {/* 타이핑 시각화 컨테이너 - 데스크톱용 */}
         <div
@@ -427,8 +456,8 @@ export function TypingTestUI({
           </div>
         </div>
 
-        {/* 데스크톱용 컨트롤 버튼들 */}
-        <div className="hidden md:flex justify-center items-center gap-4 mb-6 mt-16">
+        {/* 4. 컨트롤 버튼 - PC 버전 */}
+        <div className="hidden md:flex justify-center items-center gap-4 mb-8 mt-8">
           {!isActive && !isCompleted && !isCountingDown && (
             <>
               <button
@@ -497,7 +526,7 @@ export function TypingTestUI({
           )}
         </div>
 
-        {/* 키보드 숏컷 안내 */}
+        {/* 5. 숏컷 인포 */}
         <div className="shortcuts-container">
           <KeyboardShortcuts
             showStart={!isActive && !isCompleted && !isCountingDown}

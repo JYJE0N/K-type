@@ -71,6 +71,7 @@ function renderSpecialKey(char: string, specialKey: string, status: string) {
   return keyDisplay;
 }
 
+
 /**
  * 문자별 스타일 클래스 생성
  */
@@ -119,7 +120,7 @@ export const CharacterRenderer = memo(function CharacterRenderer({
         {/* 현재 문자 아래 커서 */}
         {showCursor && status === "current" && (
           <span 
-            className={`typing-cursor absolute left-0 w-full h-0.5 rounded-sm transition-all duration-150 ${
+            className={`typing-cursor absolute left-0 w-full h-px rounded-sm transition-all duration-150 ${
               specialKey === "space" ? "current-char-glow space-underline" : "pulse-glow"
             }`} 
           />

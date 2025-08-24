@@ -44,10 +44,8 @@ export function TextRenderer({
     return groupCharactersByWords(text, characterStates);
   }, [text, characterStates]);
 
-  // 모바일 고정 윈도우 내부 스크롤 - "구멍뚫은 종이" 방식
+  // 자동 스크롤 처리 - 모바일과 PC 다르게 처리
   useEffect(() => {
-    if (!isMobile) return;
-
     let scrollTimeout: NodeJS.Timeout;
 
     const scrollToCurrentPosition = () => {
@@ -59,39 +57,49 @@ export function TextRenderer({
         ".typing-text-container"
       );
 
-
       if (currentElement && textContainer) {
-        // 고정 윈도우의 높이를 CSS 변수에서 가져오기 (12rem = 192px)
-        const windowHeight = 192; // TODO: CSS 변수로 동적 계산 가능
-        const windowCenter = windowHeight / 2; // 72px - 가운데 줄
+        if (isMobile) {
+          // 모바일: 기존 중앙 정렬 로직
+          const windowHeight = 192;
+          const windowCenter = windowHeight / 2;
 
-        // 현재 요소의 절대 위치를 텍스트 컨테이너 기준으로 계산
-        const textContainerRect = textContainer.getBoundingClientRect();
-        const elementRect = (
-          currentElement as HTMLElement
-        ).getBoundingClientRect();
+          const textContainerRect = textContainer.getBoundingClientRect();
+          const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
 
-        // 텍스트 컨테이너 내에서 현재 요소의 상대적 위치
-        const relativeTop =
-          elementRect.top - textContainerRect.top + textContainer.scrollTop;
+          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+          const targetScrollTop = relativeTop - windowCenter;
 
-        // 현재 타이핑 위치가 윈도우 가운데 줄에 오도록 스크롤 계산
-        const targetScrollTop = relativeTop - windowCenter;
-
-
-        // 부드러운 내부 스크롤 - 일시정지 상태 고려
-        // 일시정지 중이거나 진행 중인 상태에서는 현재 위치 유지
-        if (currentIndex <= 0 && !isPaused) {
-          textContainer.scrollTo({
-            top: Math.max(0, targetScrollTop),
-            behavior: "instant",
-          });
+          if (currentIndex <= 0 && !isPaused) {
+            textContainer.scrollTo({
+              top: Math.max(0, targetScrollTop),
+              behavior: "instant",
+            });
+          } else {
+            (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
+            textContainer.scrollTop = Math.max(0, targetScrollTop);
+          }
         } else {
-          // CSS transition으로 더 부드러운 스크롤 (일시정지 중에도 위치 유지)
-          (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
-          textContainer.scrollTop = Math.max(0, targetScrollTop);
-        }
+          // PC: 텍스트가 뷰포트의 상단 1/3 지점에 위치하도록 스크롤
+          const containerHeight = textContainer.clientHeight;
+          const targetPosition = containerHeight * 0.33; // 상단 1/3 지점
 
+          const textContainerRect = textContainer.getBoundingClientRect();
+          const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
+
+          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+          const targetScrollTop = relativeTop - targetPosition;
+
+          // 첫 번째 글자일 때는 처음부터 시작
+          if (currentIndex <= 0) {
+            textContainer.scrollTo({
+              top: 0,
+              behavior: "instant",
+            });
+          } else {
+            (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
+            textContainer.scrollTop = Math.max(0, targetScrollTop);
+          }
+        }
       }
     };
 
@@ -109,7 +117,7 @@ export function TextRenderer({
     return () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
-  }, [currentIndex, isMobile]);
+  }, [currentIndex, isPaused]);
 
   // 메인 렌더링
   const renderContent = () => {
@@ -206,9 +214,133 @@ export function TextRenderer({
           </div>
         </div>
       ) : (
-        // PC/태블릿: 기존 방식
-        <div className={`typing-text-container ${getTypingTextClassName(deviceContext)} font-korean text-2xl px-6 py-6 bg-transparent rounded-lg border-2 border-transparent text-center flex flex-wrap justify-center items-baseline transition-all duration-300 ease-in-out`}>
-          {renderContent()}
+        // PC/태블릿: 적응형 구멍뚫린 창
+        <div
+          className="desktop-text-window"
+          style={{
+            position: "relative",
+            width: "70%", // 뷰포트의 70%만 사용
+            maxWidth: "800px", // 최대 너비 제한
+            margin: "0 auto", // 중앙 정렬
+            // CSS 변수를 사용한 적응형 높이
+            height: "var(--window-height)",
+            overflow: "hidden",
+            backgroundColor: "transparent",
+            marginTop: "2rem",
+            marginBottom: "2rem",
+          }}
+        >
+          {/* 위쪽 블러 그라데이션 마스크 - 외층 (강한 블러) */}
+          <div
+            className="blur-mask-top-outer"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "var(--blur-height)",
+              background: `linear-gradient(to bottom, 
+                var(--color-background) 0%, 
+                color-mix(in srgb, var(--color-background) 95%, transparent) 30%,
+                color-mix(in srgb, var(--color-background) 80%, transparent) 50%,
+                color-mix(in srgb, var(--color-background) 50%, transparent) 70%,
+                color-mix(in srgb, var(--color-background) 20%, transparent) 85%, 
+                transparent 100%)`,
+              backdropFilter: "blur(12px)",
+              zIndex: 12,
+              pointerEvents: "none",
+            }}
+          />
+          
+          {/* 위쪽 블러 그라데이션 마스크 - 내층 (부드러운 블러) */}
+          <div
+            className="blur-mask-top-inner"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "calc(var(--blur-height) * 0.7)",
+              background: `linear-gradient(to bottom, 
+                var(--color-background) 0%, 
+                color-mix(in srgb, var(--color-background) 90%, transparent) 40%,
+                color-mix(in srgb, var(--color-background) 60%, transparent) 70%, 
+                transparent 100%)`,
+              backdropFilter: "blur(4px)",
+              zIndex: 11,
+              pointerEvents: "none",
+            }}
+          />
+          
+          {/* 아래쪽 블러 그라데이션 마스크 - 외층 (강한 블러) */}
+          <div
+            className="blur-mask-bottom-outer"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "var(--blur-height)",
+              background: `linear-gradient(to top, 
+                var(--color-background) 0%, 
+                color-mix(in srgb, var(--color-background) 95%, transparent) 30%,
+                color-mix(in srgb, var(--color-background) 80%, transparent) 50%,
+                color-mix(in srgb, var(--color-background) 50%, transparent) 70%,
+                color-mix(in srgb, var(--color-background) 20%, transparent) 85%, 
+                transparent 100%)`,
+              backdropFilter: "blur(12px)",
+              zIndex: 12,
+              pointerEvents: "none",
+            }}
+          />
+          
+          {/* 아래쪽 블러 그라데이션 마스크 - 내층 (부드러운 블러) */}
+          <div
+            className="blur-mask-bottom-inner"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "calc(var(--blur-height) * 0.7)",
+              background: `linear-gradient(to top, 
+                var(--color-background) 0%, 
+                color-mix(in srgb, var(--color-background) 90%, transparent) 40%,
+                color-mix(in srgb, var(--color-background) 60%, transparent) 70%, 
+                transparent 100%)`,
+              backdropFilter: "blur(4px)",
+              zIndex: 11,
+              pointerEvents: "none",
+            }}
+          />
+
+          <div
+            className="typing-text-container font-korean text-2xl text-center"
+            style={{
+              overflow: "auto",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+              // CSS 변수를 사용한 적응형 패딩
+              padding: "var(--text-container-padding-vertical) 2rem",
+              height: "100%",
+              // 텍스트 크기도 CSS 변수로 통일
+              fontSize: "var(--typing-font-size)",
+            }}
+          >
+            <div 
+              className="flex flex-wrap justify-center items-baseline min-h-full"
+              style={{
+                // CSS 변수를 사용한 라인 높이
+                lineHeight: "var(--typing-line-height)",
+                letterSpacing: "0.02em", // 자간도 약간 추가
+                // 영화 크레딧 스타일을 위한 추가 스타일
+                textAlign: "center",
+              }}
+            >
+              {renderContent()}
+            </div>
+          </div>
         </div>
       )}
     </div>

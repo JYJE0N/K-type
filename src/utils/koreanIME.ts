@@ -59,6 +59,62 @@ export function filterKoreanJamo(text: string): string {
 }
 
 /**
+ * Korean syllable decomposition utility
+ * 한글 음절 분해 유틸리티
+ */
+export interface KoreanJamoComponents {
+  initial: string;   // 초성
+  medial: string;    // 중성  
+  final: string;     // 종성
+  hasInitial: boolean;
+  hasMedial: boolean;
+  hasFinal: boolean;
+}
+
+/**
+ * Decompose Korean syllable into jamo components
+ * 한글 음절을 자모로 분해
+ */
+export function decomposeKorean(char: string): KoreanJamoComponents | null {
+  if (!char || char.length !== 1 || !isCompletedKorean(char)) {
+    return null;
+  }
+
+  const code = char.charCodeAt(0) - 0xac00;
+  
+  // 초성, 중성, 종성 인덱스 계산
+  const initialIndex = Math.floor(code / 588); // 588 = 21 * 28
+  const medialIndex = Math.floor((code % 588) / 28);
+  const finalIndex = code % 28;
+
+  // 자모 배열 (유니코드 순서)
+  const initials = [
+    'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 
+    'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+  ];
+  
+  const medials = [
+    'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ',
+    'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
+  ];
+  
+  const finals = [
+    '', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ',
+    'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ',
+    'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+  ];
+
+  return {
+    initial: initials[initialIndex],
+    medial: medials[medialIndex],
+    final: finals[finalIndex],
+    hasInitial: true, // 한글은 항상 초성이 있음
+    hasMedial: true,  // 한글은 항상 중성이 있음
+    hasFinal: finalIndex > 0
+  };
+}
+
+/**
  * Browser-specific IME composition handling
  * 브라우저별 IME 조합 처리
  */

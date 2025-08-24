@@ -46,17 +46,39 @@ export function InputHandler({
       
       if (isIOS) {
         // iOS에서는 사용자 제스처 후에만 가상키보드가 활성화됨
-        inputRef.current.focus()
-        // 추가 처리: readonly 제거하여 편집 가능하게 만들기
-        inputRef.current.removeAttribute('readonly')
-        // 약간의 딜레이 후 다시 포커스 (iOS Safari 버그 대응)
+        const input = inputRef.current
+        
+        // 1단계: readonly 제거 및 기본 속성 설정
+        input.removeAttribute('readonly')
+        input.setAttribute('inputmode', 'text')
+        input.setAttribute('autocomplete', 'off')
+        input.setAttribute('autocorrect', 'off')
+        input.setAttribute('spellcheck', 'false')
+        
+        // 2단계: 즉시 포커스
+        input.focus()
+        
+        // 3단계: iOS Safari 특화 키보드 활성화 시퀀스
         setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus()
-            inputRef.current.click() // iOS에서 가상키보드 강제 활성화
+          if (input && document.activeElement === input) {
+            // 가상 클릭으로 키보드 강제 활성화 시도
+            const touchEvent = new TouchEvent('touchstart', { bubbles: true, cancelable: true })
+            input.dispatchEvent(touchEvent)
+            input.click()
+            input.focus()
           }
-        }, 50)
-        console.log('🍎 iOS Focus maintained with keyboard activation')
+        }, 100)
+        
+        // 4단계: 최종 검증 및 재시도
+        setTimeout(() => {
+          if (input && document.activeElement !== input) {
+            console.log('⚠️ iOS keyboard activation failed, retrying...')
+            input.focus()
+            input.click()
+          }
+        }, 300)
+        
+        console.log('🍎 iOS Enhanced keyboard activation sequence')
       } else {
         inputRef.current.focus()
         console.log('🎯 Focus maintained')
@@ -157,26 +179,43 @@ export function InputHandler({
     // ESC 키: 일시정지/중단 (직접 처리)
     if (key === 'Escape') {
       event.preventDefault();
+      console.log('🔥 ESC key detected in handleKeyDown');
       const currentState = useTypingStore.getState()
+      console.log('🔍 Current state:', {
+        isActive: currentState.isActive,
+        isPaused: currentState.isPaused,
+        isCountingDown: currentState.isCountingDown
+      });
       
       if (currentState.isActive && !currentState.isPaused) {
         // 첫 번째 ESC: 일시정지
         console.log('⏸️ ESC pressed - pausing test');
         if (onPause) {
+          console.log('✅ Calling onPause');
           onPause();
+        } else {
+          console.log('❌ onPause is not available');
         }
       } else if (currentState.isPaused) {
         // 두 번째 ESC: 중단
         console.log('⏹️ ESC pressed - stopping test');
         if (onRestart) {
+          console.log('✅ Calling onRestart');
           onRestart();
+        } else {
+          console.log('❌ onRestart is not available');
         }
       } else if (currentState.isCountingDown) {
         // 카운트다운 중: 즉시 중단
         console.log('⏹️ ESC pressed during countdown - stopping test');
         if (onRestart) {
+          console.log('✅ Calling onRestart during countdown');
           onRestart();
+        } else {
+          console.log('❌ onRestart is not available during countdown');
         }
+      } else {
+        console.log('⚠️ ESC pressed but no matching state');
       }
       return;
     }
@@ -193,6 +232,7 @@ export function InputHandler({
     // Backspace 처리 - 활성화된 타이핑 중에도 가능
     if (key === 'Backspace') {
       event.preventDefault()
+      console.log(`🔙 Backspace pressed - isPaused: ${isPaused}, isActive: ${isActive}, isCountingDown: ${isCountingDown}`)
       
       // 일시정지 상태에서는 재개
       if (isPaused && onResume) {
@@ -203,7 +243,10 @@ export function InputHandler({
       
       // 활성화된 상태에서만 백스페이스 처리
       if (isActive && !isCountingDown) {
+        console.log('✅ Calling onBackspace()')
         onBackspace()
+      } else {
+        console.log(`❌ Backspace blocked - isActive: ${isActive}, isCountingDown: ${isCountingDown}`)
       }
       
       if (inputRef.current) inputRef.current.value = ''
@@ -254,48 +297,60 @@ export function InputHandler({
 
   // Composition event handlers (for IME)
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
-    console.log('🎭 Composition started:', event.data)
-    imeHandler.current.startComposition()
-    setCompositionState(true, event.data || '')
-    onCompositionChange?.(true)
-    
-    // Hide start hint when user starts typing
-    if (showStartHint) {
-      setShowStartHint(false)
+    try {
+      console.log('🎭 Composition started:', event.data)
+      imeHandler.current.startComposition()
+      setCompositionState(true, event.data || '')
+      onCompositionChange?.(true)
+      
+      // Hide start hint when user starts typing
+      if (showStartHint) {
+        setShowStartHint(false)
+      }
+    } catch (error) {
+      console.error('❌ Error in handleCompositionStart:', error)
     }
   }, [onCompositionChange, showStartHint])
 
   const handleCompositionUpdate = useCallback((event: React.CompositionEvent) => {
-    console.log('🎭 Composition update:', event.data)
-    imeHandler.current.updateComposition(event.data || '')
-    setCompositionState(true, event.data || '')
+    try {
+      console.log('🎭 Composition update:', event.data)
+      imeHandler.current.updateComposition(event.data || '')
+      setCompositionState(true, event.data || '')
+    } catch (error) {
+      console.error('❌ Error in handleCompositionUpdate:', error)
+    }
   }, [])
 
   const handleCompositionEnd = useCallback((event: React.CompositionEvent) => {
-    console.log('🎭 Composition ended:', event.data)
-    
-    const composedText = event.data || ''
-    const newChars = imeHandler.current.endComposition(composedText)
-    setCompositionState(false, '')
-    onCompositionChange?.(false)
-    
-    // Auto-start if this is the first input
-    if (!testStarted && newChars.length > 0) {
-      handleTestStart()
-    }
-    
-    // Process each new character
-    for (const char of newChars) {
-      processCharacter(char)
-    }
-    
-    // Clear input field
-    if (inputRef.current) {
-      inputRef.current.value = ''
+    try {
+      console.log('🎭 Composition ended:', event.data)
+      
+      const composedText = event.data || ''
+      const newChars = imeHandler.current.endComposition(composedText)
+      setCompositionState(false, '')
+      onCompositionChange?.(false)
+      
+      // Auto-start if this is the first input
+      if (!testStarted && newChars.length > 0) {
+        handleTestStart()
+      }
+      
+      // Process each new character
+      for (const char of newChars) {
+        processCharacter(char)
+      }
+      
+      // Clear input field
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('❌ Error in handleCompositionEnd:', error)
     }
   }, [testStarted, onCompositionChange])
 
-  // Handle click to focus and start test
+  // Handle click to focus and start test (iOS 최적화)
   const handleContainerClick = useCallback(() => {
     console.log('🖱️ Container clicked!', { testStarted, isActive, disabled, isCompleted, isPaused })
     if (disabled || isCompleted) {
@@ -310,14 +365,25 @@ export function InputHandler({
       return
     }
     
+    // iPad에서는 첫 클릭은 포커스만, 두 번째 클릭에서 시작
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    
+    if (isIOS && !testStarted && !isActive) {
+      // iPad에서는 포커스만 하고 바로 시작하지 않음
+      console.log('📱 iPad: Focus only, waiting for explicit start')
+      maintainFocus()
+      if (showStartHint) {
+        setShowStartHint(false)
+      }
+      return
+    }
+    
     maintainFocus()
     
-    // Start test if not started
-    if (!testStarted && !isActive) {
-      console.log('🚀 Starting test from click')
+    // 데스크톱에서는 클릭으로 시작 가능
+    if (!testStarted && !isActive && !isIOS) {
+      console.log('🚀 Starting test from click (desktop)')
       handleTestStart()
-    } else {
-      console.log('❌ Cannot start test:', { testStarted, isActive })
     }
     
     // Hide hint when clicked
@@ -352,41 +418,71 @@ export function InputHandler({
     
     // 페이지 클릭 시에도 포커스 유지
     const handlePageClick = () => {
-      if (!disabled && !isCompleted) {
-        setTimeout(() => maintainFocus(), 10)
+      try {
+        if (!disabled && !isCompleted) {
+          setTimeout(() => maintainFocus(), 10)
+        }
+      } catch (error) {
+        console.error('❌ Error in handlePageClick:', error)
       }
     }
     
     // 더 강력한 전역 ESC 키 처리 (모든 키보드에서 동작)
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      // ESC 키에 대한 다중 조건 체크
+      // ESC 키만 로깅 (다른 키는 무시)
       if (event.key === 'Escape' || event.keyCode === 27 || event.which === 27) {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-        
-        const currentState = useTypingStore.getState()
-        console.log('🔥 Global ESC detected from:', (event.target as HTMLElement)?.tagName || 'unknown', 'KeyCode:', event.keyCode)
-        
-        if (currentState.isActive && !currentState.isPaused) {
-          // 첫 번째 ESC: 일시정지
-          console.log('⏸️ Global ESC - pausing test')
-          if (onPause) {
-            onPause()
-          }
-        } else if (currentState.isPaused) {
-          // 두 번째 ESC: 중단
-          console.log('⏹️ Global ESC - stopping test')
-          if (onRestart) {
-            onRestart()
-          }
-        } else if (currentState.isCountingDown) {
-          // 카운트다운 중: 즉시 중단
-          console.log('⏹️ Global ESC during countdown - stopping test')
-          if (onRestart) {
-            onRestart()
+        console.log('🎹 ESC key pressed:', event.key, event.keyCode, event.which);
+      }
+      
+      try {
+        // ESC 키에 대한 다중 조건 체크
+        if (event.key === 'Escape' || event.keyCode === 27 || event.which === 27) {
+          console.log('🔥 GLOBAL ESC DETECTED!');
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+          
+          const currentState = useTypingStore.getState()
+          console.log('🔍 Global ESC state check:', {
+            isActive: currentState.isActive,
+            isPaused: currentState.isPaused,
+            isCountingDown: currentState.isCountingDown,
+            target: (event.target as HTMLElement)?.tagName || 'unknown'
+          });
+          
+          if (currentState.isActive && !currentState.isPaused) {
+            // 첫 번째 ESC: 일시정지
+            console.log('⏸️ Global ESC - pausing test')
+            if (onPause) {
+              console.log('✅ Global calling onPause');
+              onPause()
+            } else {
+              console.log('❌ Global onPause not available');
+            }
+          } else if (currentState.isPaused) {
+            // 두 번째 ESC: 중단
+            console.log('⏹️ Global ESC - stopping test')
+            if (onRestart) {
+              console.log('✅ Global calling onRestart');
+              onRestart()
+            } else {
+              console.log('❌ Global onRestart not available');
+            }
+          } else if (currentState.isCountingDown) {
+            // 카운트다운 중: 즉시 중단
+            console.log('⏹️ Global ESC during countdown - stopping test')
+            if (onRestart) {
+              console.log('✅ Global calling onRestart during countdown');
+              onRestart()
+            } else {
+              console.log('❌ Global onRestart not available during countdown');
+            }
+          } else {
+            console.log('⚠️ Global ESC but no matching state');
           }
         }
+      } catch (error) {
+        console.error('❌ Error in handleGlobalKeyDown:', error)
       }
     }
     

@@ -301,6 +301,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
               size="md"
             />
           </div>
+
         </div>
       </div>
     </div>

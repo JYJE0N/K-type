@@ -38,17 +38,12 @@
   --mobile-progress-spacing: 1rem; /* 더 위로 이동 */
 }
 
-/* 모바일 컨텐츠 컨테이너 - 완전 고정 레이아웃 */
+/* 모바일 컨테이너 및 iPad Mini 최적화 */
 @media (max-width: 768px) {
-  /* 모바일에서 body/html 스크롤 완전 차단 */
-  html, body {
+  /* 타이핑 페이지에서만 스크롤 차단 - 모바일만 */
+  body.typing-page {
     height: 100vh !important;
     overflow: hidden !important;
-  }
-  
-  /* 가상키보드 활성화 시 실제 사용 가능한 높이로 조정 */
-  body.keyboard-visible {
-    height: var(--actual-viewport-height, 100vh) !important;
   }
   
   .mobile-content-container {
@@ -59,7 +54,6 @@
     left: 0;
     overflow: hidden; /* 내부 스크롤 차단 */
   }
-}
 
   /* 모바일 언어 토글 고정 */
   .mobile-language-toggle {
@@ -72,6 +66,45 @@
     background-color: var(--color-background);
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--color-border-primary);
+  }
+  
+  /* 카운트다운 중에는 언어 토글 숨김 */
+  body:has(.countdown-overlay) .mobile-language-toggle {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-out;
+  }
+}
+
+/* PC에서는 타이핑 페이지도 자유 스크롤 허용 */
+@media (min-width: 769px) {
+  body.typing-page {
+    overflow: auto !important; /* PC에서는 스크롤 허용 */
+    height: auto !important;
+  }
+}
+
+/* iPad Mini 성능 최적화 - 애니메이션 최소화 */
+@media (max-width: 820px) and (max-height: 1180px) {
+    * {
+      transition-duration: 0.15s !important; /* 애니메이션 속도 향상 */
+      animation-duration: 0.8s !important; /* 카운트다운 애니메이션 속도 향상 */
+    }
+    
+    /* 무거운 효과들 비활성화 */
+    .backdrop-blur-xl {
+      backdrop-filter: blur(4px) !important; /* blur 감소 */
+    }
+    
+    .shadow-2xl,
+    .shadow-xl {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important; /* 그림자 최소화 */
+    }
+    
+    /* 가상키보드 활성화 시 실제 사용 가능한 높이로 조정 */
+    body.keyboard-visible {
+      height: var(--actual-viewport-height, 100vh) !important;
+    }
   }
 
 /* 글자 조합 패널 - 가상 키보드 고려 */
@@ -522,6 +555,32 @@ html[data-theme="stealth-notion"] {
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 /* ===============================
+   🎯 적응형 텍스트 윈도우 계산 변수
+   =============================== */
+
+:root {
+  /* 기본 타이핑 텍스트 크기 및 줄간격 */
+  --typing-font-size: 1.5rem; /* 24px */
+  --typing-line-height: 2.5;
+  
+  /* 계산된 한 줄 높이 */
+  --single-line-height: calc(var(--typing-font-size) * var(--typing-line-height)); /* 60px */
+  
+  /* 구멍뚫린 창 설정 */
+  --visible-lines: 3; /* 보여질 줄 수 */
+  --window-padding: 80px; /* 상하 여백 더 증가 */
+  --window-height: calc(var(--single-line-height) * var(--visible-lines) + var(--window-padding) * 2); /* 340px */
+  
+  /* 블러 마스크 설정 - 자연스러운 전환을 위해 좀 더 크게 */
+  --blur-lines: 0.75; /* 블러 적용 줄 수 약간 증가 */
+  --blur-padding: 20px; /* 블러 여백 증가 */
+  --blur-height: calc(var(--single-line-height) * var(--blur-lines) + var(--blur-padding)); /* 65px */
+  
+  /* 텍스트 컨테이너 패딩 (블러 높이와 동일) */
+  --text-container-padding-vertical: var(--blur-height); /* 65px */
+}
+
+/* ===============================
    🎯 기본 설정 및 CSS 리셋
    =============================== */
 
@@ -805,7 +864,7 @@ a:hover {
 }
 
 .pulse-glow {
-  animation: pulse-glow 1.5s ease-in-out infinite alternate;
+  animation: pulse-color 1.5s ease-in-out infinite alternate;
 }
 
 .shake-animation {
@@ -824,14 +883,71 @@ a:hover {
   }
 }
 
-@keyframes pulse-glow {
+@keyframes pulse-color {
   0% {
-    box-shadow: 0 0 0 2px var(--color-typing-cursor);
+    background-color: var(--color-typing-cursor);
+    opacity: 0.8;
   }
   100% {
-    box-shadow: 0 0 0 2px var(--color-typing-cursor),
-      0 0 10px var(--color-typing-cursor);
+    background-color: var(--color-interactive-primary-hover);
+    opacity: 1;
   }
+}
+
+@keyframes korean-jamo-pulse {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Toolbar 아이콘 통일 스타일 */
+.toolbar-icon {
+  color: var(--color-text-secondary) !important;
+  transition: color 0.15s ease-in-out !important;
+}
+
+.toolbar-icon:hover {
+  color: var(--color-interactive-primary) !important;
+}
+
+.toolbar-icon.active {
+  color: var(--color-interactive-primary) !important;
+}
+
+/* Link 컴포넌트 특별 처리 */
+a.toolbar-icon {
+  color: var(--color-text-secondary) !important;
+  text-decoration: none !important;
+}
+
+a.toolbar-icon:hover,
+a.toolbar-icon:focus,
+a.toolbar-icon:visited {
+  color: var(--color-interactive-primary) !important;
+  text-decoration: none !important;
+}
+
+/* 아이콘 자체에 색상 강제 적용 */
+.toolbar-icon svg {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* IoStatsChart 아이콘 특별 처리 */
+.toolbar-icon .w-5.h-5 {
+  color: inherit !important;
+}
+
+/* 더 강한 셀렉터로 Link 컴포넌트 처리 */
+div a.toolbar-icon {
+  color: var(--color-text-secondary) !important;
+}
+
+div a.toolbar-icon:hover {
+  color: var(--color-interactive-primary) !important;
 }
 
 @keyframes shake {
@@ -980,7 +1096,7 @@ a:hover {
 
 /* 커서와 언더라인 스타일 */
 .typing-cursor {
-  bottom: -2px;
+  bottom: 1px;
   background-color: var(--color-typing-cursor);
 }
 

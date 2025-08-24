@@ -19,43 +19,40 @@ export function Toolbar({ className = "" }: ToolbarProps) {
         {/* 통계 링크 */}
         <Link
           href="/stats"
-          className="p-2 rounded-lg transition-colors"
+          className="p-2 rounded-lg transition-colors toolbar-icon"
           style={{
-            backgroundColor: 'transparent',
-            color: 'var(--color-text-secondary)'
+            color: 'var(--color-text-secondary) !important',
+            textDecoration: 'none !important'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'
-            e.currentTarget.style.color = 'var(--color-interactive-primary)'
+            e.currentTarget.style.color = 'var(--color-interactive-primary) !important'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--color-text-secondary)'
+            e.currentTarget.style.color = 'var(--color-text-secondary) !important'
           }}
           title="통계 보기"
         >
-          <IoStatsChart className="w-5 h-5" />
+          <IoStatsChart className="w-5 h-5" style={{ color: 'inherit !important' }} />
         </Link>
 
         {/* 설정 버튼 */}
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className="p-2 rounded-lg transition-colors"
-          style={{
-            backgroundColor: showSettings ? 'var(--color-background-elevated)' : 'transparent',
-            color: showSettings ? 'var(--color-interactive-primary)' : 'var(--color-text-secondary)'
-          }}
+          className={`p-2 rounded-lg transition-colors toolbar-icon ${showSettings ? 'active' : ''}`}
           onMouseEnter={(e) => {
             if (!showSettings) {
               e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'
-              e.currentTarget.style.color = 'var(--color-interactive-primary)'
             }
           }}
           onMouseLeave={(e) => {
             if (!showSettings) {
               e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = 'var(--color-text-secondary)'
             }
+          }}
+          style={{
+            backgroundColor: showSettings ? 'var(--color-background-elevated)' : 'transparent'
           }}
           title="설정"
         >
