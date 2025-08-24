@@ -429,11 +429,11 @@ export function InputHandler({
           
           const currentState = useTypingStore.getState()
           // console.log('🔍 Global ESC state check:', {
-            isActive: currentState.isActive,
-            isPaused: currentState.isPaused,
-            isCountingDown: currentState.isCountingDown,
-            target: (event.target as HTMLElement)?.tagName || 'unknown'
-          });
+          //   isActive: currentState.isActive,
+          //   isPaused: currentState.isPaused,
+          //   isCountingDown: currentState.isCountingDown,
+          //   target: (event.target as HTMLElement)?.tagName || 'unknown'
+          // });
           
           if (currentState.isActive && !currentState.isPaused) {
             // 첫 번째 ESC: 일시정지
