@@ -175,7 +175,7 @@ export function TextRenderer({
             top: "calc(var(--header-height) + 6.5rem)", /* 헤더 + 언어 토글 + 충분한 여유 공간 */
             left: "1rem",
             right: "1rem",
-            height: "calc(var(--mobile-window-height) - 2rem)", /* 헤더 고려하여 높이 조정 */
+            minHeight: "8rem", /* 최소 높이 */
             maxHeight: "calc(100vh - var(--header-height) - var(--footer-height) - 16rem)", /* 컨트롤 버튼 영역 고려 */
             overflow: "hidden",
             zIndex: 40, /* 고정 타이핑 윈도우 */
@@ -189,12 +189,12 @@ export function TextRenderer({
           <div
             className="typing-text-container font-korean text-xl text-center"
             style={{
-              height: "100%", // 부모 높이에 맞춤
               overflow: "auto", // 스크롤 가능
               scrollbarWidth: "none",
               msOverflowStyle: "none",
               WebkitOverflowScrolling: "touch",
               padding: "1rem",
+              minHeight: "6rem", // 최소 내부 높이
             }}
           >
             {/* 실제 스크롤되는 텍스트 컨테이너 */}

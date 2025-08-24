@@ -99,27 +99,33 @@ export function TypingTestUI({
     const handleResize = () => {
       // 모바일에서만 감지
       if (window.innerWidth <= 768) {
-        // iOS Safari는 window.innerHeight가 변경되지 않으므로 screen.height 사용
-        const screenHeight = window.screen.height;
-        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        // 더 정확한 뷰포트 높이 감지
+        const initialViewportHeight = window.innerHeight;
+        const currentViewportHeight = window.visualViewport?.height || window.innerHeight;
         
-        // 키보드 높이 = 화면 높이 - 현재 뷰포트 높이 - 상단바/하단바 여유공간
-        const keyboardHeight = Math.max(0, screenHeight - viewportHeight - 150);
+        // 키보드 높이 = 초기 뷰포트 높이 - 현재 뷰포트 높이
+        const keyboardHeight = Math.max(0, initialViewportHeight - currentViewportHeight);
         
-        // 키보드가 200px 이상 올라왔을 때 (더 정확한 감지)
-        const isKeyboardUp = keyboardHeight > 200;
+        // 키보드가 150px 이상 올라왔을 때 (임계값 조정)
+        const isKeyboardUp = keyboardHeight > 150;
         setKeyboardVisible(isKeyboardUp);
 
-        // CSS 변수 업데이트
+        // CSS 변수 업데이트 - 실제 사용 가능한 뷰포트 높이 기준
         document.documentElement.style.setProperty(
           "--keyboard-height",
           isKeyboardUp ? `${keyboardHeight}px` : "0px"
+        );
+        
+        // 실제 사용 가능한 뷰포트 높이도 CSS 변수로 제공
+        document.documentElement.style.setProperty(
+          "--actual-viewport-height",
+          `${currentViewportHeight}px`
         );
 
         // body 클래스 토글
         document.body.classList.toggle("keyboard-visible", isKeyboardUp);
         
-        console.log(`키보드 상태: ${isKeyboardUp ? '활성' : '비활성'}, 높이: ${keyboardHeight}px`);
+        console.log(`🎹 키보드 상태: ${isKeyboardUp ? '활성' : '비활성'}, 높이: ${keyboardHeight}px, 사용가능 높이: ${currentViewportHeight}px`);
       }
     };
 
@@ -299,11 +305,15 @@ export function TypingTestUI({
           )}
         </div>
 
-        {/* 모바일용 하단 UI 컨테이너 - 컴팩트 디자인 */}
+        {/* 모바일용 하단 UI 컨테이너 - 뷰포트 대응 */}
         <div className="md:hidden fixed left-0 right-0 z-50" 
              style={{ 
-               bottom: "calc(var(--footer-height) + var(--keyboard-height) + env(safe-area-inset-bottom, 0px) + 0.5rem)",
-               maxHeight: "calc(50vh - 2rem)" // 공간 절약: 최대 높이 제한
+               bottom: keyboardVisible 
+                 ? "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" // 가상키보드 활성 시: 바로 위에
+                 : "calc(var(--footer-height) + env(safe-area-inset-bottom, 0px) + 0.5rem)", // 일반 상태: 푸터 위에
+               maxHeight: keyboardVisible 
+                 ? "calc(var(--actual-viewport-height, 100vh) - var(--header-height) - 8rem)" // 가상키보드 시 실제 뷰포트 사용
+                 : "calc(50vh - 2rem)" // 일반 상태: 기존 높이 제한
              }}>
           
           {/* 통합 정보 패널 - 조합패널 + 프로그레스바 */}

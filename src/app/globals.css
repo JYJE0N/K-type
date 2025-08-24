@@ -38,12 +38,28 @@
   --mobile-progress-spacing: 1rem; /* 더 위로 이동 */
 }
 
-/* 모바일 컨텐츠 컨테이너 - 하단 UI를 위한 공간 확보 */
+/* 모바일 컨텐츠 컨테이너 - 완전 고정 레이아웃 */
 @media (max-width: 768px) {
-  .mobile-content-container {
-    padding-bottom: 200px; /* 프로그레스바 + 컨트롤 버튼 + 여백 */
-    /* min-height 제거 - 고정 UI로 인해 불필요한 높이 생성 방지 */
+  /* 모바일에서 body/html 스크롤 완전 차단 */
+  html, body {
+    height: 100vh !important;
+    overflow: hidden !important;
   }
+  
+  /* 가상키보드 활성화 시 실제 사용 가능한 높이로 조정 */
+  body.keyboard-visible {
+    height: var(--actual-viewport-height, 100vh) !important;
+  }
+  
+  .mobile-content-container {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden; /* 내부 스크롤 차단 */
+  }
+}
 
   /* 모바일 언어 토글 고정 */
   .mobile-language-toggle {

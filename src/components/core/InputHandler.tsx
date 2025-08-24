@@ -38,11 +38,29 @@ export function InputHandler({
   
   const { isCompleted, isActive, isCountingDown, isPaused, setCompositionState } = useTypingStore()
 
-  // Focus management
+  // Focus management with iOS/iPad specific handling
   const maintainFocus = useCallback(() => {
     if (inputRef.current && !disabled && !isCompleted) {
-      inputRef.current.focus()
-      console.log('🎯 Focus maintained')
+      // iOS/iPad 특화: 더 강력한 포커스 처리
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      
+      if (isIOS) {
+        // iOS에서는 사용자 제스처 후에만 가상키보드가 활성화됨
+        inputRef.current.focus()
+        // 추가 처리: readonly 제거하여 편집 가능하게 만들기
+        inputRef.current.removeAttribute('readonly')
+        // 약간의 딜레이 후 다시 포커스 (iOS Safari 버그 대응)
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+            inputRef.current.click() // iOS에서 가상키보드 강제 활성화
+          }
+        }, 50)
+        console.log('🍎 iOS Focus maintained with keyboard activation')
+      } else {
+        inputRef.current.focus()
+        console.log('🎯 Focus maintained')
+      }
     } else {
       console.log('❌ Cannot maintain focus:', { hasInput: !!inputRef.current, disabled, isCompleted })
     }
