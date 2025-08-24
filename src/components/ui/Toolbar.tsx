@@ -15,14 +15,19 @@ export function Toolbar({ className = "" }: ToolbarProps) {
 
   return (
     <>
-      <div className={`flex items-center gap-1 ${className}`}>
-        {/* 통계 링크 */}
+      <div className={`flex items-center gap-1 md:gap-2 ${className}`}>
+        {/* 통계 링크 - 모바일 터치 최적화 */}
         <Link
           href="/stats"
-          className="p-2 rounded-lg transition-colors toolbar-icon"
+          className="p-2 md:p-2 rounded-lg transition-colors toolbar-icon touch-manipulation"
           style={{
             color: 'var(--color-text-secondary) !important',
-            textDecoration: 'none !important'
+            textDecoration: 'none !important',
+            minHeight: '44px', // 모바일 터치 최소 크기
+            minWidth: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'
@@ -34,13 +39,13 @@ export function Toolbar({ className = "" }: ToolbarProps) {
           }}
           title="통계 보기"
         >
-          <IoStatsChart className="w-5 h-5" style={{ color: 'inherit !important' }} />
+          <IoStatsChart className="w-5 h-5 md:w-5 md:h-5" style={{ color: 'inherit !important' }} />
         </Link>
 
-        {/* 설정 버튼 */}
+        {/* 설정 버튼 - 모바일 터치 최적화 */}
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className={`p-2 rounded-lg transition-colors toolbar-icon ${showSettings ? 'active' : ''}`}
+          className={`p-2 md:p-2 rounded-lg transition-colors toolbar-icon touch-manipulation ${showSettings ? 'active' : ''}`}
           onMouseEnter={(e) => {
             if (!showSettings) {
               e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'
@@ -52,11 +57,16 @@ export function Toolbar({ className = "" }: ToolbarProps) {
             }
           }}
           style={{
-            backgroundColor: showSettings ? 'var(--color-background-elevated)' : 'transparent'
+            backgroundColor: showSettings ? 'var(--color-background-elevated)' : 'transparent',
+            minHeight: '44px', // 모바일 터치 최소 크기
+            minWidth: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           title="설정"
         >
-          <IoSettingsSharp className="w-5 h-5" />
+          <IoSettingsSharp className="w-5 h-5 md:w-5 md:h-5" />
         </button>
 
         {/* 테마 메뉴 */}

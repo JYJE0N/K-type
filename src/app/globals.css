@@ -1389,11 +1389,64 @@ div a.toolbar-icon:hover {
   body {
     font-size: 14px;
   }
+
+  /* 모바일 툴바 최적화 */
+  .toolbar-icon {
+    padding: 0.75rem !important; /* 더 큰 터치 영역 */
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation; /* 빠른 터치 응답 */
+  }
+
+  /* 모바일 버튼 그룹 간격 조정 */
+  .typing-button-primary,
+  .typing-button-secondary,
+  .typing-button-restart {
+    padding: 1rem 1.5rem !important;
+    min-height: 48px;
+    font-size: 1rem;
+    touch-action: manipulation;
+  }
+
+  /* 모바일 설정 메뉴 드롭다운 위치 조정 */
+  .settings-menu-dropdown,
+  .theme-menu-dropdown {
+    position: fixed !important;
+    top: calc(var(--header-height) + 0.5rem) !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 모바일 스크롤 성능 최적화 */
+  .typing-text-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
 }
 
 @media (max-width: 480px) {
   body {
     font-size: 13px;
+  }
+
+  /* 작은 화면에서 더 촘촘한 레이아웃 */
+  .toolbar-icon {
+    padding: 0.5rem !important;
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  .typing-button-primary,
+  .typing-button-secondary,
+  .typing-button-restart {
+    padding: 0.875rem 1.25rem !important;
+    min-height: 44px;
+    font-size: 0.9rem;
   }
 }
 

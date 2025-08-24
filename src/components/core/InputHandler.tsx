@@ -41,11 +41,13 @@ export function InputHandler({
   // Focus management with iOS/iPad specific handling
   const maintainFocus = useCallback(() => {
     if (inputRef.current && !disabled && !isCompleted) {
-      // iOS/iPad 특화: 더 강력한 포커스 처리
+      // iOS/iPad/Android 특화: 더 강력한 포커스 처리
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isAndroid = /Android/.test(navigator.userAgent)
+      const isMobile = isIOS || isAndroid
       
-      if (isIOS) {
-        // iOS에서는 사용자 제스처 후에만 가상키보드가 활성화됨
+      if (isMobile) {
+        // 모바일에서는 사용자 제스처 후에만 가상키보드가 활성화됨
         const input = inputRef.current
         
         // 1단계: readonly 제거 및 기본 속성 설정
@@ -55,15 +57,22 @@ export function InputHandler({
         input.setAttribute('autocorrect', 'off')
         input.setAttribute('spellcheck', 'false')
         
+        // 안드로이드에서 타입 명시적 설정
+        if (isAndroid) {
+          input.setAttribute('type', 'text')
+        }
+        
         // 2단계: 즉시 포커스
         input.focus()
         
-        // 3단계: iOS Safari 특화 키보드 활성화 시퀀스
+        // 3단계: 모바일 Safari/Chrome 특화 키보드 활성화 시퀀스
         setTimeout(() => {
           if (input && document.activeElement === input) {
             // 가상 클릭으로 키보드 강제 활성화 시도
-            const touchEvent = new TouchEvent('touchstart', { bubbles: true, cancelable: true })
-            input.dispatchEvent(touchEvent)
+            if (typeof TouchEvent !== 'undefined') {
+              const touchEvent = new TouchEvent('touchstart', { bubbles: true, cancelable: true })
+              input.dispatchEvent(touchEvent)
+            }
             input.click()
             input.focus()
           }
@@ -72,13 +81,13 @@ export function InputHandler({
         // 4단계: 최종 검증 및 재시도
         setTimeout(() => {
           if (input && document.activeElement !== input) {
-            console.log('⚠️ iOS keyboard activation failed, retrying...')
+            console.log('⚠️ Mobile keyboard activation failed, retrying...')
             input.focus()
             input.click()
           }
         }, 300)
         
-        console.log('🍎 iOS Enhanced keyboard activation sequence')
+        console.log('📱 Mobile Enhanced keyboard activation sequence', { isIOS, isAndroid })
       } else {
         inputRef.current.focus()
         console.log('🎯 Focus maintained')
@@ -350,7 +359,7 @@ export function InputHandler({
     }
   }, [testStarted, onCompositionChange])
 
-  // Handle click to focus and start test (iOS 최적화)
+  // Handle click to focus and start test (모바일 최적화)
   const handleContainerClick = useCallback(() => {
     console.log('🖱️ Container clicked!', { testStarted, isActive, disabled, isCompleted, isPaused })
     if (disabled || isCompleted) {
@@ -365,12 +374,14 @@ export function InputHandler({
       return
     }
     
-    // iPad에서는 첫 클릭은 포커스만, 두 번째 클릭에서 시작
+    // 모바일 환경 감지
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    const isAndroid = /Android/.test(navigator.userAgent)
+    const isMobile = isIOS || isAndroid
     
-    if (isIOS && !testStarted && !isActive) {
-      // iPad에서는 포커스만 하고 바로 시작하지 않음
-      console.log('📱 iPad: Focus only, waiting for explicit start')
+    if (isMobile && !testStarted && !isActive) {
+      // 모바일에서는 첫 클릭은 포커스만, 명시적 시작 대기
+      console.log('📱 Mobile: Focus only, waiting for explicit start')
       maintainFocus()
       if (showStartHint) {
         setShowStartHint(false)
@@ -381,7 +392,7 @@ export function InputHandler({
     maintainFocus()
     
     // 데스크톱에서는 클릭으로 시작 가능
-    if (!testStarted && !isActive && !isIOS) {
+    if (!testStarted && !isActive && !isMobile) {
       console.log('🚀 Starting test from click (desktop)')
       handleTestStart()
     }
@@ -430,13 +441,13 @@ export function InputHandler({
     // 더 강력한 전역 ESC 키 처리 (모든 키보드에서 동작)
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       // ESC 키만 로깅 (다른 키는 무시)
-      if (event.key === 'Escape' || event.keyCode === 27 || event.which === 27) {
-        console.log('🎹 ESC key pressed:', event.key, event.keyCode, event.which);
+      if (event.key === 'Escape') {
+        console.log('🎹 ESC key pressed:', event.key);
       }
       
       try {
-        // ESC 키에 대한 다중 조건 체크
-        if (event.key === 'Escape' || event.keyCode === 27 || event.which === 27) {
+        // ESC 키 체크 (event.key만 사용)
+        if (event.key === 'Escape') {
           console.log('🔥 GLOBAL ESC DETECTED!');
           event.preventDefault()
           event.stopPropagation()
