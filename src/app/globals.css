@@ -73,7 +73,6 @@
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--color-border-primary);
   }
-}
 
 /* 글자 조합 패널 - 가상 키보드 고려 */
 @media (max-width: 768px) {
