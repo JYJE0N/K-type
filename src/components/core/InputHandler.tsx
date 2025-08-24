@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTypingStore } from '@/stores/typingStore'
 import { IMEHandler, isKoreanJamo, getBrowserType, isCompletedKorean } from '@/utils/koreanIME'
+import { detectMobile } from '@/utils/mobileDetection'
 
 interface InputHandlerProps {
   onKeyPress: (key: string) => void
@@ -41,10 +42,11 @@ export function InputHandler({
   // Focus management with iOS/iPad specific handling
   const maintainFocus = useCallback(() => {
     if (inputRef.current && !disabled && !isCompleted) {
-      // iOS/iPad/Android 특화: 더 강력한 포커스 처리
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      const isAndroid = /Android/.test(navigator.userAgent)
-      const isMobile = isIOS || isAndroid
+      // 모바일 환경: 더 강력한 포커스 처리
+      const mobileDetection = detectMobile()
+      const isMobile = mobileDetection?.isMobile ?? false
+      const isIOS = mobileDetection?.isIOS ?? false
+      const isAndroid = mobileDetection?.isAndroid ?? false
       
       if (isMobile) {
         // 모바일에서는 사용자 제스처 후에만 가상키보드가 활성화됨
@@ -105,7 +107,7 @@ export function InputHandler({
       setTestStarted(true)
       setShowStartHint(false)
     }
-  }, [testStarted, isActive])
+  }, [testStarted, isActive, onTestStart])
 
   // Process character input (unified handler)
   const processCharacter = useCallback((char: string) => {
@@ -124,9 +126,8 @@ export function InputHandler({
     }
 
     // 모바일에서는 자동 시작 비활성화
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isAndroid = /Android/.test(navigator.userAgent)
-    const isMobile = isIOS || isAndroid
+    const mobileDetection = detectMobile()
+    const isMobile = mobileDetection?.isMobile ?? false
     
     // 데스크톱에서만 자동 시작
     if (!testStarted && !isCountingDown && !isActive && !isMobile) {
@@ -154,7 +155,7 @@ export function InputHandler({
     setTimeout(() => {
       processedInputRef.current.delete(charId)
     }, 200)
-  }, [testStarted, onKeyPress])
+  }, [testStarted, onKeyPress, isActive, isCountingDown, handleTestStart])
 
   // Handle direct input (for non-IME characters)
   const handleInput = useCallback((event: React.FormEvent<HTMLInputElement>) => {
@@ -181,7 +182,7 @@ export function InputHandler({
       // Clear input to prevent accumulation
       target.value = ''
     }
-  }, [disabled, isCompleted])
+  }, [disabled, isCompleted, processCharacter])
 
   // Handle keyboard events (전역 이벤트 처리 제외 문자만)
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -271,9 +272,8 @@ export function InputHandler({
       event.preventDefault()
       
       // 모바일 환경 감지
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      const isAndroid = /Android/.test(navigator.userAgent)
-      const isMobile = isIOS || isAndroid
+      const mobileDetection = detectMobile()
+      const isMobile = mobileDetection?.isMobile ?? false
       
       // 데스크톱에서만 자동 시작
       if (!testStarted && !isCountingDown && !isActive && !isMobile) {
@@ -291,9 +291,8 @@ export function InputHandler({
       event.preventDefault()
       
       // 모바일 환경 감지
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      const isAndroid = /Android/.test(navigator.userAgent)
-      const isMobile = isIOS || isAndroid
+      const mobileDetection = detectMobile()
+      const isMobile = mobileDetection?.isMobile ?? false
       
       // 데스크톱에서만 자동 시작
       if (!testStarted && !isCountingDown && !isActive && !isMobile) {
@@ -313,9 +312,8 @@ export function InputHandler({
         event.preventDefault()
         
         // 모바일 환경 감지
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-        const isAndroid = /Android/.test(navigator.userAgent)
-        const isMobile = isIOS || isAndroid
+        const mobileDetection = detectMobile()
+        const isMobile = mobileDetection?.isMobile ?? false
         
         // 데스크톱에서만 자동 시작
         if (!testStarted && !isCountingDown && !isActive && !isMobile) {
@@ -327,7 +325,7 @@ export function InputHandler({
         }
       }
     }
-  }, [disabled, isCompleted, testStarted, isCountingDown, isActive, isPaused, onBackspace, onResume])
+  }, [disabled, isCompleted, testStarted, isCountingDown, isActive, isPaused, onBackspace, onResume, onPause, onRestart, handleTestStart, processCharacter])
 
   // Composition event handlers (for IME)
   const handleCompositionStart = useCallback((event: React.CompositionEvent) => {
@@ -344,7 +342,7 @@ export function InputHandler({
     } catch (error) {
       console.error('❌ Error in handleCompositionStart:', error)
     }
-  }, [onCompositionChange, showStartHint])
+  }, [onCompositionChange, showStartHint, setCompositionState])
 
   const handleCompositionUpdate = useCallback((event: React.CompositionEvent) => {
     try {
@@ -354,7 +352,7 @@ export function InputHandler({
     } catch (error) {
       console.error('❌ Error in handleCompositionUpdate:', error)
     }
-  }, [])
+  }, [setCompositionState])
 
   const handleCompositionEnd = useCallback((event: React.CompositionEvent) => {
     try {
@@ -366,9 +364,8 @@ export function InputHandler({
       onCompositionChange?.(false)
       
       // 모바일 환경 감지
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      const isAndroid = /Android/.test(navigator.userAgent)
-      const isMobile = isIOS || isAndroid
+      const mobileDetection = detectMobile()
+      const isMobile = mobileDetection?.isMobile ?? false
       
       // 데스크톱에서만 자동 시작
       if (!testStarted && newChars.length > 0 && !isMobile) {
@@ -406,9 +403,8 @@ export function InputHandler({
     }
     
     // 모바일 환경 감지
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isAndroid = /Android/.test(navigator.userAgent)
-    const isMobile = isIOS || isAndroid
+    const mobileDetection = detectMobile()
+    const isMobile = mobileDetection?.isMobile ?? false
     
     if (isMobile && !testStarted && !isActive) {
       // 모바일에서는 첫 클릭은 포커스만, 명시적 시작 대기
@@ -459,9 +455,8 @@ export function InputHandler({
     }, 100)
     
     // 모바일 환경 감지
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isAndroid = /Android/.test(navigator.userAgent)
-    const isMobile = isIOS || isAndroid
+    const mobileDetection = detectMobile()
+    const isMobile = mobileDetection?.isMobile ?? false
     
     // 페이지 클릭 시에도 포커스 유지 (모바일에서는 빈도 줄임)
     const handlePageClick = () => {
@@ -559,7 +554,8 @@ export function InputHandler({
       // Safari-specific handling
       console.log('🧭 Safari-specific IME handling enabled')
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 브라우저 타입 감지는 한번만 수행
 
   return (
     <div 

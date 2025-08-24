@@ -1,10 +1,24 @@
 "use client"
 
-import { useEffect, useState, ReactNode } from 'react'
+import { useEffect, useState, ReactNode, lazy, Suspense } from 'react'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { StealthKanban } from './StealthKanban'
-import { StealthDocs } from './StealthDocs'
-import { StealthSlack } from './StealthSlack'
+
+// Stealth 컴포넌트들 동적 임포트 - stealth 모드에서만 필요
+const StealthKanban = lazy(() => 
+  import('./StealthKanban').then(module => ({
+    default: module.StealthKanban
+  }))
+);
+const StealthDocs = lazy(() => 
+  import('./StealthDocs').then(module => ({
+    default: module.StealthDocs
+  }))
+);
+const StealthSlack = lazy(() => 
+  import('./StealthSlack').then(module => ({
+    default: module.StealthSlack
+  }))
+);
 
 interface StealthManagerProps {
   children: ReactNode
@@ -69,7 +83,13 @@ export function StealthManager({ children }: StealthManagerProps) {
     
     return (
       <div className="relative">
-        <StealthComponent />
+        <Suspense fallback={
+          <div className="w-full h-screen bg-white flex items-center justify-center">
+            <div className="text-gray-600">Loading...</div>
+          </div>
+        }>
+          <StealthComponent />
+        </Suspense>
         
         {/* ESC 키 힌트 (희미하게) */}
         <div className="fixed top-4 right-4 text-xs text-gray-400 opacity-30 hover:opacity-100 transition-opacity z-50">

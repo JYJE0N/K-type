@@ -250,7 +250,7 @@ export const useUserProgressStore = create<UserProgressStore>()(
             set(mergedProgress)
             console.log('🔄 Progress merged from server:', mergedProgress)
           }
-        } catch (error) {
+        } catch (_error) {
           // API 에러 시 로컬 스토리지 데이터 유지
           console.log('📱 Using localStorage data only - API not available')
           set({ error: null })  // 에러 메시지 표시 안함

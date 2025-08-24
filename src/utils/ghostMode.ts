@@ -180,7 +180,7 @@ export class GhostModeManager {
     userPosition: number,
     userTimeElapsed: number,
     userCPM: number,
-    userAccuracy: number
+    _userAccuracy: number
   ): GhostComparison | null {
     if (!this.isActive() || !this.currentGhost) return null;
 

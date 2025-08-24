@@ -14,9 +14,8 @@ interface SpaceRendererProps {
 
 export const SpaceRenderer = memo(function SpaceRenderer({ 
   state, 
-  showCursor,
-  'data-index': dataIndex
-}: SpaceRendererProps) {
+  showCursor
+}: Omit<SpaceRendererProps, 'data-index'>) {
   const { status, index, specialKey } = state;
   
   if (specialKey !== "space") {

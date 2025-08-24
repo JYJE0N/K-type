@@ -4,7 +4,7 @@ import { eventBus, StatsUpdateEvent } from '@/utils/eventBus';
 import { useUserProgressStore } from '@/stores/userProgressStore';
 import { useStatsStore } from '@/stores/statsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { TypingSession, TestMode, TextType } from '@/types';
+import type { TypingSession } from '@/types';
 
 /**
  * 🎯 중앙집중식 테스트 완료 처리 관리자

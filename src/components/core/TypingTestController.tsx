@@ -10,6 +10,7 @@ import { TextGenerator } from "@/utils/textGenerator";
 import { ghostModeManager } from "@/utils/ghostMode";
 import { typingEffectsManager } from "@/utils/typingEffects";
 import { LanguageDetector, detectTextLanguage } from "@/utils/languageDetection";
+import { detectMobile } from "@/utils/mobileDetection";
 
 /**
  * 타이핑 테스트의 비즈니스 로직을 관리하는 컨트롤러
@@ -41,7 +42,7 @@ export function useTypingTestController() {
 
   const { calculateStats, resetStats, liveStats } = useStatsStore();
   const { language, textType, testMode, testTarget, ghostModeEnabled, typingEffectsEnabled, countdownEnabled, sentenceLength, sentenceStyle } = useSettingsStore();
-  const { recordTest, updateCharacterStats, updateMistakePattern, recentTests } = useUserProgressStore();
+  const { updateCharacterStats, updateMistakePattern, recentTests } = useUserProgressStore();
   
   // 언어 감지 시스템
   const languageDetector = useRef(new LanguageDetector());
@@ -96,7 +97,7 @@ export function useTypingTestController() {
     if (typingEffectsEnabled) {
       typingEffectsManager.resetCombo();
     }
-  }, [generateNewText, resetTest, setTargetText, resetStats, ghostModeEnabled, testMode, testTarget, typingEffectsEnabled, recentTests, language, textType]);
+  }, [generateNewText, resetTest, setTargetText, resetStats, ghostModeEnabled, typingEffectsEnabled, recentTests, language, textType, testMode, testTarget]);
 
   // 테스트 시작
   const handleStart = useCallback(() => {
@@ -105,7 +106,20 @@ export function useTypingTestController() {
       return;
     }
     
-    // 카운트다운 설정에 따라 시작 방식 결정
+    // 모바일 감지 (통합 유틸리티 사용)
+    const mobileDetection = detectMobile();
+    const isMobile = mobileDetection?.isMobile ?? false;
+    
+    // 모바일에서는 자동 카운트다운 완전 차단
+    if (isMobile) {
+      console.log('🚫 모바일 환경: 자동 카운트다운 차단');
+      // 카운트다운 없이 바로 시작만 허용
+      const startTest = useTypingStore.getState().startTest;
+      startTest();
+      return;
+    }
+    
+    // 데스크톱에서만 카운트다운 설정 따름
     if (countdownEnabled) {
       startCountdown();
     } else {
@@ -160,7 +174,7 @@ export function useTypingTestController() {
     }
 
     // 이펙트 시스템은 이미 타이핑 스토어에서 처리됨
-  }, [targetText, userInput, getCurrentChar, calculateStats, updateCharacterStats, updateMistakePattern]);
+  }, [targetText, userInput, getCurrentChar, calculateStats, updateCharacterStats, updateMistakePattern, keystrokes, mistakes, startTime, currentIndex, textType, firstKeystrokeTime]);
 
   // 백스페이스 처리
   const handleBackspace = useCallback(() => {
@@ -177,7 +191,7 @@ export function useTypingTestController() {
     calculateStats(keystrokes, mistakes, startTime, currentIndex, new Date(), textType, targetText, userInput, firstKeystrokeTime);
   }, [storeHandleBackspace, languageHint.show, calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, firstKeystrokeTime]);
 
-  // 테스트 완료 처리 (🚨 recordTest 제거 - TestCompletionHandler에서만 처리)
+  // 테스트 완료 처리 (TestCompletionHandler에서만 처리)
   const handleTestCompletion = useCallback(() => {
     if (!isCompleted || !firstKeystrokeTime) return;
 
@@ -187,7 +201,7 @@ export function useTypingTestController() {
     console.log('📊 TypingTestController: 통계 계산 완료 (저장 제외)');
 
     return liveStats;
-  }, [isCompleted]); // 무한 루프 방지 - 다른 의존성 제거
+  }, [isCompleted, firstKeystrokeTime, calculateStats, keystrokes, mistakes, startTime, currentIndex, textType, targetText, userInput, liveStats]);
 
   // 전역 이벤트 리스너 (승급 모달에서 새 테스트 요청)
   useEffect(() => {

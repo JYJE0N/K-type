@@ -11,37 +11,102 @@ import { useSettingsStore, initializeTheme } from '@/stores/settingsStore'
 import { useTypingStore } from '@/stores/typingStore'
 import { getLanguagePack } from '@/modules/languages'
 import { TextGenerator } from '@/utils/textGenerator'
-import { initDevTools } from '@/utils/devTools'
 
 // URL 파라미터 처리를 위한 별도 컴포넌트
 function UrlParamHandler() {
   const searchParams = useSearchParams()
+  const { 
+    setLanguage, 
+    setTextType, 
+    setTestMode, 
+    setTestTarget, 
+    setSentenceLength, 
+    setSentenceStyle 
+  } = useSettingsStore()
 
   useEffect(() => {
+    // AI 추천에서 온 설정 파라미터들 처리
+    const language = searchParams.get('language')
+    const textType = searchParams.get('textType')
+    const testMode = searchParams.get('testMode')
+    const testTarget = searchParams.get('testTarget')
+    const sentenceLength = searchParams.get('sentenceLength')
+    const sentenceStyle = searchParams.get('sentenceStyle')
+    const focusCharacters = searchParams.get('focusCharacters')
+
+    let hasAiRecommendation = false
+
+    // AI 추천 설정 적용
+    if (language && (language === 'korean' || language === 'english')) {
+      setLanguage(language)
+      hasAiRecommendation = true
+    }
+    if (textType && (textType === 'words' || textType === 'sentences')) {
+      setTextType(textType as 'words' | 'sentences')
+      hasAiRecommendation = true
+    }
+    if (testMode && (testMode === 'words' || testMode === 'sentences')) {
+      setTestMode(testMode as 'words' | 'sentences')
+      hasAiRecommendation = true
+    }
+    if (testTarget && !isNaN(parseInt(testTarget))) {
+      setTestTarget(parseInt(testTarget))
+      hasAiRecommendation = true
+    }
+    if (sentenceLength && ['short', 'medium', 'long'].includes(sentenceLength)) {
+      setSentenceLength(sentenceLength as 'short' | 'medium' | 'long')
+      hasAiRecommendation = true
+    }
+    if (sentenceStyle && ['plain', 'punctuation', 'numbers', 'mixed'].includes(sentenceStyle)) {
+      setSentenceStyle(sentenceStyle as 'plain' | 'punctuation' | 'numbers' | 'mixed')
+      hasAiRecommendation = true
+    }
+
+    // TODO: focusCharacters 처리 (특정 문자 집중 연습)
+    if (focusCharacters) {
+      console.log('🎯 집중 연습 문자:', focusCharacters.split(','))
+    }
+
+    // AI 추천 설정이 적용된 경우 새 테스트 시작
+    if (hasAiRecommendation) {
+      console.log('🤖 AI 추천 설정 적용됨, 새 테스트 시작')
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('typing:restart-test'))
+      }, 200)
+      
+      // URL에서 파라미터 제거
+      window.history.replaceState({}, '', '/')
+    }
+
+    // 기존 restart 파라미터 처리
     const restart = searchParams.get('restart')
     if (restart === 'true') {
       console.log('🔄 URL 파라미터로 새 테스트 시작 요청됨')
-      // 약간의 딜레이 후 새 텍스트 생성 트리거
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('typing:restart-test'))
       }, 100)
       
-      // URL에서 파라미터 제거 (히스토리 깨끗하게 유지)
       window.history.replaceState({}, '', '/')
     }
-  }, [searchParams])
+  }, [searchParams, setLanguage, setTextType, setTestMode, setTestTarget, setSentenceLength, setSentenceStyle])
 
   return null
 }
 
 export default function Home() {
-  const { language, testTarget, testMode, theme, sentenceLength, sentenceStyle } = useSettingsStore()
+  const { language, testTarget, testMode, sentenceLength, sentenceStyle } = useSettingsStore()
   const { setTargetText, resetTest } = useTypingStore()
 
-  // 테마 및 개발자 도구 초기화
+  // 테마 및 개발자 도구 초기화 (프로덕션에서는 devTools 제외)
   useEffect(() => {
     initializeTheme()
-    initDevTools()
+    
+    // 개발자 도구는 개발 환경에서만 로딩
+    if (process.env.NODE_ENV === 'development') {
+      import('@/utils/devTools').then(module => {
+        module.initDevTools()
+      })
+    }
   }, [])
 
   // 모바일 스크롤 제어를 위한 body 클래스 추가/제거

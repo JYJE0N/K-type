@@ -5,16 +5,21 @@ import { FaKeyboard } from "react-icons/fa6";
 import { TextRenderer } from "./TextRenderer";
 import { InputHandler } from "./InputHandler";
 import { TypingVisualizer } from "./TypingVisualizer";
-import { GhostIndicator } from "./GhostIndicator";
-import { PromotionModal } from "@/components/gamification/PromotionModal";
 import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
 import { CharacterProgressSlider } from "@/components/ui/ProgressSlider";
 import { LanguageMismatchAlert } from "@/components/ui/LanguageMismatchAlert";
 // import { TypingPreview } from "@/components/ui/TypingPreview";
 import { useTypingStore } from "@/stores/typingStore";
-import { useSettingsStore } from "@/stores/settingsStore";
+// import { useSettingsStore } from "@/stores/settingsStore"; // 현재 미사용
 import type { TierConfig } from "@/utils/tierSystem";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
+
+// 동적 임포트: PromotionModal은 승급 시에만 필요하므로 지연 로딩
+const PromotionModal = lazy(() => 
+  import("@/components/gamification/PromotionModal").then(module => ({
+    default: module.PromotionModal
+  }))
+);
 
 interface TypingTestUIProps {
   // 상태
@@ -27,7 +32,6 @@ interface TypingTestUIProps {
   currentTime: number;
 
   // 완료 처리 관련
-  getWordProgress?: () => number;
   showPromotionModal: boolean;
   promotionData: { fromTier: TierConfig; toTier: TierConfig } | null;
   closePromotionModal: () => void;
@@ -70,7 +74,6 @@ export function TypingTestUI({
   userInput,
   mistakes,
   currentTime,
-  getWordProgress = () => 0,
   showPromotionModal,
   promotionData,
   closePromotionModal,
@@ -91,7 +94,8 @@ export function TypingTestUI({
   const { isActive, isPaused, isCompleted, isCountingDown, countdownValue } =
     useTypingStore();
 
-  const { testTarget } = useSettingsStore();
+  // 설정 스토어에서 필요한 값들
+  // const { testTarget } = useSettingsStore(); // 현재 미사용
 
   // 가상 키보드 감지
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -549,16 +553,35 @@ export function TypingTestUI({
         />
       )}
 
-      {/* 승급 모달 */}
+      {/* 승급 모달 - 동적 로딩 */}
       {showPromotionModal && promotionData && (
-        <PromotionModal
-          isOpen={showPromotionModal}
-          fromTier={promotionData.fromTier}
-          toTier={promotionData.toTier}
-          onClose={closePromotionModal}
-          onContinue={handleContinueTest}
-          onViewStats={handleViewStats}
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background bg-opacity-90 backdrop-blur-sm" />
+            <div className="relative rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+                 style={{
+                   backgroundColor: "var(--color-surface)",
+                   border: "1px solid rgba(59, 130, 246, 0.2)"
+                 }}>
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 animate-pulse"
+                     style={{ backgroundColor: "var(--color-interactive-primary)", opacity: 0.7 }}>
+                  <FaKeyboard className="w-8 h-8 text-white" />
+                </div>
+                <p style={{ color: "var(--color-text-secondary)" }}>승급 정보를 준비하는 중...</p>
+              </div>
+            </div>
+          </div>
+        }>
+          <PromotionModal
+            isOpen={showPromotionModal}
+            fromTier={promotionData.fromTier}
+            toTier={promotionData.toTier}
+            onClose={closePromotionModal}
+            onContinue={handleContinueTest}
+            onViewStats={handleViewStats}
+          />
+        </Suspense>
       )}
     </div>
   );

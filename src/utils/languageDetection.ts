@@ -172,7 +172,7 @@ export function generateLanguageSwitchHint(
 ): string {
   if (!mismatchInfo.hasMismatch) return '';
   
-  const { inputLanguage, expectedLanguage, confidence } = mismatchInfo;
+  const { expectedLanguage, confidence } = mismatchInfo;
   
   if (confidence < 70) {
     // 신뢰도가 낮으면 일반적인 안내

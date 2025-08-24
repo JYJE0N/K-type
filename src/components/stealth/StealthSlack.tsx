@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTypingStore } from '@/stores/typingStore'
 import { useStatsStore } from '@/stores/statsStore'
-import { useSettingsStore } from '@/stores/settingsStore'
 import { 
   Hash, 
   Search, 
@@ -79,7 +78,6 @@ export function StealthSlack({ className = "" }: StealthSlackProps) {
   const router = useRouter()
   const { isActive, isCompleted, targetText, currentIndex } = useTypingStore()
   const { liveStats } = useStatsStore()
-  const { theme } = useSettingsStore()
   
   // 홈으로 돌아가기 핸들러
   const handleHomeNavigation = () => {
@@ -160,7 +158,7 @@ export function StealthSlack({ className = "" }: StealthSlackProps) {
         <div className="p-4">
           <div className="text-sm font-semibold text-purple-200 mb-2">채널</div>
           <div className="space-y-1">
-            {channels.map((channel, index) => (
+            {channels.map((channel) => (
               <div 
                 key={channel.name}
                 className={`flex items-center justify-between p-2 rounded hover:bg-purple-600 cursor-pointer ${

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState, useRef } from "react";
+import { useMemo, useEffect, useState, useRef, memo, useCallback } from "react";
 
 interface ProgressSliderProps {
   value: number; // 0-100 사이의 값
@@ -16,7 +16,7 @@ interface ProgressSliderProps {
  * 진행율 슬라이더 컴포넌트
  * 슬라이더 위에 진행율 %가 따라 움직이는 UI
  */
-export function ProgressSlider({ 
+export const ProgressSlider = memo(function ProgressSlider({ 
   value, 
   className = "",
   showLabel = true,
@@ -72,8 +72,8 @@ export function ProgressSlider({
 
   const displayValue = animated ? animatedValue : normalizedValue;
 
-  // 크기별 스타일
-  const sizeClasses = {
+  // 크기별 스타일 (메모이제이션)
+  const sizeClasses = useMemo(() => ({
     sm: {
       track: "h-1",
       thumb: "w-3 h-3",
@@ -89,10 +89,10 @@ export function ProgressSlider({
       thumb: "w-5 h-5", 
       label: "text-base -top-10"
     }
-  };
+  }), []);
 
-  // 색상별 스타일 (그라데이션 포함)
-  const variantClasses = {
+  // 색상별 스타일 (그라데이션 포함, 메모이제이션)
+  const variantClasses = useMemo(() => ({
     primary: {
       fill: "",
       gradient: "linear-gradient(90deg, var(--color-interactive-secondary), var(--color-interactive-primary))",
@@ -113,7 +113,7 @@ export function ProgressSlider({
       gradient: "",
       thumb: "bg-white border-white"
     }
-  };
+  }), []);
 
   const sizeStyle = sizeClasses[size];
   const variantStyle = variantClasses[variant];
@@ -167,7 +167,7 @@ export function ProgressSlider({
       )}
     </div>
   );
-}
+});
 
 /**
  * 시간 기반 진행율 슬라이더

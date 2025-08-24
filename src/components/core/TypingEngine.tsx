@@ -5,7 +5,9 @@ import { TypingTestUI } from "./TypingTestUI";
 import { useTypingTestController } from "./TypingTestController";
 import { useTypingTimer } from "./TypingTimer";
 import { useTestCompletionHandler } from "./TestCompletionHandler";
-import { useTypingStore } from "@/stores/typingStore";
+import { smartPreloader, performanceTriggeredPreloading } from "@/utils/bundleOptimization";
+import { useStatsStore } from "@/stores/statsStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 interface TypingEngineProps {
   className?: string;
@@ -25,11 +27,41 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
     closePromotionModal, 
     handleContinueTest,
     handleViewStats,
-    getWordProgress,
     handleTestCompletion 
   } = useTestCompletionHandler();
   
   const timer = useTypingTimer(handleTestCompletion);
+  
+  // 최적화를 위한 상태들
+  const { liveStats } = useStatsStore();
+  const { theme } = useSettingsStore();
+
+  // 스마트 프리로딩 로직
+  useEffect(() => {
+    // 테스트 시작 시 Stats 컴포넌트들을 백그라운드에서 프리로딩
+    if (controller.isActive || controller.currentIndex > 0) {
+      smartPreloader.preloadStatsComponents();
+    }
+
+    // 성능 기반 프리로딩 트리거
+    if (liveStats) {
+      performanceTriggeredPreloading.checkHighPerformance(liveStats.cpm, liveStats.wpm);
+      
+      // 진행률 기반 프리로딩 (targetText 길이로 계산)
+      const progress = controller.targetText ? controller.currentIndex / controller.targetText.length : 0;
+      performanceTriggeredPreloading.checkNearCompletion(progress);
+    }
+
+    // 테마 기반 프리로딩
+    performanceTriggeredPreloading.checkUserPattern(theme, false);
+  }, [
+    controller.isActive, 
+    controller.currentIndex, 
+    controller.targetText,
+    liveStats?.cpm, 
+    liveStats?.wpm,
+    theme
+  ]);
 
   // 초기 텍스트 생성은 page.tsx의 useEffect에서 처리됨 (무한루프 방지를 위해 제거)
 
@@ -49,8 +81,7 @@ export function TypingEngine({ className = "" }: TypingEngineProps) {
       // 타이머 관련
       currentTime={timer.currentTime}
       
-      // 완료 처리 관련
-      getWordProgress={getWordProgress}
+      // 완료 처리 관련 - getWordProgress 제거됨
       showPromotionModal={showPromotionModal}
       promotionData={promotionData}
       closePromotionModal={closePromotionModal}

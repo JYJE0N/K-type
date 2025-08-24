@@ -17,10 +17,9 @@ interface TypingPreviewProps {
 export function TypingPreview({
   targetText,
   currentIndex,
-  userInput,
   isActive,
   className = "",
-}: TypingPreviewProps) {
+}: Omit<TypingPreviewProps, 'userInput'>) {
   // 미리보기 텍스트 생성 (현재 위치부터 다음 20글자 정도)
   const previewText = useMemo(() => {
     if (!targetText || currentIndex < 0) return '';

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Keystroke, Mistake } from '@/types'
 import { isKoreanJamo } from '@/utils/koreanIME'
-import { eventBus } from '@/utils/eventBus'
+// import { eventBus } from '@/utils/eventBus' // EventBus 제거 - 순환참조 방지
 import { typingEffectsManager } from '@/utils/typingEffects'
 
 interface TypingStore {
@@ -284,7 +284,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
 
   // Complete test
   completeTest: () => {
-    const state = get()
+    const _state = get()
     const endTime = new Date()
     
     // eventBus 호출 제거 - 무한 루프 방지
@@ -413,15 +413,15 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const simpleWPM = minutes > 0 ? Math.round(newState.completedWords / minutes) : 0
     const simpleCPM = minutes > 0 ? Math.round(newState.currentIndex / minutes) : 0
     
-    // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산 via event bus
-    eventBus.emit('stats:update', {
-      keystrokes: newState.keystrokes,
-      mistakes: newState.mistakes,
-      startTime: newState.startTime,
-      currentIndex: newState.currentIndex,
-      userInput: newState.userInput,
-      firstKeystrokeTime: newState.firstKeystrokeTime
-    })
+    // 기존 통계도 유지하면서 MonkeyType 스타일도 같이 계산 - EventBus 제거로 비활성화
+    // eventBus.emit('stats:update', {
+    //   keystrokes: newState.keystrokes,
+    //   mistakes: newState.mistakes,
+    //   startTime: newState.startTime,
+    //   currentIndex: newState.currentIndex,
+    //   userInput: newState.userInput,
+    //   firstKeystrokeTime: newState.firstKeystrokeTime
+    // })
     
     console.log(`📊 간단한 통계: CPM ${simpleCPM}, WPM ${simpleWPM}`)
   },
@@ -485,15 +485,15 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     }))
 
     // 통계 업데이트
-    const newState = get()
-    eventBus.emit('stats:update', {
-      keystrokes: newState.keystrokes,
-      mistakes: newState.mistakes,
-      startTime: newState.startTime,
-      currentIndex: newState.currentIndex,
-      userInput: newState.userInput,
-      firstKeystrokeTime: newState.firstKeystrokeTime
-    })
+    const _newState = get()
+    // eventBus.emit('stats:update', {
+    //   keystrokes: newState.keystrokes,
+    //   mistakes: newState.mistakes,
+    //   startTime: newState.startTime,
+    //   currentIndex: newState.currentIndex,
+    //   userInput: newState.userInput,
+    //   firstKeystrokeTime: newState.firstKeystrokeTime
+    // })
   },
 
   // Get current character

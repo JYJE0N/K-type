@@ -25,7 +25,8 @@ interface HistoryGraphProps {
   primaryMetric?: 'cpm' | 'wpm';
 }
 
-export function HistoryGraph({ primaryMetric = 'cpm' }: HistoryGraphProps) {
+export function HistoryGraph({ primaryMetric: _primaryMetric = 'cpm' }: HistoryGraphProps) {
+  // primaryMetric 현재 미사용으로 _ prefix 처리
   const { recentTests } = useUserProgressStore();
   const [data, setData] = useState<HistoryDataPoint[]>([]);
 

@@ -281,7 +281,7 @@ export class TypingEffectsManager {
   /**
    * 정확한 키 입력 시 호출
    */
-  onCorrectKeystroke(currentCPM: number, currentAccuracy: number): void {
+  onCorrectKeystroke(currentCPM: number, _currentAccuracy: number): void {
     if (!this.isEffectsEnabled) return;
 
     this.comboState.consecutiveCorrect++;
@@ -408,7 +408,7 @@ export class TypingEffectsManager {
   /**
    * 글로우 효과 생성
    */
-  private createGlowEffect(config: GlowConfig, activeEffect: ActiveEffect): void {
+  private createGlowEffect(config: GlowConfig, _activeEffect: ActiveEffect): void {
     const target = this.getGlowTarget(config.target);
     if (!target) return;
 
@@ -428,7 +428,7 @@ export class TypingEffectsManager {
   /**
    * 애니메이션 효과 생성
    */
-  private createAnimationEffect(config: AnimationConfig, activeEffect: ActiveEffect): void {
+  private createAnimationEffect(config: AnimationConfig, _activeEffect: ActiveEffect): void {
     const target = this.effectContainer!;
     const animationClass = `animate-${config.type}`;
     

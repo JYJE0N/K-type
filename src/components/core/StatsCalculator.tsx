@@ -4,6 +4,6 @@ interface StatsCalculatorProps {
   className?: string
 }
 
-export function StatsCalculator({ className = '' }: StatsCalculatorProps) {
+export function StatsCalculator(_props: StatsCalculatorProps) {
   return null
 }

@@ -8,9 +8,6 @@ import {
   TrendingUp,
   Target,
   Zap,
-  Flame,
-  AlertCircle,
-  Info,
 } from "lucide-react";
 
 interface Suggestion {
@@ -23,7 +20,7 @@ interface Suggestion {
 
 export function ImprovementSuggestions() {
   const { liveStats } = useStatsStore();
-  const { bestWPM, bestAccuracy, averageWPM, averageAccuracy, recentTests } =
+  const { averageWPM, averageAccuracy } =
     useUserProgressStore();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
@@ -129,18 +126,6 @@ export function ImprovementSuggestions() {
     setSuggestions(newSuggestions.slice(0, 3)); // 최대 3개만 표시
   }, [averageWPM, averageAccuracy, liveStats]);
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return Flame;
-      case "medium":
-        return AlertCircle;
-      case "low":
-        return Info;
-      default:
-        return Lightbulb;
-    }
-  };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {

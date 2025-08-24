@@ -1,8 +1,6 @@
 "use client";
 
-import { TierDisplay } from "@/components/gamification/TierDisplay";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { TierBadge, PercentileTierBadge } from "@/components/ui/TierBadge";
+import { PercentileTierBadge } from "@/components/ui/TierBadge";
 import { ProgressSlider } from "@/components/ui/ProgressSlider";
 import { defaultTierSystem } from "@/utils/tierSystem";
 import { useUserProgressStore } from "@/stores/userProgressStore";
@@ -21,8 +19,8 @@ interface TierSectionProps {
 export function TierSection({
   className = "",
   bestCPM,
-  bestWPM,
-  improvementRate,
+  bestWPM: _bestWPM,
+  improvementRate: _improvementRate,
   totalTests,
   primaryMetric,
   mounted,

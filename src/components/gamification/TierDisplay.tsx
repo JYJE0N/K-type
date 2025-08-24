@@ -2,7 +2,7 @@
 
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { defaultTierSystem, formatProgress, type TierConfig } from "@/utils/tierSystem";
-import { TierBadge } from "./TierBadge";
+import { TierBadge } from "../ui/TierBadge";
 import { useEffect, useState } from "react";
 import { Trophy, TrendingUp, Target, Users, Award } from "lucide-react";
 
@@ -55,12 +55,8 @@ export function TierDisplay({
       <div className={`${className}`}>
         <TierBadge
           tier={currentTier}
-          progress={progress ? (
-            Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
-          ) : 0}
-          level={Math.min(10, Math.floor(totalTests / 10) + 1)}
           size="sm"
-          showProgress={showProgress}
+          showLabel={false}
         />
       </div>
     );
@@ -80,12 +76,8 @@ export function TierDisplay({
         <div className="flex justify-center mb-6">
           <TierBadge
             tier={currentTier}
-            progress={progress ? (
-              Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
-            ) : 0}
-            level={Math.min(10, Math.floor(totalTests / 10) + 1)}
             size="lg"
-            showProgress={showProgress}
+            showLabel={true}
           />
         </div>
 
@@ -224,11 +216,8 @@ export function TierDisplay({
               >
                 <TierBadge
                   tier={tier}
-                  progress={tier.id === currentTier.id ? (progress ? (
-                    Math.min(100, (progress.cpm.progress + progress.accuracy.progress + progress.consistency.progress + progress.tests.progress) / 4)
-                  ) : 0) : 0}
                   size="sm"
-                  showProgress={false}
+                  showLabel={false}
                 />
               </div>
             ))}

@@ -100,11 +100,25 @@ function getCharacterClass(status: string, specialKey?: string | null) {
   }
 }
 
+// 성능 최적화를 위한 커스텀 비교 함수
+const areEqual = (
+  prevProps: Omit<CharacterRendererProps, 'data-index'>,
+  nextProps: Omit<CharacterRendererProps, 'data-index'>
+) => {
+  // state 객체의 속성들을 개별적으로 비교
+  return (
+    prevProps.state.char === nextProps.state.char &&
+    prevProps.state.status === nextProps.state.status &&
+    prevProps.state.index === nextProps.state.index &&
+    prevProps.state.specialKey === nextProps.state.specialKey &&
+    prevProps.showCursor === nextProps.showCursor
+  );
+};
+
 export const CharacterRenderer = memo(function CharacterRenderer({ 
   state, 
-  showCursor,
-  'data-index': dataIndex
-}: CharacterRendererProps) {
+  showCursor
+}: Omit<CharacterRendererProps, 'data-index'>) {
   const { char, status, index, specialKey } = state;
 
   return (
@@ -128,4 +142,4 @@ export const CharacterRenderer = memo(function CharacterRenderer({
       </span>
     </span>
   );
-});
+}, areEqual);

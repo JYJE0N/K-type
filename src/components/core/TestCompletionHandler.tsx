@@ -54,7 +54,8 @@ export function useTestCompletionHandler() {
     return () => {
       window.removeEventListener('test:promotion', handleTestPromotion as EventListener);
     };
-  }, [initializeUser, fetchProgress]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 한번만 실행 (initializeUser, fetchProgress는 항상 안정적)
 
 
   // 🎯 간소화된 테스트 완료 처리 (이벤트 발행만)
@@ -116,7 +117,7 @@ export function useTestCompletionHandler() {
         router.push('/stats');
       }, 500);
     }
-  }, [isCompleted, firstKeystrokeTime, startTime, currentIndex, keystrokes, mistakes, targetText, router, totalTests, averageCPM, averageAccuracy, averageConsistency, liveStats]);
+  }, [isCompleted, firstKeystrokeTime, startTime, keystrokes, mistakes, targetText, currentIndex, totalTests, averageCPM, averageAccuracy, averageConsistency, liveStats, router]);
 
   // 테스트 완료 감지 (완전한 무한 루프 방지)
   useEffect(() => {
@@ -130,7 +131,8 @@ export function useTestCompletionHandler() {
     // 즉시 실행 (지연 없음)
     handleTestCompletion();
     
-  }, [isCompleted]); // currentIndex 제거로 재실행 방지
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCompleted]); // handleTestCompletion은 의도적으로 제외 (무한루프 방지)
 
   // 승급 모달 닫기 + stats 페이지로 이동
   const closePromotionModal = useCallback(() => {

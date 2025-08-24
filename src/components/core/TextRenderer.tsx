@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useRef, useState } from "react";
+import { useMemo, useEffect, useRef, memo, useCallback } from "react";
 import {
   calculateCharacterStates,
   groupCharactersByWords,
@@ -23,7 +23,7 @@ interface TextRendererProps {
  * 최적화된 텍스트 렌더러
  * 책임: 텍스트 레이아웃, 상태 계산 조합, 성능 최적화
  */
-export function TextRenderer({
+export const TextRenderer = memo(function TextRenderer({
   text,
   currentIndex,
   userInput,
@@ -133,10 +133,10 @@ export function TextRenderer({
       if (scrollTimeout) clearTimeout(scrollTimeout);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [currentIndex, isPaused]);
+  }, [currentIndex, isPaused, text, isMobile]); // text 점버 상태 변경 시 스크롤 재계산
 
-  // 메인 렌더링
-  const renderContent = () => {
+  // 메인 렌더링 (메모이제이션 최적화)
+  const renderContent = useCallback(() => {
     if (!text) {
       return (
         <div className="text-text-secondary italic text-lg">
@@ -183,7 +183,7 @@ export function TextRenderer({
         )}
       </>
     );
-  };
+  }, [text, wordGroups, currentIndex]); // wordGroups와 currentIndex만 의존성으로 사용
 
   return (
     <div
@@ -361,5 +361,5 @@ export function TextRenderer({
       )}
     </div>
   );
-}
+});
 

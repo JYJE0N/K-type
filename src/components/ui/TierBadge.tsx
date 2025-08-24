@@ -1,7 +1,7 @@
 "use client";
 
-import { IoPersonSharp, IoDiamond } from "react-icons/io5";
-import { useEffect, useState } from "react";
+import { IoPersonSharp } from "react-icons/io5";
+import { useEffect, useState, memo, useMemo } from "react";
 import type { TierConfig } from '@/utils/tierSystem';
 
 interface TierBadgeProps {
@@ -13,7 +13,7 @@ interface TierBadgeProps {
   currentPercentile?: number;
 }
 
-export function TierBadge({ 
+export const TierBadge = memo(function TierBadge({ 
   tier, 
   className = '', 
   size = 'md',
@@ -26,7 +26,9 @@ export function TierBadge({
   useEffect(() => {
     setIsClient(true);
   }, []);
-  const sizeClasses = {
+  
+  // 사이즈 클래스 메모이제이션
+  const sizeClasses = useMemo(() => ({
     sm: { 
       icon: 'w-6 h-6', 
       badge: 'min-w-[18px] h-4 px-1 text-xs', 
@@ -45,21 +47,19 @@ export function TierBadge({
       container: 'relative inline-block',
       offset: '-top-1.5 -right-1.5'
     }
-  };
+  }), []);
 
   const { icon: iconSize, badge: badgeSize, container, offset } = sizeClasses[size];
 
-  // 티어별 배지 스타일 - 심플한 스타일
-  const getBadgeStyle = () => {
-    return {
-      backgroundColor: tier.color,
-      color: 'black',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-    };
-  };
+  // 티어별 배지 스타일 - 심플한 스타일 (메모이제이션)
+  const badgeStyle = useMemo(() => ({
+    backgroundColor: tier.color,
+    color: 'black',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+  }), [tier.color]);
 
-  // 배지 라벨 텍스트 또는 아이콘 - 클라이언트에서만 동적 값 표시
-  const getBadgeContent = () => {
+  // 배지 라벨 텍스트 또는 아이콘 - 클라이언트에서만 동적 값 표시 (메모이제이션)
+  const badgeContent = useMemo(() => {
     if (showPercentile && isClient && currentPercentile > 0) {
       if (currentPercentile >= 99) {
         return '99+';
@@ -69,7 +69,7 @@ export function TierBadge({
     
     // 기본적으로는 이모지 텍스트 (다이아몬드 포함)
     return tier.icon;
-  };
+  }, [showPercentile, isClient, currentPercentile, tier.icon]);
 
   return (
     <div className={`${container} ${className}`}>
@@ -84,10 +84,10 @@ export function TierBadge({
       {/* 티어 배지 - 메시지 알림 스타일 */}
       <div 
         className={`absolute ${offset} ${badgeSize} rounded-full flex items-center justify-center font-bold transition-all duration-200 hover:scale-110`}
-        style={getBadgeStyle()}
+        style={badgeStyle}
       >
         <span className="leading-none select-none whitespace-nowrap flex items-center justify-center">
-          {getBadgeContent()}
+          {badgeContent}
         </span>
       </div>
       
@@ -108,7 +108,7 @@ export function TierBadge({
       )}
     </div>
   );
-}
+});
 
 // 간단한 티어 배지 (라벨 없음)
 export function SimpleTierBadge({ 
@@ -147,11 +147,10 @@ export function PercentileTierBadge({
 
 // 특별한 성취 배지 (신기록, 승급 등)
 export function AchievementBadge({ 
-  tier, 
   achievement = 'NEW',
   className = '', 
   size = 'md' 
-}: Pick<TierBadgeProps, 'tier' | 'className' | 'size'> & { achievement?: string }) {
+}: Omit<Pick<TierBadgeProps, 'tier' | 'className' | 'size'>, 'tier'> & { achievement?: string }) {
   const getBadgeStyle = () => {
     return {
       backgroundColor: '#ff4757', // 빨간색 (알림용)

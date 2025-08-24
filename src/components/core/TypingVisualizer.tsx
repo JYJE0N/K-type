@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo, useCallback, useMemo } from 'react'
 import { useTypingStore } from '@/stores/typingStore'
 
 interface TypingVisualizerProps {
@@ -10,27 +10,24 @@ interface TypingVisualizerProps {
   windowSize?: number
 }
 
-export function TypingVisualizer({ 
+export const TypingVisualizer = memo(function TypingVisualizer({ 
   text, 
   currentIndex, 
   className = '',
   windowSize = 5 // 전체 5칸, 중앙(3번째)에 현재 글자
 }: TypingVisualizerProps) {
-  const [displayChars, setDisplayChars] = useState<string[]>([])
-  const [currentPos, setCurrentPos] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [keyPressAnimation, setKeyPressAnimation] = useState(false)
+  const [displayCharsState, setDisplayChars] = useState<string[]>([])
+  const [currentPosState, setCurrentPos] = useState(0)
+  // const [isTransitioning, setIsTransitioning] = useState(false) // 미사용
+  // const [keyPressAnimation, setKeyPressAnimation] = useState(false) // 미사용
   const [comboCount, setComboCount] = useState(0)
   
   const { isComposing, composingText, userInput } = useTypingStore()
   
-  useEffect(() => {
-    // 트랜지션 시작
-    setIsTransitioning(true)
-    
+  // 문자 배치 로직을 메모이제이션으로 최적화
+  const { displayChars, currentPos } = useMemo(() => {
     // 현재 타이핑된 텍스트 + 조합 중인 텍스트를 합쳐서 보여줌
     const typedText = userInput
-    const activeText = isComposing ? typedText + composingText : typedText
     
     // 현재 글자가 항상 중앙(세 번째 칸)에 오도록 설계
     const centerPosition = Math.floor(windowSize / 2) // 중앙 인덱스 (2)
@@ -65,32 +62,125 @@ export function TypingVisualizer({
       }
     }
     
-    setDisplayChars(chars)
-    
-    // 현재 위치는 항상 중앙
-    setCurrentPos(centerPosition)
-    
-    // 트랜지션 완료
-    setTimeout(() => setIsTransitioning(false), 100)
-    
+    return {
+      displayChars: chars,
+      currentPos: centerPosition
+    }
   }, [text, currentIndex, userInput, isComposing, composingText, windowSize])
 
-  // 키 입력시 화려한 애니메이션 트리거
+  // displayChars와 currentPos 상태 업데이트
   useEffect(() => {
-    if (isComposing || currentIndex > 0) {
-      setKeyPressAnimation(true)
-      setComboCount(prev => prev + 1)
+    setDisplayChars(displayChars)
+    setCurrentPos(currentPos)
+  }, [displayChars, currentPos])
+
+  // 키 입력시 화려한 애니메이션 트리거 - setKeyPressAnimation 제거됨으로 주석처리
+  // useEffect(() => {
+  //   if (isComposing || currentIndex > 0) {
+  //     setKeyPressAnimation(true)
+  //     setComboCount(prev => prev + 1)
       
-      // 애니메이션 리셋
-      setTimeout(() => setKeyPressAnimation(false), 600)
-    }
-  }, [isComposing, currentIndex])
+  //     // 애니메이션 리셋
+  //     setTimeout(() => setKeyPressAnimation(false), 600)
+  //   }
+  // }, [isComposing, currentIndex])
 
   // 콤보 카운트 리셋 (2초간 입력 없으면)
   useEffect(() => {
     const timer = setTimeout(() => setComboCount(0), 2000)
     return () => clearTimeout(timer)
   }, [comboCount])
+
+  // 캐릭터 렌더링 최적화
+  const renderCharacter = useCallback((char: string, index: number) => {
+    // 중앙(currentPos=2)을 기준으로 상태 결정
+    const isComposingChar = isComposing && index === currentPos && composingText
+    const isCompletedChar = index < currentPos
+    const isCurrentChar = !isComposing && index === currentPos
+    const isUpcomingChar = index > currentPos
+    
+    // 빈 칸 체크
+    const isEmpty = !char
+    
+    // 완료된 문자의 정확성 확인
+    const isCorrect = true // TODO: 실제 정확성 데이터 연결
+
+    return (
+      <div
+        key={`${index}-${char}-${currentIndex}-${isComposing}-${Date.now()}`}
+        className="relative flex items-center justify-center w-16 h-16 rounded-3xl text-2xl font-korean font-medium backdrop-blur-xl border transition-all duration-700 ease-out"
+        style={{
+          backgroundColor: isComposingChar
+            ? 'var(--color-visualizer-composing-bg)'
+            : isCompletedChar && char
+              ? isCorrect 
+                ? 'var(--color-visualizer-completed-bg)'
+                : 'var(--color-feedback-error)'
+              : isCurrentChar && char
+                ? 'var(--color-visualizer-current-bg)'
+              : isUpcomingChar && char
+                ? 'var(--color-visualizer-upcoming-bg)'
+              : isEmpty
+                ? 'transparent'
+                : 'var(--color-visualizer-upcoming-bg)',
+          color: isComposingChar
+            ? 'var(--color-visualizer-composing-text)'
+            : isCompletedChar && char
+              ? isCorrect 
+                ? 'var(--color-visualizer-completed-text)'
+                : 'var(--color-text-inverse)'
+              : isCurrentChar && char
+                ? 'var(--color-visualizer-current-text)'
+              : isUpcomingChar && char
+                ? 'var(--color-visualizer-upcoming-text)'
+              : isEmpty
+                ? 'transparent'
+                : 'var(--color-visualizer-upcoming-text)',
+          borderColor: isComposingChar
+            ? 'var(--color-visualizer-composing-bg)'
+            : isCompletedChar && char
+              ? isCorrect 
+                ? 'var(--color-visualizer-completed-bg)'
+                : 'var(--color-feedback-error)'
+              : isCurrentChar && char
+                ? 'var(--color-visualizer-current-bg)'
+              : isUpcomingChar && char
+                ? 'var(--color-visualizer-upcoming-border)'
+              : isEmpty
+                ? 'transparent'
+                : 'var(--color-visualizer-upcoming-border)',
+          boxShadow: isComposingChar
+            ? '0 20px 25px -5px var(--color-visualizer-composing-shadow), 0 10px 10px -5px var(--color-visualizer-composing-shadow)'
+            : isCompletedChar && char
+              ? isCorrect 
+                ? '0 10px 15px -3px var(--color-visualizer-completed-shadow)'
+                : '0 10px 15px -3px rgba(239, 68, 68, 0.2)'
+              : isCurrentChar && char
+                ? '0 4px 6px -1px var(--color-visualizer-current-shadow)'
+              : 'none',
+          opacity: isUpcomingChar && char ? 0.5 : isEmpty ? 0.1 : 1,
+          fontWeight: isComposingChar ? '600' : isCompletedChar || isCurrentChar ? '500' : '300',
+          transform: `
+            translateY(${isComposingChar ? -8 : isCurrentChar ? -4 : isCompletedChar ? -1 : 0}px) 
+            scale(${isComposingChar ? 1.15 : isCurrentChar ? 1.05 : isCompletedChar ? 1.02 : isUpcomingChar ? 0.95 : 0.85})
+          `,
+          zIndex: isComposingChar ? 30 : isCurrentChar ? 20 : isCompletedChar ? 10 : 5,
+          filter: isComposingChar ? 'brightness(1.2) saturate(1.2)' : isCurrentChar ? 'brightness(1.1)' : 'none',
+          transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+          animationDelay: `${Math.abs(index - currentPos) * 60}ms`
+        }}
+      >
+        {/* Character content */}
+        <span className="relative z-10 select-none">
+          {char === ' ' ? (
+            <span className="opacity-50 text-lg">␣</span>
+          ) : (
+            char || ''
+          )}
+        </span>
+      </div>
+    )
+  }, [currentIndex, isComposing, composingText, currentPos])
 
   if (!text || displayChars.length === 0) {
     return null
@@ -99,96 +189,7 @@ export function TypingVisualizer({
   return (
     <div className={`typing-visualizer ${className} relative`}>
       <div className="relative flex items-center justify-center gap-4 py-8 px-6">
-        {displayChars.map((char, index) => {
-          // 중앙(currentPos=2)을 기준으로 상태 결정
-          const isComposingChar = isComposing && index === currentPos && composingText
-          const isCompletedChar = index < currentPos
-          const isCurrentChar = !isComposing && index === currentPos
-          const isUpcomingChar = index > currentPos
-          
-          // 빈 칸 체크
-          const isEmpty = !char
-          
-          // 완료된 문자의 정확성 확인
-          const isCorrect = true // TODO: 실제 정확성 데이터 연결
-          
-          return (
-            <div
-              key={`${index}-${char}-${currentIndex}-${isComposing}-${Date.now()}`}
-              className="relative flex items-center justify-center w-16 h-16 rounded-3xl text-2xl font-korean font-medium backdrop-blur-xl border transition-all duration-700 ease-out"
-              style={{
-                backgroundColor: isComposingChar
-                  ? 'var(--color-visualizer-composing-bg)'
-                  : isCompletedChar && char
-                    ? isCorrect 
-                      ? 'var(--color-visualizer-completed-bg)'
-                      : 'var(--color-feedback-error)'
-                    : isCurrentChar && char
-                      ? 'var(--color-visualizer-current-bg)'
-                    : isUpcomingChar && char
-                      ? 'var(--color-visualizer-upcoming-bg)'
-                    : isEmpty
-                      ? 'transparent'
-                      : 'var(--color-visualizer-upcoming-bg)',
-                color: isComposingChar
-                  ? 'var(--color-visualizer-composing-text)'
-                  : isCompletedChar && char
-                    ? isCorrect 
-                      ? 'var(--color-visualizer-completed-text)'
-                      : 'var(--color-text-inverse)'
-                    : isCurrentChar && char
-                      ? 'var(--color-visualizer-current-text)'
-                    : isUpcomingChar && char
-                      ? 'var(--color-visualizer-upcoming-text)'
-                    : isEmpty
-                      ? 'transparent'
-                      : 'var(--color-visualizer-upcoming-text)',
-                borderColor: isComposingChar
-                  ? 'var(--color-visualizer-composing-bg)'
-                  : isCompletedChar && char
-                    ? isCorrect 
-                      ? 'var(--color-visualizer-completed-bg)'
-                      : 'var(--color-feedback-error)'
-                    : isCurrentChar && char
-                      ? 'var(--color-visualizer-current-bg)'
-                    : isUpcomingChar && char
-                      ? 'var(--color-visualizer-upcoming-border)'
-                    : isEmpty
-                      ? 'transparent'
-                      : 'var(--color-visualizer-upcoming-border)',
-                boxShadow: isComposingChar
-                  ? '0 20px 25px -5px var(--color-visualizer-composing-shadow), 0 10px 10px -5px var(--color-visualizer-composing-shadow)'
-                  : isCompletedChar && char
-                    ? isCorrect 
-                      ? '0 10px 15px -3px var(--color-visualizer-completed-shadow)'
-                      : '0 10px 15px -3px rgba(239, 68, 68, 0.2)'
-                    : isCurrentChar && char
-                      ? '0 4px 6px -1px var(--color-visualizer-current-shadow)'
-                    : 'none',
-                opacity: isUpcomingChar && char ? 0.5 : isEmpty ? 0.1 : 1,
-                fontWeight: isComposingChar ? '600' : isCompletedChar || isCurrentChar ? '500' : '300',
-                transform: `
-                  translateY(${isComposingChar ? -8 : isCurrentChar ? -4 : isCompletedChar ? -1 : 0}px) 
-                  scale(${isComposingChar ? 1.15 : isCurrentChar ? 1.05 : isCompletedChar ? 1.02 : isUpcomingChar ? 0.95 : 0.85})
-                `,
-                zIndex: isComposingChar ? 30 : isCurrentChar ? 20 : isCompletedChar ? 10 : 5,
-                filter: isComposingChar ? 'brightness(1.2) saturate(1.2)' : isCurrentChar ? 'brightness(1.1)' : 'none',
-                transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-                animationDelay: `${Math.abs(index - currentPos) * 60}ms`
-              }}
-            >
-              {/* Character content */}
-              <span className="relative z-10 select-none">
-                {char === ' ' ? (
-                  <span className="opacity-50 text-lg">␣</span>
-                ) : (
-                  char || ''
-                )}
-              </span>
-              
-            </div>
-          )
-        })}
+        {displayChars.map(renderCharacter)}
       </div>
       
       {/* 우아한 상태 표시 */}
@@ -247,6 +248,6 @@ export function TypingVisualizer({
       </div>
     </div>
   )
-}
+});
 
 /* 스타일드 JSX에서 전역 CSS로 이동 */

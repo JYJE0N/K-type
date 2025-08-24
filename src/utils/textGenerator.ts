@@ -187,7 +187,7 @@ export class TextGenerator {
     // 새 구조에서는 구두점 포함 문장을 사용
     try {
       return this.generateSentencesByLengthAndStyle('short', 'punctuation', Math.ceil(count / 5))
-    } catch (error) {
+    } catch (_error) {
       // 폴백: 기본 단어 사용
       const words = this.languagePack.wordLists.plain || []
       
@@ -219,7 +219,7 @@ export class TextGenerator {
     // 새 구조에서는 숫자 포함 문장을 사용
     try {
       return this.generateSentencesByLengthAndStyle('short', 'numbers', Math.ceil(count / 5))
-    } catch (error) {
+    } catch (_error) {
       // 폴백: 기본 단어 사용
       const words = this.languagePack.wordLists.plain || []
       
@@ -265,7 +265,7 @@ export class TextGenerator {
         console.log(`📝 새 문장 시스템으로 생성: ${result.substring(0, 50)}...`)
         return result
       }
-    } catch (error) {
+    } catch (_error) {
       console.log('새 문장 시스템을 사용할 수 없습니다. 레거시 방식을 사용합니다.')
     }
 

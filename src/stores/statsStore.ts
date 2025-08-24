@@ -3,11 +3,37 @@ import { LiveStats, Keystroke, Mistake, TextType } from '@/types'
 import { 
   calculateKoreanStrokeCPM, 
   calculateKoreanStrokeWPM,
-  analyzeTextStrokes,
-  calculateTextStrokes 
+  analyzeTextStrokes
 } from '@/utils/koreanStrokeCalculator'
 import { containsKorean } from '@/utils/koreanIME'
-import { eventBus } from '@/utils/eventBus'
+// import { eventBus } from '@/utils/eventBus' // EventBus 제거로 비활성화
+
+// 메모이제이션을 위한 캐시 객체
+const memoCache = new Map<string, any>();
+
+// 간단한 메모이제이션 함수
+function memoize<T extends (...args: any[]) => any>(fn: T, keyGenerator?: (...args: Parameters<T>) => string): T {
+  return ((...args: Parameters<T>) => {
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
+    
+    if (memoCache.has(key)) {
+      return memoCache.get(key);
+    }
+    
+    const result = fn(...args);
+    memoCache.set(key, result);
+    
+    // 캐시 크기 제한 (100개 항목)
+    if (memoCache.size > 100) {
+      const firstKey = memoCache.keys().next().value;
+      if (firstKey !== undefined) {
+        memoCache.delete(firstKey);
+      }
+    }
+    
+    return result;
+  }) as T;
+}
 
 interface StatsStore {
   liveStats: LiveStats
@@ -47,7 +73,13 @@ const initialStats: LiveStats = {
   errorsCount: 0
 }
 
-export const useStatsStore = create<StatsStore>((set, get) => {
+// 메모이제이션된 계산 함수들
+const memoizedCalculateKoreanStrokeCPM = memoize(calculateKoreanStrokeCPM, (text: string, minutes: number, accuracy?: number) => `cpm-${text.length}-${minutes.toFixed(2)}-${(accuracy ?? 1).toFixed(2)}`);
+const memoizedCalculateKoreanStrokeWPM = memoize(calculateKoreanStrokeWPM, (text: string, minutes: number, accuracy?: number) => `wpm-${text.length}-${minutes.toFixed(2)}-${(accuracy ?? 1).toFixed(2)}`);
+const memoizedContainsKorean = memoize(containsKorean, (text: string) => `korean-${text || ''}`);
+const memoizedAnalyzeTextStrokes = memoize(analyzeTextStrokes, (text: string) => `strokes-${text || ''}`);
+
+export const useStatsStore = create<StatsStore>((set) => {
   const store = {
   liveStats: initialStats,
 
@@ -85,16 +117,16 @@ export const useStatsStore = create<StatsStore>((set, get) => {
     let wpm = 0
     let rawWpm = 0
 
-    // 한글 포함 여부에 따른 CPM/WPM 계산 방식 분기
-    if (containsKorean(actualUserInput)) {
+    // 한글 포함 여부에 따른 CPM/WPM 계산 방식 분기 (메모이제이션 적용)
+    if (memoizedContainsKorean(actualUserInput)) {
       // 🇰🇷 한글 스트로크 기반 계산 (실제 입력 기준, 오타 포함)
-      rawCpm = calculateKoreanStrokeCPM(actualUserInput, minutes, 1.0) // 정확도 보정 없음
-      cpm = calculateKoreanStrokeCPM(actualUserInput, minutes, accuracyRate) // 약간의 정확도 보정만
-      rawWpm = calculateKoreanStrokeWPM(actualUserInput, minutes, 1.0)
-      wpm = calculateKoreanStrokeWPM(actualUserInput, minutes, accuracyRate)
+      rawCpm = memoizedCalculateKoreanStrokeCPM(actualUserInput, minutes, 1.0) // 정확도 보정 없음
+      cpm = memoizedCalculateKoreanStrokeCPM(actualUserInput, minutes, accuracyRate) // 약간의 정확도 보정만
+      rawWpm = memoizedCalculateKoreanStrokeWPM(actualUserInput, minutes, 1.0)
+      wpm = memoizedCalculateKoreanStrokeWPM(actualUserInput, minutes, accuracyRate)
 
-      // 추가 통계 정보 로그
-      const strokeAnalysis = analyzeTextStrokes(actualUserInput)
+      // 추가 통계 정보 로그 (메모이제이션 적용)
+      const strokeAnalysis = memoizedAnalyzeTextStrokes(actualUserInput)
       console.log('🎯 한글 스트로크 분석 (오타 포함):', {
         text: actualUserInput.length > 20 ? actualUserInput.substring(0, 20) + '...' : actualUserInput,
         expectedText: currentText.substring(0, 20) + '...',
@@ -117,7 +149,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
     const mistakeRate = keystrokesCount > 0 ? mistakeCount / keystrokesCount : 0
     const consistency = Math.round(100 - (mistakeRate * 60)) // 실수 영향 완화
 
-    console.log(`🚀 월급루팡 통계 (${containsKorean(actualUserInput) ? '한글' : '영문'}, ${textType}):`, {
+    console.log(`🚀 월급루팡 통계 (${memoizedContainsKorean(actualUserInput) ? '한글' : '영문'}, ${textType}):`, {
       timeElapsed: timeElapsed.toFixed(2),
       completedChars: currentIndex,
       keystrokesCount,
@@ -149,7 +181,7 @@ export const useStatsStore = create<StatsStore>((set, get) => {
   },
 
   // WPM 계산 (스트로크 기반 개선된 방식)
-  calculateWPM: (keystrokes: Keystroke[], timeElapsed: number, textType: TextType = 'words', completedText = '') => {
+  calculateWPM: (keystrokes: Keystroke[], timeElapsed: number, _textType: TextType = 'words', completedText = '') => {
     if (timeElapsed === 0 || keystrokes.length === 0) return 0
     
     const correctCharacters = keystrokes.filter(k => k.correct).length
@@ -158,9 +190,9 @@ export const useStatsStore = create<StatsStore>((set, get) => {
     
     if (minutes <= 0) return 0
     
-    // 한글 포함 시 스트로크 기반 계산
-    if (containsKorean(completedText)) {
-      return calculateKoreanStrokeWPM(completedText, minutes, accuracyRate)
+    // 한글 포함 시 스트로크 기반 계산 (메모이제이션 적용)
+    if (memoizedContainsKorean(completedText)) {
+      return memoizedCalculateKoreanStrokeWPM(completedText, minutes, accuracyRate)
     }
     
     // 영문의 경우 기존 방식 (5타 = 1단어)
@@ -188,9 +220,9 @@ export const useStatsStore = create<StatsStore>((set, get) => {
     
     if (minutes <= 0) return 0
     
-    // 한글 포함 시 스트로크 기반 계산
-    if (containsKorean(completedText)) {
-      return calculateKoreanStrokeCPM(completedText, minutes, accuracyRate)
+    // 한글 포함 시 스트로크 기반 계산 (메모이제이션 적용)
+    if (memoizedContainsKorean(completedText)) {
+      return memoizedCalculateKoreanStrokeCPM(completedText, minutes, accuracyRate)
     }
     
     // 영문의 경우 기존 방식
@@ -220,54 +252,56 @@ export const useStatsStore = create<StatsStore>((set, get) => {
 })
 
 // 🚨 긴급: 이벤트 버스 리스너 완전 비활성화 (사이트 벽돌 방지)
+// 이벤트 버스 리스너 완전 비활성화 (사이트 벽돌 방지)
 if (false && typeof window !== 'undefined') {
-  let isListenersRegistered = false;
 
-  const registerEventListeners = () => {
-    if (isListenersRegistered) return;
-    isListenersRegistered = true;
+  // EventBus 제거로 비활성화
+  // const registerEventListeners = () => {
+  //   if (isListenersRegistered) return;
+  //   isListenersRegistered = true;
 
-    eventBus.on('stats:update', (data) => {
-      const { calculateStats } = useStatsStore.getState();
-      calculateStats(
-        data.keystrokes,
-        data.mistakes,
-        data.startTime,
-        data.currentIndex,
-        data.currentTime,
-        data.textType,
-        data.currentText,
-        data.userInput,
-        data.firstKeystrokeTime
-      );
-    });
+  //   eventBus.on('stats:update', (data) => {
+  //     const { calculateStats } = useStatsStore.getState();
+  //     calculateStats(
+  //       data.keystrokes,
+  //       data.mistakes,
+  //       data.startTime,
+  //       data.currentIndex,
+  //       data.currentTime,
+  //       data.textType,
+  //       data.currentText,
+  //       data.userInput,
+  //       data.firstKeystrokeTime
+  //     );
+  //   });
 
-    eventBus.on('test:completed', async (data) => {
-      const { calculateStats } = useStatsStore.getState();
+  //   eventBus.on('test:completed', async (data) => {
+  //     const { calculateStats } = useStatsStore.getState();
       
-      // 최종 통계 계산
-      calculateStats(
-        data.keystrokes,
-        data.mistakes,
-        data.startTime,
-        data.currentIndex,
-        data.currentTime,
-        data.textType,
-        data.currentText,
-        data.userInput,
-        data.firstKeystrokeTime
-      );
+  //     // 최종 통계 계산
+  //     calculateStats(
+  //       data.keystrokes,
+  //       data.mistakes,
+  //       data.startTime,
+  //       data.currentIndex,
+  //       data.currentTime,
+  //       data.textType,
+  //       data.currentText,
+  //       data.userInput,
+  //       data.firstKeystrokeTime
+  //     );
 
-      // 🔥 구조 개선: recordTest는 TestCompletionHandler에서만 처리
-      // statsStore는 통계 계산만 담당 (단일 책임 원칙)
-      console.log('📊 StatsStore: 통계 계산 완료 - 저장은 TestCompletionHandler에서 처리');
-    });
-  };
+  //     // 🔥 구조 개선: recordTest는 TestCompletionHandler에서만 처리
+  //     // statsStore는 통계 계산만 담당 (단일 책임 원칙)
+  //     console.log('📊 StatsStore: 통계 계산 완료 - 저장은 TestCompletionHandler에서 처리');
+  //   });
+  // };
 
-  // DOM이 로드된 후 리스너 등록
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', registerEventListeners);
-  } else {
-    registerEventListeners();
-  }
+  // EventBus 제거로 비활성화
+  // // DOM이 로드된 후 리스너 등록
+  // if (document.readyState === 'loading') {
+  //   document.addEventListener('DOMContentLoaded', registerEventListeners);
+  // } else {
+  //   registerEventListeners();
+  // }
 }

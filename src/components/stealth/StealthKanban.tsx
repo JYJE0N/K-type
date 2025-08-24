@@ -19,7 +19,7 @@ function KanbanCard({ title, status, progress = 0, assignee, isTyping }: KanbanC
     done: { icon: CheckSquare, color: '#00875a', bgColor: '#e3fcef' }
   }
   
-  const { icon: StatusIcon, color, bgColor } = statusConfig[status]
+  const { icon: StatusIcon, color } = statusConfig[status]
 
   return (
     <div 
@@ -80,7 +80,6 @@ export function StealthKanban({ className = "" }: StealthKanbanProps) {
     currentIndex,
     completionRate,
     cpm,
-    wpm,
     accuracy,
     elapsedTime
   } = useStealthCommon()

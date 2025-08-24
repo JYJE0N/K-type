@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { useStatsStore } from "@/stores/statsStore";
@@ -10,12 +10,35 @@ import { KeyboardShortcuts } from "@/components/ui/KeyboardShortcuts";
 import { IoPlay, IoTrendingUp } from "react-icons/io5";
 import { Loader2 } from "lucide-react";
 
-// 섹션 컴포넌트들 임포트
+// 섹션 컴포넌트들 동적 임포트 (차트가 포함된 무거운 컴포넌트들)
+const TestResultSection = lazy(() => 
+  import("./TestResultSection").then(module => ({
+    default: module.TestResultSection
+  }))
+);
+const TierSection = lazy(() => 
+  import("./TierSection").then(module => ({
+    default: module.TierSection
+  }))
+);
+const RecentRecordsSection = lazy(() => 
+  import("./RecentRecordsSection").then(module => ({
+    default: module.RecentRecordsSection
+  }))
+);
+const InsightsSection = lazy(() => 
+  import("./InsightsSection").then(module => ({
+    default: module.InsightsSection
+  }))
+);
+const RecommendationSection = lazy(() => 
+  import("./RecommendationSection").then(module => ({
+    default: module.RecommendationSection
+  }))
+);
+
+// 가벼운 컴포넌트는 일반 임포트
 import { StatsHeader } from "./StatsHeader";
-import { TestResultSection } from "./TestResultSection";
-import { TierSection } from "./TierSection";
-import { RecentRecordsSection } from "./RecentRecordsSection";
-import { InsightsSection } from "./InsightsSection";
 
 export function StatsPage() {
   const router = useRouter();
@@ -45,6 +68,7 @@ export function StatsPage() {
     tier: true,
     recent: true,
     insights: true,
+    recommendations: true,
     actions: true
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -203,11 +227,18 @@ export function StatsPage() {
           visibleSections.results ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <TestResultSection
-          className={isMobile ? "mb-6" : "mb-8"}
-          primaryMetric={primaryMetric}
-          onMetricChange={setPrimaryMetric}
-        />
+        <Suspense fallback={
+          <div className={`animate-pulse ${isMobile ? "mb-6" : "mb-8"}`}>
+            <div className="h-8 rounded-lg mb-4" style={{ backgroundColor: 'var(--color-surface)', width: '40%' }}></div>
+            <div className="h-64 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+          </div>
+        }>
+          <TestResultSection
+            className={isMobile ? "mb-6" : "mb-8"}
+            primaryMetric={primaryMetric}
+            onMetricChange={setPrimaryMetric}
+          />
+        </Suspense>
       </div>
 
       {/* 섹션 2: 티어 안내 */}
@@ -217,15 +248,22 @@ export function StatsPage() {
           visibleSections.tier ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <TierSection
-          className={isMobile ? "mb-6" : "mb-8"}
-          bestCPM={bestCPM}
-          bestWPM={bestWPM}
-          improvementRate={improvementRate}
-          totalTests={totalTests}
-          primaryMetric={primaryMetric}
-          mounted={mounted}
-        />
+        <Suspense fallback={
+          <div className={`animate-pulse ${isMobile ? "mb-6" : "mb-8"}`}>
+            <div className="h-6 rounded-lg mb-3" style={{ backgroundColor: 'var(--color-surface)', width: '30%' }}></div>
+            <div className="h-32 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+          </div>
+        }>
+          <TierSection
+            className={isMobile ? "mb-6" : "mb-8"}
+            bestCPM={bestCPM}
+            bestWPM={bestWPM}
+            improvementRate={improvementRate}
+            totalTests={totalTests}
+            primaryMetric={primaryMetric}
+            mounted={mounted}
+          />
+        </Suspense>
       </div>
 
       {/* 섹션 3: 최근 기록 및 AI 개선 제안 */}
@@ -235,11 +273,20 @@ export function StatsPage() {
           visibleSections.recent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <RecentRecordsSection
-          className={isMobile ? "mb-6" : "mb-8"}
-          hasRecentTests={hasRecentTests}
-          primaryMetric={primaryMetric}
-        />
+        <Suspense fallback={
+          <div className={`animate-pulse ${isMobile ? "mb-6" : "mb-8"}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="h-48 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-48 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+            </div>
+          </div>
+        }>
+          <RecentRecordsSection
+            className={isMobile ? "mb-6" : "mb-8"}
+            hasRecentTests={hasRecentTests}
+            primaryMetric={primaryMetric}
+          />
+        </Suspense>
       </div>
 
       {/* 섹션 4: 인사이트 통계 */}
@@ -249,15 +296,50 @@ export function StatsPage() {
           visibleSections.insights ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <InsightsSection
-          className={isMobile ? "mb-6" : "mb-8"}
-          totalPracticeTime={totalPracticeTime}
-          averageSpeed={averageSpeed}
-          totalKeystrokes={totalKeystrokes}
-          ranking={ranking}
-          mounted={mounted}
-          primaryMetric={primaryMetric}
-        />
+        <Suspense fallback={
+          <div className={`animate-pulse ${isMobile ? "mb-6" : "mb-8"}`}>
+            <div className="h-6 rounded-lg mb-3" style={{ backgroundColor: 'var(--color-surface)', width: '35%' }}></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+            </div>
+          </div>
+        }>
+          <InsightsSection
+            className={isMobile ? "mb-6" : "mb-8"}
+            totalPracticeTime={totalPracticeTime}
+            averageSpeed={averageSpeed}
+            totalKeystrokes={totalKeystrokes}
+            ranking={ranking}
+            mounted={mounted}
+            primaryMetric={primaryMetric}
+          />
+        </Suspense>
+      </div>
+
+      {/* 섹션 5: AI 맞춤 추천 */}
+      <div 
+        data-section="recommendations" 
+        className={`transition-all duration-700 delay-400 ${
+          visibleSections.recommendations ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+      >
+        <Suspense fallback={
+          <div className="stats-card mb-8">
+            <div className="h-6 rounded-lg mb-3" style={{ backgroundColor: 'var(--color-surface)', width: '40%' }}></div>
+            <div className="space-y-4">
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+              <div className="h-24 rounded-lg" style={{ backgroundColor: 'var(--color-surface)' }}></div>
+            </div>
+          </div>
+        }>
+          <RecommendationSection
+            className={isMobile ? "mb-6" : "mb-8"}
+          />
+        </Suspense>
       </div>
 
       {/* 하단 액션 버튼 */}

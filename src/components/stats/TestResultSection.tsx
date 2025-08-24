@@ -1,14 +1,21 @@
 "use client";
 
-import { TestResultChart } from "./TestResultChart";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTypingStore } from "@/stores/typingStore";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 import { IoSparkles, IoTrophy, IoTime } from "react-icons/io5";
 import { FaKeyboard } from "react-icons/fa6";
 import { AiFillThunderbolt } from "react-icons/ai";
-import { Target } from "lucide-react";
+import { Target, Loader2 } from "lucide-react";
 import { TestTitleSystem } from "@/utils/titleSystem";
+import { lazy, Suspense } from "react";
+
+// 동적 임포트: TestResultChart는 Recharts가 무거우므로 지연 로딩
+const TestResultChart = lazy(() => 
+  import("./TestResultChart").then(module => ({
+    default: module.TestResultChart
+  }))
+);
 
 interface TestResultSectionProps {
   className?: string;
@@ -22,8 +29,8 @@ export function TestResultSection({
   onMetricChange,
 }: TestResultSectionProps) {
   const { liveStats } = useStatsStore();
-  const { isCompleted, targetText, userInput, mistakes } = useTypingStore();
-  const { bestCPM, bestWPM, averageSpeed, totalTests } = useUserProgressStore();
+  const { targetText, userInput, mistakes } = useTypingStore();
+  const { bestCPM, bestWPM } = useUserProgressStore();
 
   // 테스트 결과 데이터가 있는지 확인
   const hasStatsData = liveStats && (liveStats.cpm > 0 || liveStats.wpm > 0);

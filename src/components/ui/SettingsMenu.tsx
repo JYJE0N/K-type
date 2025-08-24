@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Ghost, Sparkles, Clock, Hash, Type, Timer, X } from 'lucide-react';
+import { Settings, Ghost, Sparkles, Clock, Type, Timer, X } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
 import { ButtonGroup } from '@/components/ui/ButtonGroup';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { overlayStyles, textStyles, cn } from '@/utils/styles';
+// Hash, overlayStyles, textStyles, cn 미사용으로 제거
 
 
 interface SettingsMenuProps {
@@ -20,7 +20,7 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
   
   // 외부에서 isOpen을 제어하는지 내부에서 제어하는지 결정
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-  const setIsOpen = onClose ? onClose : (open: boolean) => setInternalIsOpen(open);
+  // setIsOpen은 closePromotionModal에서만 사용되므로 제거
   
   const { 
     ghostModeEnabled,
@@ -33,8 +33,8 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
     setTestMode,
     testTarget,
     setTestTarget,
-    textType,
-    setTextType,
+    // textType,
+    // setTextType, // 현재 미사용
     sentenceLength,
     setSentenceLength,
     sentenceStyle,
@@ -83,9 +83,10 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
     }
   };
 
-  const wordStyleOptions = [
-    { value: 'plain', label: '일반' }
-  ];
+  // 단어 스타일 옵션 (현재 미사용)
+  // const wordStyleOptions = [
+  //   { value: 'plain', label: '일반' }
+  // ];
 
   const sentenceLengthOptions = [
     { value: 'short', label: '단문' },

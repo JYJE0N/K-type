@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -10,16 +9,11 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   Area,
-  AreaChart,
   Tooltip,
-  Legend,
   ComposedChart,
-  Bar,
 } from "recharts";
-import { Share2, Trophy, Target, Clock, Zap } from "lucide-react";
-import { IoPlay, IoAnalyticsSharp, IoSparkles } from "react-icons/io5";
-import { FaKeyboard } from "react-icons/fa6";
-import { TbTargetArrow } from "react-icons/tb";
+import { Share2 } from "lucide-react";
+import { IoPlay } from "react-icons/io5";
 import { IoCalendarOutline } from "react-icons/io5";
 import { useUserProgressStore } from "@/stores/userProgressStore";
 
@@ -145,7 +139,7 @@ export function TestResultChart({
     const chartData = [];
 
     // 데이터 밀도 계산 (차트 성능 최적화용)
-    const dataDensity = points / testDuration;
+    // const dataDensity = points / testDuration; // 미사용
 
     // 스트로크 패턴 생성 (실제 타이핑의 리듬감 모방)
     const strokePattern = [];
@@ -294,13 +288,13 @@ export function TestResultChart({
 
   const zones = getPerformanceZones();
 
-  // X축 틱 간격 최적화 함수
-  const getOptimalTickInterval = (dataLength: number) => {
-    if (dataLength <= 30) return 0; // 모든 틱 표시
-    if (dataLength <= 60) return 1; // 2개 중 1개 표시
-    if (dataLength <= 90) return 2; // 3개 중 1개 표시
-    return Math.floor(dataLength / 15); // 최대 15개 틱 표시
-  };
+  // X축 틱 간격 최적화 함수 - 미사용
+  // const getOptimalTickInterval = (dataLength: number) => {
+  //   if (dataLength <= 30) return 0; // 모든 틱 표시
+  //   if (dataLength <= 60) return 1; // 2개 중 1개 표시
+  //   if (dataLength <= 90) return 2; // 3개 중 1개 표시
+  //   return Math.floor(dataLength / 15); // 최대 15개 틱 표시
+  // };
 
   // 간결한 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -345,7 +339,7 @@ export function TestResultChart({
           title: "타이핑 테스트 결과",
           text: shareText,
         });
-      } catch (err) {
+      } catch (_err) {
         console.log("공유 취소됨");
       }
     } else {

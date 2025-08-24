@@ -1,8 +1,8 @@
 "use client";
 
-import { SimpleTierBadge } from '@/components/ui/TierBadge';
-import { defaultTierSystem } from '@/utils/tierSystem';
-import { useUserProgressStore } from '@/stores/userProgressStore';
+// import { useUserProgressStore } from '@/stores/userProgressStore'; // 현재 미사용
+// import { SimpleTierBadge } from '@/components/ui/TierBadge';
+// import { defaultTierSystem } from '@/utils/tierSystem';
 
 interface StatsHeaderProps {
   className?: string;
@@ -21,17 +21,17 @@ export function StatsHeader({
   sentenceLength,
   sentenceStyle
 }: StatsHeaderProps) {
-  const { bestCPM, averageSpeed, totalTests } = useUserProgressStore();
+  // const { bestCPM, averageSpeed, totalTests } = useUserProgressStore();
 
-  // 현재 사용자의 티어 정보 계산
-  const currentStats = {
-    averageCPM: bestCPM || averageSpeed || 0,
-    averageAccuracy: 90, // 임시값
-    averageConsistency: 80, // 임시값
-    totalTests: totalTests || 0
-  };
+  // 현재 사용자의 티어 정보 계산 (미사용)
+  // const currentStats = {
+  //   averageCPM: bestCPM || averageSpeed || 0,
+  //   averageAccuracy: 90, // 임시값
+  //   averageConsistency: 80, // 임시값
+  //   totalTests: totalTests || 0
+  // };
 
-  const currentTier = defaultTierSystem.calculateCurrentTier(currentStats);
+  // const currentTier = defaultTierSystem.calculateCurrentTier(currentStats);
 
   return (
     <div className={`mb-8 ${className}`}>

@@ -82,6 +82,40 @@ export type TextType = 'words' | 'punctuation' | 'numbers' | 'sentences' | 'shor
 // 디바이스 타입
 export type DeviceType = 'desktop' | 'tablet' | 'mobile';
 
+// 언어 타입
+export type Language = 'korean' | 'english';
+
+// 사용자 진행 데이터 타입
+export interface TestRecord {
+  id: string;
+  cpm: number;
+  wpm: number;
+  accuracy: number;
+  consistency?: number;
+  testTime: number;
+  completedAt: Date;
+  language: Language;
+  textType: TextType;
+  testMode: TestMode;
+  mistakeCount: number;
+  totalCharacters: number;
+}
+
+export interface WeakCharacter {
+  char: string;
+  errorCount: number;
+  totalCount: number;
+  errorRate: number;
+  lastSeen: Date;
+}
+
+export interface MistakePattern {
+  intended: string;
+  typed: string;
+  count: number;
+  lastOccurrence: Date;
+}
+
 // 타이핑 세션 데이터
 export interface TypingSession {
   id: string;
