@@ -287,19 +287,8 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const state = get()
     const endTime = new Date()
     
-    // Calculate final stats via event bus
-    if (state.startTime) {
-      eventBus.emit('test:completed', {
-        keystrokes: state.keystrokes,
-        mistakes: state.mistakes,
-        startTime: state.startTime,
-        currentIndex: state.currentIndex,
-        currentTime: endTime,
-        userInput: state.userInput,
-        firstKeystrokeTime: state.firstKeystrokeTime
-      })
-      console.log('✅ Test completed - Final stats calculated')
-    }
+    // eventBus 호출 제거 - 무한 루프 방지
+    console.log('✅ Test completed - eventBus 호출 제거됨')
     
     set({
       isActive: false,
@@ -340,15 +329,7 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
         lastProcessedTime: currentTime
       })
       
-      // 통계 업데이트 via event bus
-      eventBus.emit('stats:update', {
-        keystrokes: [...state.keystrokes, jamoKeystroke],
-        mistakes: state.mistakes,
-        startTime: state.startTime,
-        currentIndex: state.currentIndex,
-        userInput: state.userInput,
-        firstKeystrokeTime: state.firstKeystrokeTime
-      })
+      // 통계 업데이트 제거 - 무한 루프 방지
       return
     }
 
@@ -357,22 +338,22 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       return
     }
 
-    // Auto-start test if not active
-    if (!state.isActive && !state.startTime) {
-      console.log('🚀 Auto-starting test')
-      get().startTest()
-    }
+    // Auto-start 완전 비활성화 - 무한 루프 방지
+    // if (!state.isActive && !state.startTime) {
+    //   console.log('🚀 Auto-starting test')
+    //   get().startTest()
+    // }
 
     // Get expected character
     const expectedChar = state.targetText[state.currentIndex]
     if (!expectedChar) {
       console.log('⚠️ No more characters to type')
       
-      // Check for completion - 텍스트 끝에서 엔터 키 또는 스페이스바로 완료
-      if (key === '\n' || key === ' ') {
-        console.log(`🏁 Text completed with ${key === '\n' ? 'Enter' : 'Space'} key at end`)
-        setTimeout(() => get().completeTest(), 50)
-      }
+      // 텍스트 끝 완료 로직 제거 - 무한 루프 방지
+      // if (key === '\n' || key === ' ') {
+      //   console.log(`🏁 Text completed with ${key === '\n' ? 'Enter' : 'Space'} key at end`)
+      //   setTimeout(() => get().completeTest(), 50)
+      // }"}
       return
     }
 
@@ -390,11 +371,11 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     const updates = processKeystroke(state, key, expectedChar, isCorrect)
     set(updates)
     
-    // 마지막 글자 입력 후 자동 완료 체크
+    // 마지막 글자 완료 로직도 제거 - 무한 루프 방지  
     const newIndex = updates.currentIndex || state.currentIndex
     if (newIndex >= state.targetText.length) {
-      console.log('🏁 Test completed - reached end of text')
-      setTimeout(() => get().completeTest(), 50)
+      console.log('🏁 Test reached end - 자동 완료 비활성화')
+      // setTimeout(() => get().completeTest(), 50)  
       return
     }
     

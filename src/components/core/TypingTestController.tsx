@@ -187,7 +187,7 @@ export function useTypingTestController() {
     console.log('📊 TypingTestController: 통계 계산 완료 (저장 제외)');
 
     return liveStats;
-  }, [isCompleted, firstKeystrokeTime, calculateStats, keystrokes, mistakes.length, startTime, currentIndex, textType, targetText, userInput, liveStats]);
+  }, [isCompleted]); // 무한 루프 방지 - 다른 의존성 제거
 
   // 전역 이벤트 리스너 (승급 모달에서 새 테스트 요청)
   useEffect(() => {

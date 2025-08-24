@@ -545,7 +545,7 @@ export function InputHandler({
       document.removeEventListener('keydown', handleGlobalKeyDown, { capture: true })
       window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true })
     }
-  }, [disabled, isCompleted, onPause, onRestart])
+  }, [])
 
   // Browser-specific adjustments
   useEffect(() => {

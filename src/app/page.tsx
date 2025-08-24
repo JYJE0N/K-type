@@ -52,7 +52,7 @@ export default function Home() {
     }
   }, [])
 
-  // 언어 또는 설정 변경 시 새로운 텍스트 생성
+  // 초기 텍스트만 생성 (설정 변경 시 자동 재시작 방지)
   useEffect(() => {
     const languagePack = getLanguagePack(language)
     if (!languagePack) return
@@ -68,8 +68,22 @@ export default function Home() {
     })
     
     setTargetText(newText)
-    resetTest()
-  }, [language, testTarget, testMode, sentenceLength, sentenceStyle, setTargetText, resetTest])
+    // resetTest() 제거 - 모바일 자동 시작 방지
+  }, [language, testTarget, testMode, sentenceLength, sentenceStyle, setTargetText])
+  
+  // 수동 재시작 이벤트 처리만
+  useEffect(() => {
+    const handleRestart = () => {
+      console.log('🔄 수동 재시작 이벤트 처리');
+      resetTest();
+    }
+    
+    window.addEventListener('typing:restart-test', handleRestart);
+    
+    return () => {
+      window.removeEventListener('typing:restart-test', handleRestart);
+    }
+  }, [resetTest])
 
   return (
     <>

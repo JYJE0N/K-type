@@ -8,6 +8,7 @@ import {
 import { CharacterRenderer } from "./CharacterRenderer";
 import { SpaceRenderer } from "./SpaceRenderer";
 import { useDeviceContext, getTypingTextClassName } from "@/utils/deviceDetection";
+import { usePerformanceMonitor } from "@/utils/performanceMonitor";
 
 interface TextRendererProps {
   text: string;
@@ -30,6 +31,9 @@ export function TextRenderer({
   isPaused = false,
   className = "",
 }: TextRendererProps) {
+  // 성능 모니터링
+  usePerformanceMonitor('TextRenderer');
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const deviceContext = useDeviceContext();
   const { isMobile } = deviceContext;
@@ -129,7 +133,7 @@ export function TextRenderer({
       if (scrollTimeout) clearTimeout(scrollTimeout);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [currentIndex, isPaused, text.length, isMobile]);
+  }, [currentIndex, isPaused]);
 
   // 메인 렌더링
   const renderContent = () => {
