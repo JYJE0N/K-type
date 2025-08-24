@@ -9,6 +9,7 @@ import { AiFillThunderbolt } from "react-icons/ai";
 import { Target, Loader2 } from "lucide-react";
 import { TestTitleSystem } from "@/utils/titleSystem";
 import { lazy, Suspense } from "react";
+import { KakaoShare } from "@/components/ui/KakaoShare";
 
 // 동적 임포트: TestResultChart는 Recharts가 무거우므로 지연 로딩
 const TestResultChart = lazy(() => 
@@ -291,6 +292,21 @@ export function TestResultSection({
           >
             테스트 결과
           </div>
+        </div>
+      </div>
+
+      {/* 공유하기 섹션 */}
+      <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <KakaoShare 
+          title={`월루타자기 테스트 결과 - ${primaryMetric === 'cpm' ? liveStats.cpm : liveStats.wpm}${primaryMetric === 'cpm' ? 'CPM' : 'WPM'}`}
+          description={`정확도 ${liveStats.accuracy}% | ${isNewRecord ? '신기록 달성!' : '완료'} | 월루타자기에서 타이핑 실력을 향상시키세요!`}
+          className="w-full sm:w-auto"
+        />
+        <div 
+          className="text-sm text-center sm:text-left"
+          style={{ color: "var(--color-text-secondary)" }}
+        >
+          친구들과 결과를 공유해보세요!
         </div>
       </div>
 

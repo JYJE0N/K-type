@@ -58,6 +58,45 @@ const nextConfig = {
   images: {
     formats: ['image/webp', 'image/avif'],
   },
+
+  // 도메인 리디렉션 (Railway 등록 도메인)
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'wollu.app',
+          },
+        ],
+        destination: 'https://wollu.life/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.wollu.life',
+          },
+        ],
+        destination: 'https://wollu.life/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.wollu.app',
+          },
+        ],
+        destination: 'https://wollu.life/:path*',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
