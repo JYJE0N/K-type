@@ -98,7 +98,7 @@ export function useTypingTimer(onTestComplete?: () => void) {
         // if (testMode === "time" && actualElapsed >= testTarget) {
         //   onTestComplete?.();
         // }
-      }, 100); // 100ms마다 업데이트
+      }, 50); // 50ms마다 업데이트 (더 부드러운 진행률)
     }
 
     return () => {

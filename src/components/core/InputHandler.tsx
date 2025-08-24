@@ -271,15 +271,6 @@ export function InputHandler({
     if (key === 'Enter' || key === 'Tab') {
       event.preventDefault()
       
-      // 모바일 환경 감지
-      const mobileDetection = detectMobile()
-      const isMobile = mobileDetection?.isMobile ?? false
-      
-      // 데스크톱에서만 자동 시작
-      if (!testStarted && !isCountingDown && !isActive && !isMobile) {
-        handleTestStart()
-      }
-      
       if (isActive && !isCountingDown) {
         processCharacter(key === 'Enter' ? '\n' : '\t')
       }
@@ -289,15 +280,6 @@ export function InputHandler({
     // 스페이스 처리  
     if (key === ' ') {
       event.preventDefault()
-      
-      // 모바일 환경 감지
-      const mobileDetection = detectMobile()
-      const isMobile = mobileDetection?.isMobile ?? false
-      
-      // 데스크톱에서만 자동 시작
-      if (!testStarted && !isCountingDown && !isActive && !isMobile) {
-        handleTestStart()
-      }
       
       if (isActive && !isCountingDown && !imeHandler.current.isComposing()) {
         processCharacter(' ')
@@ -310,15 +292,6 @@ export function InputHandler({
       const charCode = key.charCodeAt(0)
       if (charCode < 128 && charCode >= 32) {
         event.preventDefault()
-        
-        // 모바일 환경 감지
-        const mobileDetection = detectMobile()
-        const isMobile = mobileDetection?.isMobile ?? false
-        
-        // 데스크톱에서만 자동 시작
-        if (!testStarted && !isCountingDown && !isActive && !isMobile) {
-          handleTestStart()
-        }
         
         if (isActive && !isCountingDown) {
           processCharacter(key)

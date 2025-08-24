@@ -255,15 +255,15 @@ export function TypingTestUI({
           </div>
         )}
 
-        {/* iPad 전용 시작 버튼 */}
+        {/* 모든 기기 공용 시작 버튼 */}
         {!isActive && !isCompleted && !isCountingDown && (
-          <div className="ipad-start-button-container block md:hidden mb-6 text-center">
+          <div className="start-button-container mb-6 text-center">
             <button
               onClick={() => {
-                console.log('📱 iPad explicit start button clicked');
+                console.log('🚀 시작 버튼 클릭 - 사용자 의도적 시작');
                 onStart();
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 hover:scale-105 active:scale-95"
               style={{
                 backgroundColor: 'var(--color-interactive-primary)',
                 color: 'var(--color-text-on-primary)',
@@ -277,19 +277,18 @@ export function TypingTestUI({
               className="text-xs mt-2 opacity-60"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              버튼을 눌러 시작하세요
+              준비가 되면 버튼을 눌러주세요
             </div>
           </div>
         )}
 
         {/* 2. 텍스트 필드 */}
         <div
-          className="typing-area relative cursor-pointer"
+          className="typing-area relative"
           style={{ minHeight: "200px" }}
           onClick={() => {
-            if (!isActive && !isCompleted && !isCountingDown) {
-              onStart();
-            } else if (isPaused && onResume) {
+            // 일시정지 상태에서만 클릭으로 재개 허용
+            if (isPaused && onResume) {
               onResume();
             }
           }}

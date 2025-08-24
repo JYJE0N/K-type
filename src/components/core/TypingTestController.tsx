@@ -10,7 +10,6 @@ import { TextGenerator } from "@/utils/textGenerator";
 import { ghostModeManager } from "@/utils/ghostMode";
 import { typingEffectsManager } from "@/utils/typingEffects";
 import { LanguageDetector, detectTextLanguage } from "@/utils/languageDetection";
-import { detectMobile } from "@/utils/mobileDetection";
 
 /**
  * 타이핑 테스트의 비즈니스 로직을 관리하는 컨트롤러
@@ -106,20 +105,7 @@ export function useTypingTestController() {
       return;
     }
     
-    // 모바일 감지 (통합 유틸리티 사용)
-    const mobileDetection = detectMobile();
-    const isMobile = mobileDetection?.isMobile ?? false;
-    
-    // 모바일에서는 자동 카운트다운 완전 차단
-    if (isMobile) {
-      console.log('🚫 모바일 환경: 자동 카운트다운 차단');
-      // 카운트다운 없이 바로 시작만 허용
-      const startTest = useTypingStore.getState().startTest;
-      startTest();
-      return;
-    }
-    
-    // 데스크톱에서만 카운트다운 설정 따름
+    // 모든 기기에서 사용자 설정을 존중
     if (countdownEnabled) {
       startCountdown();
     } else {
