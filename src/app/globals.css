@@ -545,14 +545,18 @@ body {
   overflow-x: hidden;
 }
 
-/* 기본 링크 스타일 제거 */
+/* 기본 링크 스타일 제거 - 강제 적용으로 CSS 로딩 전에도 안정적 */
 a {
-  color: inherit;
-  text-decoration: none;
+  color: inherit !important;
+  text-decoration: none !important;
 }
 
 a:visited {
-  color: inherit;
+  color: inherit !important;
+}
+
+a:hover {
+  text-decoration: none !important;
 }
 
 /* 모바일에서 불필요한 세로 스크롤 방지 */

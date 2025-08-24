@@ -16,13 +16,13 @@ export function Toolbar({ className = "" }: ToolbarProps) {
   return (
     <>
       <div className={`flex items-center gap-1 ${className}`}>
-        {/* 통계 버튼 */}
+        {/* 통계 링크 */}
         <Link
           href="/stats"
           className="p-2 rounded-lg transition-colors"
           style={{
-            color: 'var(--color-text-secondary)',
-            textDecoration: 'none'
+            backgroundColor: 'transparent',
+            color: 'var(--color-text-secondary)'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-background-elevated)'

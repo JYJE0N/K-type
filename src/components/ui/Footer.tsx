@@ -23,11 +23,9 @@ export function Footer({ className = "" }: FooterProps) {
               href="https://github.com/JYJE0N"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="GitHub Profile"
               className="h-10 w-10 p-2 rounded-md transition-all duration-200 flex items-center justify-center"
               style={{
-                color: 'var(--color-text-primary)',
-                textDecoration: 'none'
+                color: 'var(--color-text-primary)'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = 'var(--color-interactive-secondary)'
@@ -37,6 +35,8 @@ export function Footer({ className = "" }: FooterProps) {
                 e.currentTarget.style.color = 'var(--color-text-primary)'
                 e.currentTarget.style.backgroundColor = 'transparent'
               }}
+              aria-label="GitHub Profile"
+              title="GitHub Profile"
             >
               <IoLogoGithub className="w-6 h-6" />
             </a>
