@@ -29,6 +29,8 @@
   --mobile-window-height: calc(55vh - var(--mobile-window-top) - 1rem);
   --mobile-progress-spacing: 2.75rem;
   --keyboard-height: 0px; /* 가상 키보드 높이 */
+  --header-height: 4rem; /* 64px - 헤더 높이 */
+  --footer-height: 5rem; /* 80px - 푸터 높이 (여백 포함) */
 }
 
 /* 가상 키보드가 올라왔을 때 UI 조정 */
@@ -36,15 +38,25 @@
   --mobile-progress-spacing: 1rem; /* 더 위로 이동 */
 }
 
-/* 모바일 고정 프로그레스바 - 가상 키보드 고려 */
-.mobile-progress-bar {
-  bottom: calc(var(--keyboard-height) + 1rem);
-  top: unset !important;
-}
+/* 모바일 컨텐츠 컨테이너 - 하단 UI를 위한 공간 확보 */
+@media (max-width: 768px) {
+  .mobile-content-container {
+    padding-bottom: 200px; /* 프로그레스바 + 컨트롤 버튼 + 여백 */
+    /* min-height 제거 - 고정 UI로 인해 불필요한 높이 생성 방지 */
+  }
 
-/* 컨트롤 버튼들 - 가상 키보드 고려 */  
-.mobile-controls {
-  bottom: calc(var(--keyboard-height) + 0.5rem);
+  /* 모바일 언어 토글 고정 */
+  .mobile-language-toggle {
+    position: fixed !important;
+    top: calc(var(--header-height) + 1rem);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    margin-bottom: 0 !important;
+    background-color: var(--color-background);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border-primary);
+  }
 }
 
 /* 글자 조합 패널 - 가상 키보드 고려 */
@@ -72,49 +84,45 @@
   transition: scroll-behavior 0.2s ease-in-out;
 }
 
-/* 모바일 텍스트 줄간격 - 더 조밀하게 (강제 적용) */
-.mobile-typing-text,
-.mobile-typing-text *,
-.mobile-typing-text .word-group,
-.mobile-typing-text .word-group * {
-  line-height: 1.1 !important; /* 1.2 → 1.1로 더욱 축소 */
-  letter-spacing: 0.005em !important; /* 0.01em → 0.005em으로 더욱 축소 */
-  margin-bottom: 0 !important; /* 하단 마진 제거 */
-  padding-bottom: 0 !important; /* 하단 패딩 제거 */
+/* 표준화된 타이핑 텍스트 스타일 */
+.typing-text-standardized {
+  line-height: var(--typing-line-height-desktop);
+  letter-spacing: 0.02em;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
-/* 모바일 전용 추가 조정 */
-@media (max-width: 768px) {
-  .typing-text-container,
-  .typing-text-container * {
-    line-height: 1.1 !important;
-    letter-spacing: 0.005em !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  
-  .typing-text-container .word-group,
-  .typing-text-container .word-group *,
-  .typing-text-container span {
-    line-height: 1.1 !important;
-    letter-spacing: 0.005em !important;
-    margin: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  
-  /* 모바일에서 텍스트 컨테이너 자체 패딩도 줄이기 */
-  .mobile-typing-text {
-    line-height: 1.1 !important;
-    padding-top: 1rem !important; /* 3rem → 1rem으로 축소 */
-    padding-bottom: 1rem !important; /* 3rem → 1rem으로 축소 */
-  }
+/* 디바이스별 타이핑 텍스트 최적화 */
+.mobile-device .typing-text-standardized {
+  line-height: var(--typing-line-height-mobile);
+  letter-spacing: 0.01em;
+  padding-top: var(--spacing-4);
+  padding-bottom: var(--spacing-4);
 }
 
-/* PC 텍스트 기본 줄간격 */
-.desktop-typing-text {
-  line-height: 1.6;
+/* 모바일 타이핑 컨테이너 레이아웃 */
+.mobile-typing-container {
+  /* min-height: 300vh; */
+  display: block; /* flex 대신 block으로 줄간격 정상 적용 */
+  text-align: center;
+  line-height: var(--typing-line-height-mobile);
+  word-wrap: break-word;
+  white-space: pre-wrap; /* 공백과 줄바꿈 유지 */
+  padding: var(--spacing-4) 0;
 }
+
+.tablet-device .typing-text-standardized {
+  line-height: var(--typing-line-height-tablet);
+  letter-spacing: 0.015em;
+}
+
+.desktop-device .typing-text-standardized {
+  line-height: var(--typing-line-height-desktop);
+  letter-spacing: 0.02em;
+}
+
+/* 레거시 클래스 - 제거 예정 */
+/* .desktop-typing-text는 .typing-text-standardized로 대체됨 */
 
 /* 📏 디자인 토큰 (Design Tokens) */
 :root {
@@ -537,7 +545,29 @@ body {
   overflow-x: hidden;
 }
 
-/* 📦 레이아웃 시스템 */
+/* 기본 링크 스타일 제거 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:visited {
+  color: inherit;
+}
+
+/* 모바일에서 불필요한 세로 스크롤 방지 */
+@media (max-width: 768px) {
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  body {
+    position: relative;
+  }
+}
+
+/* 📦 레이아웃 시스템 - 일관된 Z-Index 계층 */
 .app-layout {
   min-height: 100vh;
   display: flex;
@@ -548,12 +578,13 @@ body {
 
 .app-main {
   flex: 1;
+  position: relative; /* 스크롤 컨텍스트 제공 */
 }
 
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 100; /* 최상위 - 툴바/메뉴들을 위해 */
   width: 100%;
   backdrop-filter: blur(8px);
 }
@@ -561,6 +592,8 @@ body {
 .app-footer {
   background-color: var(--color-background-secondary);
   margin-top: auto;
+  position: relative;
+  z-index: 10; /* 최하위 */
 }
 
 /* ===============================
@@ -832,6 +865,7 @@ body {
   background-color: var(--color-background);
   border: 1px solid var(--color-border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 110 !important; /* 헤더 위에 */
 }
 
 .theme-menu-icon {
@@ -876,6 +910,7 @@ body {
   border: 1px solid var(--color-border);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 110 !important; /* 헤더 위에 */
 }
 
 /* 타이핑 엔진 버튼 스타일 */
@@ -913,8 +948,6 @@ body {
 /* 텍스트 렌더러 스타일 */
 .typing-text-container {
   font-size: var(--font-size, 26px);
-  line-height: 1.8;
-  letter-spacing: 0.05em;
   font-weight: 500;
 }
 

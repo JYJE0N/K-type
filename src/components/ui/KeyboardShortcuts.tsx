@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { IoPlay, IoReloadCircle, IoPauseSharp } from "react-icons/io5";
+import { useDeviceContext } from "@/utils/deviceDetection";
 
 interface KeyChipProps {
   children: React.ReactNode;
@@ -96,6 +97,7 @@ interface KeyboardShortcutsProps {
   showPause?: boolean;
   showResume?: boolean;
   className?: string;
+  forceHide?: boolean; // 강제 숨김 옵션
 }
 
 export function KeyboardShortcuts({ 
@@ -104,8 +106,18 @@ export function KeyboardShortcuts({
   showContinue = false,
   showPause = false,
   showResume = false,
-  className = '' 
+  className = '',
+  forceHide = false
 }: KeyboardShortcutsProps) {
+  const deviceContext = useDeviceContext();
+  
+  // 모바일 가상키보드 환경에서는 단축키 숨김
+  const shouldHideShortcuts = forceHide || !deviceContext.showKeyboardShortcuts;
+  
+  if (shouldHideShortcuts) {
+    return null;
+  }
+  
   return (
     <div className={`flex justify-center ${className}`}>
       <div 

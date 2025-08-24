@@ -12,19 +12,31 @@ export function Footer({ className = "" }: FooterProps) {
     <footer className={`app-footer ${className}`}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-text-muted">
+          <div className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
             © 2025 월루타자기. All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-text-muted">Made by Doomock</span>
+            <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Made by Doomock</span>
 
             <a
               href="https://github.com/JYJE0N"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub Profile"
-              className="github-link h-10 w-10 p-2 rounded-md transition-all duration-200 flex items-center justify-center"
+              className="h-10 w-10 p-2 rounded-md transition-all duration-200 flex items-center justify-center"
+              style={{
+                color: 'var(--color-text-primary)',
+                textDecoration: 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-interactive-secondary)'
+                e.currentTarget.style.backgroundColor = 'var(--color-surface)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-primary)'
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
             >
               <IoLogoGithub className="w-6 h-6" />
             </a>

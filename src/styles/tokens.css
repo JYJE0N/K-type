@@ -38,6 +38,11 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
   
+  /* 📱 타이핑 전용 줄간격 토큰 (디바이스별 표준화) */
+  --typing-line-height-mobile: 1.4;
+  --typing-line-height-tablet: 1.5;
+  --typing-line-height-desktop: 1.5;
+  
   /* 🔳 보더 토큰 */
   --border-radius-none: 0;
   --border-radius-sm: 0.125rem;

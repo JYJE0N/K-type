@@ -95,10 +95,22 @@ export async function POST(request: NextRequest) {
     }
     
     // 테스트 기록 추가
-    await userProgress.addTestRecord(cleanTestRecord)
+    try {
+      await userProgress.addTestRecord(cleanTestRecord)
+      console.log('✅ Test record added successfully')
+    } catch (addError) {
+      console.error('❌ Error adding test record:', addError)
+      throw new Error(`Failed to add test record: ${addError instanceof Error ? addError.message : 'Unknown error'}`)
+    }
     
     // 스트릭 업데이트
-    await userProgress.updateStreak()
+    try {
+      await userProgress.updateStreak()
+      console.log('✅ Streak updated successfully')
+    } catch (streakError) {
+      console.error('❌ Error updating streak:', streakError)
+      throw new Error(`Failed to update streak: ${streakError instanceof Error ? streakError.message : 'Unknown error'}`)
+    }
     
     return NextResponse.json({ 
       success: true,
@@ -106,8 +118,17 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error saving test record:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack
+    })
     return NextResponse.json(
-      { error: 'Failed to save test record' },
+      { 
+        error: 'Failed to save test record',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error'
+      },
       { status: 500 }
     )
   }

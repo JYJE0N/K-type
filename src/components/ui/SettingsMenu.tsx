@@ -311,12 +311,15 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
     return isOpen ? (
       <div 
         ref={dropdownRef}
-        className="absolute right-6 top-full mt-2 p-6 min-w-96 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm"
+        className="absolute top-full mt-2 p-4 md:p-6 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm"
         style={{ 
           backgroundColor: 'var(--color-background)', 
           borderColor: 'var(--color-border)',
           border: '1px solid var(--color-border)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          right: '0.5rem',
+          width: 'calc(100vw - 1rem)',
+          maxWidth: '24rem'
         }}
       >
         {renderSettingsContent()}
@@ -338,7 +341,18 @@ export function SettingsMenu({ className = '', isOpen: externalIsOpen, onClose }
 
       {/* 드롭다운 메뉴 */}
       {internalIsOpen && (
-        <div className="settings-menu-dropdown absolute right-0 top-full mt-2 p-6 min-w-96 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm">
+        <div 
+          className="settings-menu-dropdown absolute top-full mt-2 p-4 md:p-6 z-[9999] shadow-2xl rounded-xl backdrop-blur-sm"
+          style={{ 
+            backgroundColor: 'var(--color-background)', 
+            borderColor: 'var(--color-border)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            right: '0.5rem',
+            width: 'calc(100vw - 1rem)',
+            maxWidth: '24rem'
+          }}
+        >
           {renderSettingsContent()}
         </div>
       )}

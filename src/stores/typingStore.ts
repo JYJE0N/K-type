@@ -445,12 +445,12 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
     console.log(`📊 간단한 통계: CPM ${simpleCPM}, WPM ${simpleWPM}`)
   },
 
-  // Handle backspace
+  // Handle backspace - 완전한 수정 기능
   handleBackspace: () => {
     const state = get()
     
-    if (state.currentIndex <= 0 || state.isCompleted) {
-      console.log('❌ Cannot backspace: at start or completed')
+    if (state.currentIndex <= 0 || state.isCompleted || state.isCountingDown) {
+      console.log('❌ Cannot backspace: at start, completed, or counting down')
       return
     }
 
@@ -466,18 +466,53 @@ export const useTypingStore = create<TypingStore>((set, get) => ({
       timeDelta
     }
 
+    // 삭제할 문자의 위치 (현재 인덱스 - 1)
+    const deletePosition = state.currentIndex - 1
+    
+    // 해당 위치의 실수 기록 제거 (가장 최근 실수만)
+    const updatedMistakes = state.mistakes.filter((mistake, index) => {
+      // 같은 위치의 가장 마지막 실수만 제거
+      if (mistake.position === deletePosition) {
+        // findLastIndex 대신 역순 검색으로 마지막 인덱스 찾기
+        let lastMistakeIndex = -1
+        for (let i = state.mistakes.length - 1; i >= 0; i--) {
+          if (state.mistakes[i].position === deletePosition) {
+            lastMistakeIndex = i
+            break
+          }
+        }
+        return index !== lastMistakeIndex
+      }
+      return true
+    })
+
     console.log('🔙 Processing backspace:', {
       fromIndex: state.currentIndex,
-      toIndex: state.currentIndex - 1
+      toIndex: state.currentIndex - 1,
+      deletedChar: state.userInput[deletePosition],
+      mistakesBefore: state.mistakes.length,
+      mistakesAfter: updatedMistakes.length
     })
 
     set(state => ({
       keystrokes: [...state.keystrokes, keystroke],
       currentIndex: Math.max(0, state.currentIndex - 1),
       userInput: state.userInput.slice(0, -1),
+      mistakes: updatedMistakes, // 실수 기록도 업데이트
       lastProcessedChar: 'Backspace',
       lastProcessedTime: currentTime
     }))
+
+    // 통계 업데이트
+    const newState = get()
+    eventBus.emit('stats:update', {
+      keystrokes: newState.keystrokes,
+      mistakes: newState.mistakes,
+      startTime: newState.startTime,
+      currentIndex: newState.currentIndex,
+      userInput: newState.userInput,
+      firstKeystrokeTime: newState.firstKeystrokeTime
+    })
   },
 
   // Get current character

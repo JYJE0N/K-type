@@ -69,13 +69,13 @@ export default function Home() {
       </Suspense>
       <Layout>
         {/* 메인 컨테이너 */}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <div className="w-full max-w-6xl mx-auto">
             
             {/* 섹션 1: 메인 타이핑 영역 */}
             <section className="w-full">
-              {/* 언어 선택 토글 */}
-              <div className="flex justify-center mb-6">
+              {/* 언어 선택 토글 - 모바일에서 고정 위치 */}
+              <div className="flex justify-center mb-6 md:mb-6 md:relative md:z-auto mobile-language-toggle">
                 <LanguageToggle />
               </div>
               

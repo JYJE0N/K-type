@@ -172,10 +172,22 @@ export function InputHandler({
       return;
     }
 
-    // Backspace 처리
+    // Backspace 처리 - 활성화된 타이핑 중에도 가능
     if (key === 'Backspace') {
       event.preventDefault()
-      onBackspace()
+      
+      // 일시정지 상태에서는 재개
+      if (isPaused && onResume) {
+        console.log('▶️ Resuming from pause via backspace')
+        onResume()
+        return
+      }
+      
+      // 활성화된 상태에서만 백스페이스 처리
+      if (isActive && !isCountingDown) {
+        onBackspace()
+      }
+      
       if (inputRef.current) inputRef.current.value = ''
       return
     }

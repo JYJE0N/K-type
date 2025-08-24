@@ -7,6 +7,7 @@ import {
 } from "@/utils/textState";
 import { CharacterRenderer } from "./CharacterRenderer";
 import { SpaceRenderer } from "./SpaceRenderer";
+import { useDeviceContext, getTypingTextClassName } from "@/utils/deviceDetection";
 
 interface TextRendererProps {
   text: string;
@@ -30,19 +31,8 @@ export function TextRenderer({
   className = "",
 }: TextRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  // SSR 안전한 모바일 감지 (hydration 차단 방지)
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    // 초기 설정은 mount 후에만
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const deviceContext = useDeviceContext();
+  const { isMobile } = deviceContext;
 
   // 문자별 상태 계산 (메모이제이션)
   const characterStates = useMemo(() => {
@@ -182,12 +172,13 @@ export function TextRenderer({
           className="fixed-text-window"
           style={{
             position: "fixed",
-            top: "var(--mobile-window-top)",
+            top: "calc(var(--header-height) + 6.5rem)", /* 헤더 + 언어 토글 + 충분한 여유 공간 */
             left: "1rem",
             right: "1rem",
-            height: "var(--mobile-window-height)",
+            height: "calc(var(--mobile-window-height) - 2rem)", /* 헤더 고려하여 높이 조정 */
+            maxHeight: "calc(100vh - var(--header-height) - var(--footer-height) - 16rem)", /* 컨트롤 버튼 영역 고려 */
             overflow: "hidden",
-            zIndex: 10,
+            zIndex: 40, /* 고정 타이핑 윈도우 */
             backgroundColor: "var(--color-surface)",
             borderRadius: "0.75rem",
             border: "2px solid var(--color-border-primary)",
@@ -208,25 +199,15 @@ export function TextRenderer({
           >
             {/* 실제 스크롤되는 텍스트 컨테이너 */}
             <div
-              className="mobile-typing-text"
-              style={{
-                minHeight: "300vh", // 더 넉넉한 높이로 맥락 확보
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                alignItems: "flex-start",
-                lineHeight: "1.1", // 직접 지정으로 확실히 적용
-                letterSpacing: "0.005em", // 직접 지정으로 확실히 적용
-                // paddingTop과 paddingBottom은 CSS에서 처리
-              }}
+              className={`${getTypingTextClassName(deviceContext)} mobile-typing-container`}
             >
               {renderContent()}
             </div>
           </div>
         </div>
       ) : (
-        // PC: 기존 방식
-        <div className="typing-text-container desktop-typing-text font-korean text-2xl px-6 py-6 bg-transparent rounded-lg border-2 border-transparent text-center flex flex-wrap justify-center items-baseline transition-all duration-300 ease-in-out">
+        // PC/태블릿: 기존 방식
+        <div className={`typing-text-container ${getTypingTextClassName(deviceContext)} font-korean text-2xl px-6 py-6 bg-transparent rounded-lg border-2 border-transparent text-center flex flex-wrap justify-center items-baseline transition-all duration-300 ease-in-out`}>
           {renderContent()}
         </div>
       )}

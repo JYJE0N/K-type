@@ -98,12 +98,20 @@ temp/
 *.swo
 *~
 
-# OS generated files
+# macOS
 .DS_Store
 .DS_Store?
 ._*
+.AppleDouble
+.LSOverride
+
+# macOS thumbnails and system files
 .Spotlight-V100
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 .Trashes
+
+# Windows
 ehthumbs.db
 Thumbs.db
 
@@ -134,8 +142,7 @@ test-*.js
 yarn-wrapper.sh
 
 # npm config
-.npmrc._*
-.DS_Store
+.npmrc
 
 # Scripts directory
 scripts/

@@ -134,7 +134,7 @@ export function TypingTestUI({
   }, []);
 
   return (
-    <div className={`typing-test-container ${className}`}>
+    <div className={`typing-test-container mobile-content-container ${className}`}>
       {/* 카운트다운 오버레이 */}
       {isCountingDown && (
         <div
@@ -142,7 +142,7 @@ export function TypingTestUI({
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.4)",
             backdropFilter: "blur(12px)",
-            zIndex: 9999,
+            zIndex: 90, /* 카운트다운 오버레이 */
           }}
         >
           {/* 준비 텍스트 */}
@@ -289,30 +289,110 @@ export function TypingTestUI({
           )}
         </div>
 
-        {/* 모바일용 고정 프로그레스바 - 가상 키보드 대응 */}
-        <div className="mobile-progress-bar md:hidden fixed left-1 right-1 z-20">
-          <div
-            className="rounded-lg p-3"
-            style={{
-              backgroundColor: "var(--color-background)",
-              border: "1px solid var(--color-background)",
-            }}
-          >
-            <CharacterProgressSlider
-              currentIndex={currentIndex}
-              totalLength={targetText.length}
-              elapsedTime={currentTime}
-              variant="success"
-              size="sm"
-              className="w-full"
-              showCount={false}
-              animated={false}
-            />
+        {/* 모바일용 하단 UI 컨테이너 - 헤더/푸터 영역 제외, 가상 키보드 대응 */}
+        <div className="md:hidden fixed left-0 right-0 z-30" 
+             style={{ 
+               bottom: "calc(var(--footer-height) + var(--keyboard-height) + env(safe-area-inset-bottom, 0px) + 0.5rem)",
+               maxHeight: "calc(100vh - var(--header-height) - var(--footer-height))"
+             }}>
+          
+          {/* 프로그레스 바 */}
+          <div className="mx-4 mb-4">
+            <div
+              className="rounded-lg p-3"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                border: "1px solid var(--color-border-primary)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CharacterProgressSlider
+                currentIndex={currentIndex}
+                totalLength={targetText.length}
+                elapsedTime={currentTime}
+                variant="success"
+                size="sm"
+                className="w-full"
+                showCount={false}
+                animated={false}
+              />
+            </div>
+          </div>
+
+          {/* 컨트롤 버튼들 */}
+          <div className="flex justify-center items-center gap-3 px-4">
+            {!isActive && !isCompleted && !isCountingDown && (
+              <>
+                <button
+                  onClick={onStart}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-white hover:opacity-90"
+                  style={{ backgroundColor: "var(--color-interactive-primary)" }}
+                >
+                  <IoPlay className="w-4 h-4" />
+                  시작
+                </button>
+
+                <button
+                  onClick={onRestart}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-white hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-interactive-secondary)",
+                  }}
+                >
+                  <IoReloadCircle className="w-4 h-4" />
+                  새로고침
+                </button>
+              </>
+            )}
+
+            {isActive && !isPaused && (
+              <>
+                <button
+                  onClick={onPause}
+                  className="typing-button-secondary flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200"
+                >
+                  <IoPauseSharp className="w-4 h-4" />
+                  일시정지
+                </button>
+
+                <button
+                  onClick={onStop}
+                  className="typing-button-restart flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200"
+                >
+                  <IoStop className="w-4 h-4" />
+                  중단
+                </button>
+              </>
+            )}
+
+            {isPaused && (
+              <>
+                <button
+                  onClick={onResume}
+                  className="typing-button-primary flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200"
+                >
+                  <IoPlay className="w-4 h-4" />
+                  재개
+                </button>
+
+                <button
+                  onClick={onRestart}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-white hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-interactive-secondary)",
+                  }}
+                >
+                  <IoReloadCircle className="w-4 h-4" />
+                  새로고침
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* 컨트롤 버튼들 - 가상 키보드 대응 */}
-        <div className="mobile-controls md:bottom-auto controls-container flex justify-center items-center gap-4 mb-6 mt-16 md:mt-0 fixed md:static left-0 right-0 z-30">
+        {/* 데스크톱용 컨트롤 버튼들 */}
+        <div className="hidden md:flex justify-center items-center gap-4 mb-6 mt-16">
           {!isActive && !isCompleted && !isCountingDown && (
             <>
               <button
