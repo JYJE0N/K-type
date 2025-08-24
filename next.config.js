@@ -95,6 +95,28 @@ const nextConfig = {
         destination: 'https://wollu.life/:path*',
         permanent: true,
       },
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'wollu.site',
+          },
+        ],
+        destination: 'https://wollu.life/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.wollu.site',
+          },
+        ],
+        destination: 'https://wollu.life/:path*',
+        permanent: true,
+      },
     ]
   },
 }
