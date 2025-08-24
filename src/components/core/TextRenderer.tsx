@@ -35,6 +35,8 @@ export const TextRenderer = memo(function TextRenderer({
   usePerformanceMonitor('TextRenderer');
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const currentElementRef = useRef<HTMLElement | null>(null);
+  const textContainerRef = useRef<HTMLElement | null>(null);
   const deviceContext = useDeviceContext();
   const { isMobile } = deviceContext;
 
@@ -59,71 +61,56 @@ export const TextRenderer = memo(function TextRenderer({
     let rafId: number;
 
     const scrollToCurrentPosition = () => {
+      if (!textContainerRef.current) return;
+      
       const targetIndex = currentIndex < 0 ? 0 : currentIndex;
-      const currentElement = document.querySelector(
-        `[data-index="${targetIndex}"]`
-      );
-      const textContainer = containerRef.current?.querySelector(
-        ".typing-text-container"
-      );
+      
+      // DOM 선택자 최적화: ref 사용
+      if (!currentElementRef.current || currentElementRef.current.getAttribute('data-index') !== targetIndex.toString()) {
+        currentElementRef.current = textContainerRef.current.querySelector(`[data-index="${targetIndex}"]`) as HTMLElement;
+      }
+      
+      const currentElement = currentElementRef.current;
+      const textContainer = textContainerRef.current;
 
       if (currentElement && textContainer) {
         if (isMobile) {
-          // 모바일: 성능 최적화된 스크롤링
+          // 모바일: RAF 없이 직접 스크롤 (성능 최적화)
           const windowHeight = 192;
           const windowCenter = windowHeight / 2;
 
-          // requestAnimationFrame으로 성능 최적화
-          rafId = requestAnimationFrame(() => {
-            const textContainerRect = textContainer.getBoundingClientRect();
-            const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
+          const textContainerRect = textContainer.getBoundingClientRect();
+          const elementRect = currentElement.getBoundingClientRect();
 
-            const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
-            const targetScrollTop = relativeTop - windowCenter;
+          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+          const targetScrollTop = relativeTop - windowCenter;
 
-            if (currentIndex <= 0 && !isPaused) {
-              textContainer.scrollTo({
-                top: Math.max(0, targetScrollTop),
-                behavior: "instant",
-              });
-            } else {
-              // 모바일에서는 더 부드러운 스크롤을 위해 직접 설정
-              textContainer.scrollTop = Math.max(0, targetScrollTop);
-            }
-          });
+          textContainer.scrollTop = Math.max(0, targetScrollTop);
         } else {
-          // PC: 기존 로직 유지
-          rafId = requestAnimationFrame(() => {
-            const containerHeight = textContainer.clientHeight;
-            const targetPosition = containerHeight * 0.33;
+          // PC: 단순화된 스크롤링
+          const containerHeight = textContainer.clientHeight;
+          const targetPosition = containerHeight * 0.33;
 
-            const textContainerRect = textContainer.getBoundingClientRect();
-            const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
+          const textContainerRect = textContainer.getBoundingClientRect();
+          const elementRect = currentElement.getBoundingClientRect();
 
-            const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
-            const targetScrollTop = relativeTop - targetPosition;
+          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+          const targetScrollTop = relativeTop - targetPosition;
 
-            if (currentIndex <= 0) {
-              textContainer.scrollTo({
-                top: 0,
-                behavior: "instant",
-              });
-            } else {
-              (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
-              textContainer.scrollTop = Math.max(0, targetScrollTop);
-            }
-          });
+          if (currentIndex <= 0) {
+            textContainer.scrollTop = 0;
+          } else {
+            textContainer.scrollTop = Math.max(0, targetScrollTop);
+          }
         }
       }
     };
 
-    // 모바일에서는 더 적극적인 쓰로틀링 적용 (성능 향상)
-    const throttleDelay = isMobile ? 33 : 16; // 모바일 30fps, PC 60fps
+    // 쓰로틀링 최적화 (RAF 제거)
+    const throttleDelay = isMobile ? 16 : 8; // 성능 향상된 지연시간
     
     const throttledScroll = () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
-      if (rafId) cancelAnimationFrame(rafId);
-      
       scrollTimeout = setTimeout(scrollToCurrentPosition, throttleDelay);
     };
 
@@ -131,9 +118,8 @@ export const TextRenderer = memo(function TextRenderer({
 
     return () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
-      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [currentIndex, isPaused, text, isMobile]); // text 점버 상태 변경 시 스크롤 재계산
+  }, [currentIndex, isPaused, isMobile]); // text 의존성 제거로 성능 향상
 
   // 메인 렌더링 (메모이제이션 최적화)
   const renderContent = useCallback(() => {
@@ -211,6 +197,7 @@ export const TextRenderer = memo(function TextRenderer({
           }}
         >
           <div
+            ref={(el) => { textContainerRef.current = el; }}
             className="typing-text-container font-korean text-xl text-center"
             style={{
               overflow: "auto", // 스크롤 가능
@@ -246,91 +233,37 @@ export const TextRenderer = memo(function TextRenderer({
             marginBottom: "2rem",
           }}
         >
-          {/* 위쪽 블러 그라데이션 마스크 - 외층 (강한 블러) */}
+          {/* 단순화된 블러 효과 - 성능 최적화 */}
           <div
-            className="blur-mask-top-outer"
+            className="blur-mask-top"
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              height: "var(--blur-height)",
-              background: `linear-gradient(to bottom, 
-                var(--color-background) 0%, 
-                color-mix(in srgb, var(--color-background) 95%, transparent) 30%,
-                color-mix(in srgb, var(--color-background) 80%, transparent) 50%,
-                color-mix(in srgb, var(--color-background) 50%, transparent) 70%,
-                color-mix(in srgb, var(--color-background) 20%, transparent) 85%, 
-                transparent 100%)`,
-              backdropFilter: "blur(12px)",
-              zIndex: 12,
+              height: "4rem",
+              background: `linear-gradient(to bottom, var(--color-background) 0%, transparent 100%)`,
+              zIndex: 10,
               pointerEvents: "none",
             }}
           />
           
-          {/* 위쪽 블러 그라데이션 마스크 - 내층 (부드러운 블러) */}
           <div
-            className="blur-mask-top-inner"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "calc(var(--blur-height) * 0.7)",
-              background: `linear-gradient(to bottom, 
-                var(--color-background) 0%, 
-                color-mix(in srgb, var(--color-background) 90%, transparent) 40%,
-                color-mix(in srgb, var(--color-background) 60%, transparent) 70%, 
-                transparent 100%)`,
-              backdropFilter: "blur(4px)",
-              zIndex: 11,
-              pointerEvents: "none",
-            }}
-          />
-          
-          {/* 아래쪽 블러 그라데이션 마스크 - 외층 (강한 블러) */}
-          <div
-            className="blur-mask-bottom-outer"
+            className="blur-mask-bottom"
             style={{
               position: "absolute",
               bottom: 0,
               left: 0,
               right: 0,
-              height: "var(--blur-height)",
-              background: `linear-gradient(to top, 
-                var(--color-background) 0%, 
-                color-mix(in srgb, var(--color-background) 95%, transparent) 30%,
-                color-mix(in srgb, var(--color-background) 80%, transparent) 50%,
-                color-mix(in srgb, var(--color-background) 50%, transparent) 70%,
-                color-mix(in srgb, var(--color-background) 20%, transparent) 85%, 
-                transparent 100%)`,
-              backdropFilter: "blur(12px)",
-              zIndex: 12,
-              pointerEvents: "none",
-            }}
-          />
-          
-          {/* 아래쪽 블러 그라데이션 마스크 - 내층 (부드러운 블러) */}
-          <div
-            className="blur-mask-bottom-inner"
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "calc(var(--blur-height) * 0.7)",
-              background: `linear-gradient(to top, 
-                var(--color-background) 0%, 
-                color-mix(in srgb, var(--color-background) 90%, transparent) 40%,
-                color-mix(in srgb, var(--color-background) 60%, transparent) 70%, 
-                transparent 100%)`,
-              backdropFilter: "blur(4px)",
-              zIndex: 11,
+              height: "4rem",
+              background: `linear-gradient(to top, var(--color-background) 0%, transparent 100%)`,
+              zIndex: 10,
               pointerEvents: "none",
             }}
           />
 
           <div
+            ref={(el) => { if (!textContainerRef.current) textContainerRef.current = el; }}
             className="typing-text-container font-korean text-2xl text-center"
             style={{
               overflow: "auto",
