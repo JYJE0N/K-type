@@ -132,13 +132,31 @@ export function InputHandler({
     }, 200)
   }, [testStarted, onKeyPress, isActive, isCountingDown, handleTestStart])
 
-  // Handle direct input (for non-IME characters)
+  // Handle direct input (모바일 최적화 포함)
   const handleInput = useCallback((event: React.FormEvent<HTMLInputElement>) => {
     if (disabled || isCompleted) return
     
     const target = event.target as HTMLInputElement
     const value = target.value
     
+    // 🔧 모바일에서는 간소화된 처리
+    if (mobileInfo.isMobile) {
+      const lastChar = value[value.length - 1]
+      if (lastChar && lastChar !== ' ') {
+        if (!testStarted) {
+          onTestStart()
+          setTestStarted(true)
+        }
+        onKeyPress(lastChar)
+      }
+      // 입력 필드 정리 (모바일 성능 최적화)
+      if (value.length > 10) {
+        target.value = ''
+      }
+      return
+    }
+    
+    // 데스크톱은 기존 로직 유지
     // Skip if IME is composing
     if (imeHandler.current.isComposing()) {
       // console.log('🎭 Skipping input during IME composition')
@@ -157,7 +175,7 @@ export function InputHandler({
       // Clear input to prevent accumulation
       target.value = ''
     }
-  }, [disabled, isCompleted, processCharacter])
+  }, [disabled, isCompleted, processCharacter, mobileInfo.isMobile, testStarted, onTestStart, onKeyPress])
 
   // Handle keyboard events (전역 이벤트 처리 제외 문자만)
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {

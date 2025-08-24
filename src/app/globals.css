@@ -8,6 +8,37 @@
    📦 디자인 토큰 및 테마 (통합)
    =============================== */
 
+/* 🎨 모바일 TextRenderer용 CSS 변수 (최우선 정의) */
+:root {
+  /* 기본 테마 색상 */
+  --background: #1a1b3a;
+  --surface: #2a2d5a;
+  --text-primary: #c8b5db;
+  --text-secondary: #00bcd4;
+  
+  /* 타이핑 관련 색상 */
+  --typing-correct: #da70d6;
+  --typing-incorrect: #ff1744;
+  --typing-current: #c8b5db;
+  --typing-accent: #ff69b4;
+  --color-typing-cursor: #c8b5db;
+  
+  /* 추가 색상 변수 */
+  --color-accent: #ff69b4;
+  --color-correct: #da70d6;
+  --color-incorrect: #ff1744;
+  --color-current: #c8b5db;
+  
+  /* 폰트 크기 기본값 */
+  --font-size: 24px;
+}
+
+/* 🔤 모바일 친화적 폰트 정의 */
+.font-mono { 
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 
+               'Courier New', monospace; /* Courier New 폴백 추가 */
+}
+
 /* 🎬 카운트다운 애니메이션 - 빠른 한바퀴 */
 @keyframes spin-progress {
   0% {

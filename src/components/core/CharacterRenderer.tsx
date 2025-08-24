@@ -16,7 +16,26 @@ interface CharacterRendererProps {
  * 특수 키를 시각적으로 표시하는 함수
  */
 function renderSpecialKey(char: string, specialKey: string, status: string) {
+  // 🔧 모바일 감지 추가 (SSR 안전)
+  const isMobile = typeof navigator !== 'undefined' && 
+                   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
   const getKeyDisplay = () => {
+    // 모바일일 경우 간단한 기호 사용
+    if (isMobile) {
+      switch (specialKey) {
+        case 'enter': return '↵';
+        case 'tab': return '→';
+        case 'space': 
+          if (status === 'current' || status === 'incorrect') {
+            return '_';
+          }
+          return ' ';
+        default: return char;
+      }
+    }
+    
+    // 데스크톱은 기존 로직 유지
     switch (specialKey) {
       case "enter":
         return "⏎";
@@ -54,7 +73,12 @@ function renderSpecialKey(char: string, specialKey: string, status: string) {
   const keyDisplay = getKeyDisplay();
   const keyLabel = getKeyLabel();
 
-  // Enter와 Tab은 특별한 스타일로 표시
+  // 모바일에서는 툴팁 제거 (성능 최적화)
+  if (isMobile) {
+    return keyDisplay;
+  }
+
+  // 데스크톱은 기존 로직 유지 (툴팁 포함)
   if (specialKey === "enter" || specialKey === "tab") {
     return (
       <span className="special-key-wrapper relative">

@@ -97,16 +97,49 @@ export default function Home() {
   const { language, testTarget, testMode, sentenceLength, sentenceStyle } = useSettingsStore()
   const { setTargetText, resetTest } = useTypingStore()
 
-  // 테마 및 개발자 도구 초기화 (프로덕션에서는 devTools 제외)
+  // 🔧 모바일 친화적 테마 및 개발자 도구 초기화 
   useEffect(() => {
-    initializeTheme()
-    
+    // DOM 로드 완료 확인 후 테마 적용
+    const initTheme = () => {
+      try {
+        initializeTheme()
+        
+        // 모바일에서 CSS 변수 강제 적용
+        if (typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          // CSS 변수가 제대로 로드되었는지 확인 후 재적용
+          setTimeout(() => {
+            const root = document.documentElement;
+            const testColor = getComputedStyle(root).getPropertyValue('--text-primary');
+            if (!testColor || testColor.trim() === '') {
+              // CSS 변수가 없으면 강제로 설정
+              root.style.setProperty('--text-primary', '#c8b5db');
+              root.style.setProperty('--typing-current', '#c8b5db');
+              root.style.setProperty('--color-typing-cursor', '#c8b5db');
+              console.log('🔧 모바일 CSS 변수 강제 적용');
+            }
+          }, 100);
+        }
+      } catch (error) {
+        console.warn('테마 초기화 실패, 기본값 사용:', error);
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTheme);
+    } else {
+      initTheme();
+    }
+
     // 개발자 도구는 개발 환경에서만 로딩
     if (process.env.NODE_ENV === 'development') {
       import('@/utils/devTools').then(module => {
         module.initDevTools()
       })
     }
+
+    return () => {
+      document.removeEventListener('DOMContentLoaded', initTheme);
+    };
   }, [])
 
   // 모바일 스크롤 제어를 위한 body 클래스 추가/제거
