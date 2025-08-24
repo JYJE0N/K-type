@@ -123,11 +123,15 @@ export function InputHandler({
       return
     }
 
-    // Auto-start test on first character
-    if (!testStarted && !isCountingDown && !isActive) {
+    // 모바일에서는 자동 시작 비활성화
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    const isAndroid = /Android/.test(navigator.userAgent)
+    const isMobile = isIOS || isAndroid
+    
+    // 데스크톱에서만 자동 시작
+    if (!testStarted && !isCountingDown && !isActive && !isMobile) {
+      console.log('🚀 Auto-starting test (desktop only)')
       handleTestStart()
-      // 첫 글자도 처리할 수 있도록 return 제거
-      // 카운트다운이 끝나면 아래 로직에서 처리됨
     }
 
     // 상태를 다시 한번 확인 (React 동기화 문제 해결)
@@ -265,10 +269,17 @@ export function InputHandler({
     // Enter, Tab 처리
     if (key === 'Enter' || key === 'Tab') {
       event.preventDefault()
-      if (!testStarted && !isCountingDown && !isActive) {
+      
+      // 모바일 환경 감지
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isAndroid = /Android/.test(navigator.userAgent)
+      const isMobile = isIOS || isAndroid
+      
+      // 데스크톱에서만 자동 시작
+      if (!testStarted && !isCountingDown && !isActive && !isMobile) {
         handleTestStart()
-        // 첫 글자도 처리할 수 있도록 return 제거
       }
+      
       if (isActive && !isCountingDown) {
         processCharacter(key === 'Enter' ? '\n' : '\t')
       }
@@ -278,10 +289,17 @@ export function InputHandler({
     // 스페이스 처리  
     if (key === ' ') {
       event.preventDefault()
-      if (!testStarted && !isCountingDown && !isActive) {
+      
+      // 모바일 환경 감지
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isAndroid = /Android/.test(navigator.userAgent)
+      const isMobile = isIOS || isAndroid
+      
+      // 데스크톱에서만 자동 시작
+      if (!testStarted && !isCountingDown && !isActive && !isMobile) {
         handleTestStart()
-        // 첫 글자도 처리할 수 있도록 return 제거
       }
+      
       if (isActive && !isCountingDown && !imeHandler.current.isComposing()) {
         processCharacter(' ')
       }
@@ -293,10 +311,17 @@ export function InputHandler({
       const charCode = key.charCodeAt(0)
       if (charCode < 128 && charCode >= 32) {
         event.preventDefault()
-        if (!testStarted && !isCountingDown && !isActive) {
+        
+        // 모바일 환경 감지
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        const isAndroid = /Android/.test(navigator.userAgent)
+        const isMobile = isIOS || isAndroid
+        
+        // 데스크톱에서만 자동 시작
+        if (!testStarted && !isCountingDown && !isActive && !isMobile) {
           handleTestStart()
-          // 첫 글자도 처리할 수 있도록 return 제거
         }
+        
         if (isActive && !isCountingDown) {
           processCharacter(key)
         }
@@ -340,8 +365,14 @@ export function InputHandler({
       setCompositionState(false, '')
       onCompositionChange?.(false)
       
-      // Auto-start if this is the first input
-      if (!testStarted && newChars.length > 0) {
+      // 모바일 환경 감지
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isAndroid = /Android/.test(navigator.userAgent)
+      const isMobile = isIOS || isAndroid
+      
+      // 데스크톱에서만 자동 시작
+      if (!testStarted && newChars.length > 0 && !isMobile) {
+        console.log('🚀 Auto-starting test from IME (desktop only)')
         handleTestStart()
       }
       
@@ -420,18 +451,24 @@ export function InputHandler({
     }
   }, [disabled, isCompleted, isActive])
 
-  // Initial focus and maintain focus + Global ESC handler
+  // Initial focus and maintain focus + Global ESC handler (모바일 최적화)
   useEffect(() => {
     const timer = setTimeout(() => {
       maintainFocus()
       console.log('🎯 Initial focus set')
     }, 100)
     
-    // 페이지 클릭 시에도 포커스 유지
+    // 모바일 환경 감지
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    const isAndroid = /Android/.test(navigator.userAgent)
+    const isMobile = isIOS || isAndroid
+    
+    // 페이지 클릭 시에도 포커스 유지 (모바일에서는 빈도 줄임)
     const handlePageClick = () => {
       try {
         if (!disabled && !isCompleted) {
-          setTimeout(() => maintainFocus(), 10)
+          const delay = isMobile ? 50 : 10; // 모바일에서는 더 긴 지연
+          setTimeout(() => maintainFocus(), delay)
         }
       } catch (error) {
         console.error('❌ Error in handlePageClick:', error)

@@ -118,12 +118,24 @@ export function useTestCompletionHandler() {
     }
   }, [isCompleted, firstKeystrokeTime, startTime, currentIndex, keystrokes, mistakes, targetText, router, totalTests, averageCPM, averageAccuracy, averageConsistency, liveStats]);
 
-  // 테스트 완료 감지
+  // 테스트 완료 감지 (무한 루프 방지)
   useEffect(() => {
-    if (isCompleted && targetText && currentIndex >= targetText.length) {
-      handleTestCompletion();
+    let hasTriggered = false;
+    
+    if (isCompleted && targetText && currentIndex >= targetText.length && !hasTriggered) {
+      hasTriggered = true;
+      console.log('🏁 TestCompletionHandler: 테스트 완료 감지 (한 번만 실행)');
+      
+      // 실행 지연을 통한 중복 방지
+      const timeoutId = setTimeout(() => {
+        handleTestCompletion();
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
-  }, [isCompleted, targetText, currentIndex, handleTestCompletion]);
+  }, [isCompleted, targetText, currentIndex]);
 
   // 승급 모달 닫기 + stats 페이지로 이동
   const closePromotionModal = useCallback(() => {

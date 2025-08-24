@@ -44,9 +44,15 @@ export function TextRenderer({
     return groupCharactersByWords(text, characterStates);
   }, [text, characterStates]);
 
-  // 자동 스크롤 처리 - 모바일과 PC 다르게 처리
+  // 자동 스크롤 처리 - 모바일과 PC 다르게 처리 (성능 최적화)
   useEffect(() => {
+    // 텍스트가 완료된 경우 스크롤링 비활성화 (무한 루프 방지)
+    if (currentIndex >= text.length) {
+      return;
+    }
+
     let scrollTimeout: NodeJS.Timeout;
+    let rafId: number;
 
     const scrollToCurrentPosition = () => {
       const targetIndex = currentIndex < 0 ? 0 : currentIndex;
@@ -59,65 +65,71 @@ export function TextRenderer({
 
       if (currentElement && textContainer) {
         if (isMobile) {
-          // 모바일: 기존 중앙 정렬 로직
+          // 모바일: 성능 최적화된 스크롤링
           const windowHeight = 192;
           const windowCenter = windowHeight / 2;
 
-          const textContainerRect = textContainer.getBoundingClientRect();
-          const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
+          // requestAnimationFrame으로 성능 최적화
+          rafId = requestAnimationFrame(() => {
+            const textContainerRect = textContainer.getBoundingClientRect();
+            const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
 
-          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
-          const targetScrollTop = relativeTop - windowCenter;
+            const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+            const targetScrollTop = relativeTop - windowCenter;
 
-          if (currentIndex <= 0 && !isPaused) {
-            textContainer.scrollTo({
-              top: Math.max(0, targetScrollTop),
-              behavior: "instant",
-            });
-          } else {
-            (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
-            textContainer.scrollTop = Math.max(0, targetScrollTop);
-          }
+            if (currentIndex <= 0 && !isPaused) {
+              textContainer.scrollTo({
+                top: Math.max(0, targetScrollTop),
+                behavior: "instant",
+              });
+            } else {
+              // 모바일에서는 더 부드러운 스크롤을 위해 직접 설정
+              textContainer.scrollTop = Math.max(0, targetScrollTop);
+            }
+          });
         } else {
-          // PC: 텍스트가 뷰포트의 상단 1/3 지점에 위치하도록 스크롤
-          const containerHeight = textContainer.clientHeight;
-          const targetPosition = containerHeight * 0.33; // 상단 1/3 지점
+          // PC: 기존 로직 유지
+          rafId = requestAnimationFrame(() => {
+            const containerHeight = textContainer.clientHeight;
+            const targetPosition = containerHeight * 0.33;
 
-          const textContainerRect = textContainer.getBoundingClientRect();
-          const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
+            const textContainerRect = textContainer.getBoundingClientRect();
+            const elementRect = (currentElement as HTMLElement).getBoundingClientRect();
 
-          const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
-          const targetScrollTop = relativeTop - targetPosition;
+            const relativeTop = elementRect.top - textContainerRect.top + textContainer.scrollTop;
+            const targetScrollTop = relativeTop - targetPosition;
 
-          // 첫 번째 글자일 때는 처음부터 시작
-          if (currentIndex <= 0) {
-            textContainer.scrollTo({
-              top: 0,
-              behavior: "instant",
-            });
-          } else {
-            (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
-            textContainer.scrollTop = Math.max(0, targetScrollTop);
-          }
+            if (currentIndex <= 0) {
+              textContainer.scrollTo({
+                top: 0,
+                behavior: "instant",
+              });
+            } else {
+              (textContainer as HTMLElement).style.scrollBehavior = isPaused ? "instant" : "smooth";
+              textContainer.scrollTop = Math.max(0, targetScrollTop);
+            }
+          });
         }
       }
     };
 
-    // 쓰로틀링 적용 - 더 부드러운 모션을 위해 딜레이 줄임
+    // 모바일에서는 더 적극적인 쓰로틀링 적용 (성능 향상)
+    const throttleDelay = isMobile ? 33 : 16; // 모바일 30fps, PC 60fps
+    
     const throttledScroll = () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(
-        scrollToCurrentPosition,
-        currentIndex <= 0 ? 0 : 16
-      ); // 60fps에 맞춰 16ms
+      if (rafId) cancelAnimationFrame(rafId);
+      
+      scrollTimeout = setTimeout(scrollToCurrentPosition, throttleDelay);
     };
 
     throttledScroll();
 
     return () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [currentIndex, isPaused]);
+  }, [currentIndex, isPaused, text.length, isMobile]);
 
   // 메인 렌더링
   const renderContent = () => {
