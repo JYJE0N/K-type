@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'NBj8i5W4ffEnEjNCP_3hNDKN8nGmg90O4jFr8Byps4M',
     other: {
       'naver-site-verification': process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION || '0370b05b6fb92f802be03da314e9d80b9500db60',
-      'daum-webmaster-tool': process.env.DAUM_WEBMASTER_TOOL || 'a5f5adfa8b679be4be6d2c624bb6152a2107f8774fc8c23535a761ca5815203a:K3+ujZin6cvemyrY776OoQ==',
+      'daum-webmaster-tool': process.env.NEXT_PUBLIC_DAUM_WEBMASTER_TOOL || 'a5f5adfa8b679be4be6d2c624bb6152a2107f8774fc8c23535a761ca5815203a:K3+ujZin6cvemyrY776OoQ==',
     }
   },
   icons: {
