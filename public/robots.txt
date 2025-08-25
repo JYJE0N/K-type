@@ -1,6 +1,6 @@
 # 월루타자기 - 한글 타자 연습 사이트
 # https://wollu.life
-# daum-webmaster-tool: a5f5adfa8b679be4be6d2c624bb6152a2107f8774fc8c23535a761ca5815203a:K3+ujZin6cvemyrY776OoQ==
+#DaumWebMasterTool:d5ca83cd0bb0664c0080673864cfd4b0e25a58b79b411d4887e842cd5ec563e0:K3+ujZin6cvemyrY776OoQ==
 
 User-agent: *
 Allow: /
